@@ -1,0 +1,65 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31424.327
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Src", "Src", "{F13C8E21-3AC5-49A3-9E15-0C567E85D724}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{2E07A73A-7639-4CBA-ADB6-7CCAC7F3C4BD}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{E531D8F4-E231-47BC-B870-CDFDA6DAA31E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{4D68AAED-74C5-4DBF-A044-44B9C55F3738}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{608E51CA-07E1-4BEF-A905-43BFCCA58CBF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebChat.Application", "WebChat.Application\WebChat.Application.csproj", "{CB202EDD-D213-4D16-9877-DDE2C9EDCB8F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebChat.Domain", "WebChat.Domain\WebChat.Domain.csproj", "{5FEE91D7-B852-4E9D-BDF0-16F5E84FFDD0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebChat.DataAccess.MsSql", "WebChat.DataAccess.MsSql\WebChat.DataAccess.MsSql.csproj", "{2ECFAC54-771C-495B-B655-CD6E8061DA74}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebChat.Api", "WebChat.Api\WebChat.Api.csproj", "{C49ABF58-5974-4530-BD1D-273E1BDA1496}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CB202EDD-D213-4D16-9877-DDE2C9EDCB8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB202EDD-D213-4D16-9877-DDE2C9EDCB8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB202EDD-D213-4D16-9877-DDE2C9EDCB8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB202EDD-D213-4D16-9877-DDE2C9EDCB8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FEE91D7-B852-4E9D-BDF0-16F5E84FFDD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FEE91D7-B852-4E9D-BDF0-16F5E84FFDD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FEE91D7-B852-4E9D-BDF0-16F5E84FFDD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FEE91D7-B852-4E9D-BDF0-16F5E84FFDD0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2ECFAC54-771C-495B-B655-CD6E8061DA74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2ECFAC54-771C-495B-B655-CD6E8061DA74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2ECFAC54-771C-495B-B655-CD6E8061DA74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2ECFAC54-771C-495B-B655-CD6E8061DA74}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C49ABF58-5974-4530-BD1D-273E1BDA1496}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C49ABF58-5974-4530-BD1D-273E1BDA1496}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C49ABF58-5974-4530-BD1D-273E1BDA1496}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C49ABF58-5974-4530-BD1D-273E1BDA1496}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E531D8F4-E231-47BC-B870-CDFDA6DAA31E} = {F13C8E21-3AC5-49A3-9E15-0C567E85D724}
+		{4D68AAED-74C5-4DBF-A044-44B9C55F3738} = {F13C8E21-3AC5-49A3-9E15-0C567E85D724}
+		{608E51CA-07E1-4BEF-A905-43BFCCA58CBF} = {F13C8E21-3AC5-49A3-9E15-0C567E85D724}
+		{CB202EDD-D213-4D16-9877-DDE2C9EDCB8F} = {E531D8F4-E231-47BC-B870-CDFDA6DAA31E}
+		{5FEE91D7-B852-4E9D-BDF0-16F5E84FFDD0} = {E531D8F4-E231-47BC-B870-CDFDA6DAA31E}
+		{2ECFAC54-771C-495B-B655-CD6E8061DA74} = {4D68AAED-74C5-4DBF-A044-44B9C55F3738}
+		{C49ABF58-5974-4530-BD1D-273E1BDA1496} = {608E51CA-07E1-4BEF-A905-43BFCCA58CBF}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {773102ED-FB07-44CB-A22A-7E8548CC07DF}
+	EndGlobalSection
+EndGlobal
