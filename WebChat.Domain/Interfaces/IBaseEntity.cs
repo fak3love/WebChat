@@ -1,4 +1,4 @@
-﻿namespace WebChat.Domain.Common
+﻿namespace WebChat.Domain.Interfaces
 {
     public interface IBaseEntity
     {
