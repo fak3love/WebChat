@@ -23,6 +23,11 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebChat.DataAccess.MsSql", "WebChat.DataAccess.MsSql\WebChat.DataAccess.MsSql.csproj", "{2ECFAC54-771C-495B-B655-CD6E8061DA74}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebChat.Api", "WebChat.Api\WebChat.Api.csproj", "{C49ABF58-5974-4530-BD1D-273E1BDA1496}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1A830DA3-3D0F-459D-802D-E7EC55775DD3} = {1A830DA3-3D0F-459D-802D-E7EC55775DD3}
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebChat.DataAccess", "WebChat.DataAccess\WebChat.DataAccess.csproj", "{1A830DA3-3D0F-459D-802D-E7EC55775DD3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,6 +51,10 @@ Global
 		{C49ABF58-5974-4530-BD1D-273E1BDA1496}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C49ABF58-5974-4530-BD1D-273E1BDA1496}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C49ABF58-5974-4530-BD1D-273E1BDA1496}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A830DA3-3D0F-459D-802D-E7EC55775DD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A830DA3-3D0F-459D-802D-E7EC55775DD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A830DA3-3D0F-459D-802D-E7EC55775DD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A830DA3-3D0F-459D-802D-E7EC55775DD3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -58,6 +67,7 @@ Global
 		{5FEE91D7-B852-4E9D-BDF0-16F5E84FFDD0} = {E531D8F4-E231-47BC-B870-CDFDA6DAA31E}
 		{2ECFAC54-771C-495B-B655-CD6E8061DA74} = {4D68AAED-74C5-4DBF-A044-44B9C55F3738}
 		{C49ABF58-5974-4530-BD1D-273E1BDA1496} = {608E51CA-07E1-4BEF-A905-43BFCCA58CBF}
+		{1A830DA3-3D0F-459D-802D-E7EC55775DD3} = {4D68AAED-74C5-4DBF-A044-44B9C55F3738}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {773102ED-FB07-44CB-A22A-7E8548CC07DF}
