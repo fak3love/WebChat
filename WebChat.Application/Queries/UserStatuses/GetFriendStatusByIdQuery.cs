@@ -10,16 +10,16 @@ using WebChat.Domain.Entities;
 
 namespace WebChat.Application.Queries
 {
-    public class GetLanguageByIdQuery : IRequest<LanguageDto>
+    public class GetFriendStatusByIdQuery : IRequest<FriendStatusDto>
     {
         public int Id { get; set; }
 
-        public GetLanguageByIdQuery(int id)
+        public GetFriendStatusByIdQuery(int id)
         {
             Id = id;
         }
 
-        public class Handler : IRequestHandler<GetLanguageByIdQuery, LanguageDto>
+        public class Handler : IRequestHandler<GetFriendStatusByIdQuery, FriendStatusDto>
         {
             private readonly IMapper _mapper;
 
@@ -28,16 +28,16 @@ namespace WebChat.Application.Queries
                 _mapper = mapper;
             }
 
-            public async Task<LanguageDto> Handle(GetLanguageByIdQuery request, CancellationToken cancellationToken)
+            public Task<FriendStatusDto> Handle(GetFriendStatusByIdQuery request, CancellationToken cancellationToken)
             {
-                var entity = await Task.FromResult(Languages.Value.FirstOrDefault(language => language.Id == request.Id));
+                var entity = UserFriendStatuses.Values.FirstOrDefault(status => status.Id == request.Id);
 
                 if (entity is null)
-                    throw new NotFoundException(nameof(Language), request.Id);
+                    throw new NotFoundException(nameof(UserFriendStatus), request.Id);
 
-                var dto = _mapper.Map<LanguageDto>(entity);
+                var dto = _mapper.Map<FriendStatusDto>(entity);
 
-                return dto;
+                return Task.FromResult(dto);
             }
         }
     }

@@ -8,9 +8,9 @@ using WebChat.Domain.Collections;
 
 namespace WebChat.Application.Queries
 {
-    public class GetLanguagesQuery : IRequest<ICollection<LanguageDto>>
+    public class GetCitiesQuery : IRequest<ICollection<CityDto>>
     {
-        public class Handler : IRequestHandler<GetLanguagesQuery, ICollection<LanguageDto>>
+        public class Handler : IRequestHandler<GetCitiesQuery, ICollection<CityDto>>
         {
             private readonly IMapper _mapper;
 
@@ -19,11 +19,11 @@ namespace WebChat.Application.Queries
                 _mapper = mapper;
             }
 
-            public async Task<ICollection<LanguageDto>> Handle(GetLanguagesQuery request, CancellationToken cancellationToken)
+            public Task<ICollection<CityDto>> Handle(GetCitiesQuery request, CancellationToken cancellationToken)
             {
-                var languages = await Task.FromResult(_mapper.Map<ICollection<LanguageDto>>(Languages.Value));
+                var cities = Task.FromResult(_mapper.Map<ICollection<CityDto>>(Cities.Values));
 
-                return languages;
+                return cities;
             }
         }
     }

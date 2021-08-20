@@ -19,9 +19,9 @@ namespace WebChat.Application.Queries
                 _mapper = mapper;
             }
 
-            public async Task<ICollection<FriendStatusDto>> Handle(GetFriendStatusesQuery request, CancellationToken cancellationToken)
+            public Task<ICollection<FriendStatusDto>> Handle(GetFriendStatusesQuery request, CancellationToken cancellationToken)
             {
-                var statuses = await Task.FromResult(_mapper.Map<ICollection<FriendStatusDto>>(UserFriendStatuses.Value));
+                var statuses = Task.FromResult(_mapper.Map<ICollection<FriendStatusDto>>(UserFriendStatuses.Values));
 
                 return statuses;
             }

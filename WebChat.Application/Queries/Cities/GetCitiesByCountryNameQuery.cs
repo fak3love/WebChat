@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using WebChat.Application.Dtos.City;
+using WebChat.Application.Dtos;
 using WebChat.Domain.Collections;
 
 namespace WebChat.Application.Queries
@@ -27,13 +27,13 @@ namespace WebChat.Application.Queries
                 _mapper = mapper;
             }
 
-            public async Task<ICollection<CityDto>> Handle(GetCitiesByCountryNameQuery request, CancellationToken cancellationToken)
+            public Task<ICollection<CityDto>> Handle(GetCitiesByCountryNameQuery request, CancellationToken cancellationToken)
             {
-                var country = await Task.FromResult(Countries.Value.FirstOrDefault(country => country.Name == request.CountryName));
+                var country = Countries.Values.FirstOrDefault(country => country.Name == request.CountryName);
 
-                var cities = await Task.FromResult(_mapper.Map<ICollection<CityDto>>(Cities.Value.Where(city => city.CountryId == country?.Id)));
+                var cities = _mapper.Map<ICollection<CityDto>>(Cities.Values.Where(city => city.CountryId == country?.Id));
 
-                return cities;
+                return Task.FromResult(cities);
             }
         }
     }

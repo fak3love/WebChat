@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using WebChat.Application.Common.Exceptions;
-using WebChat.Application.Dtos.City;
+using WebChat.Application.Dtos;
 using WebChat.Domain.Collections;
 using WebChat.Domain.Entities;
 
@@ -28,16 +28,16 @@ namespace WebChat.Application.Queries
                 _mapper = mapper;
             }
 
-            public async Task<CityDto> Handle(GetCityByIdQuery request, CancellationToken cancellationToken)
+            public Task<CityDto> Handle(GetCityByIdQuery request, CancellationToken cancellationToken)
             {
-                var entity = await Task.FromResult(Cities.Value.FirstOrDefault(city => city.Id == request.Id));
+                var entity = Cities.Values.FirstOrDefault(city => city.Id == request.Id);
 
                 if (entity is null)
                     throw new NotFoundException(nameof(City), request.Id);
 
                 var dto = _mapper.Map<CityDto>(entity);
 
-                return dto;
+                return Task.FromResult(dto);
             }
         }
     }
