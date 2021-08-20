@@ -10,7 +10,7 @@ namespace WebChat.DataAccess.MsSql.Configurations
         {
             builder.Property(prop => prop.FirstName).HasMaxLength(40).IsRequired();
             builder.Property(prop => prop.LastName).HasMaxLength(40).IsRequired();
-            builder.Property(prop => prop.UserStatus).HasMaxLength(200);
+            builder.Property(prop => prop.StatusMessage).HasMaxLength(200);
         }
     }
 }

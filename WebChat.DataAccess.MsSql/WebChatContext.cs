@@ -25,13 +25,13 @@ namespace WebChat.DataAccess.MsSql
 
         public WebChatContext()
         {
-            Database.EnsureDeleted();
+            //Database.EnsureDeleted();
             Database.EnsureCreated();
         }
 
         public WebChatContext(DbContextOptions options) : base(options)
         {
-            Database.EnsureDeleted();
+            //Database.EnsureDeleted();
             Database.EnsureCreated();
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -41,6 +41,7 @@ namespace WebChat.DataAccess.MsSql
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(WebChatContext).Assembly);
             modelBuilder.Seed();
         }
+
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             ApplyAuditable();

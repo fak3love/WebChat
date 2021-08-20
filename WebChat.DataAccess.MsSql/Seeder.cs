@@ -8,10 +8,10 @@ namespace WebChat.DataAccess.MsSql
     {
         public static void Seed(this ModelBuilder builder)
         {
-            builder.Entity<Country>().HasData(Countries.Value);
-            builder.Entity<City>().HasData(Cities.Value);
-            builder.Entity<Language>().HasData(Languages.Value);
-            builder.Entity<UserFriendStatus>().HasData(UserFriendStatuses.Value);
+            builder.Entity<Country>().HasData(Countries.Values);
+            builder.Entity<City>().HasData(Cities.Values);
+            builder.Entity<Language>().HasData(Languages.Values);
+            builder.Entity<UserFriendStatus>().HasData(UserFriendStatuses.Values);
         }
     }
 }
