@@ -37,18 +37,34 @@ namespace WebChat.Api.Middlewares
         {
             string result = string.Empty;
             var response = context.Response;
+            response.StatusCode = (int)HttpStatusCode.BadRequest;
             response.ContentType = "application/text";
 
             switch (exception)
             {
                 case ValidationException:
                     response.ContentType = "application/json";
-                    response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    result = JsonConvert.SerializeObject((exception as ValidationException).Failures);
+
+                    if ((exception as ValidationException).Errors.Count > 0)
+                        result = JsonConvert.SerializeObject((exception as ValidationException).Errors);
+
+                    break;
+                case IdentityException:
+                    response.ContentType = "application/json";
+                    result = JsonConvert.SerializeObject((exception as IdentityException).Errors);
+
+                    break;
+                case AuthorizationException:
+                    response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                    response.ContentType = "application/json";
+                    result = JsonConvert.SerializeObject((exception as AuthorizationException).Errors);
 
                     break;
                 case NotFoundException:
-                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    result = exception.Message;
+
+                    break;
+                case BadRequestException:
                     result = exception.Message;
 
                     break;
