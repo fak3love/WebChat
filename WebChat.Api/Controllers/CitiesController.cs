@@ -14,9 +14,6 @@ namespace WebChat.Api.Controllers
         {
             var result = await Mediator.Send(new GetCityByIdQuery(id));
 
-            if (result is null)
-                return NotFound();
-
             return Ok(result);
         }
 
@@ -24,9 +21,6 @@ namespace WebChat.Api.Controllers
         public async Task<IActionResult> GetByCountryName(string countryName)
         {
             var result = await Mediator.Send(new GetCitiesByCountryNameQuery(countryName));
-
-            if (result.Count == 0)
-                return NotFound();
 
             return Ok(result);
         }

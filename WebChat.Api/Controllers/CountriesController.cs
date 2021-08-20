@@ -14,9 +14,6 @@ namespace WebChat.Api.Controllers
         {
             var result = await Mediator.Send(new GetCountryByIdQuery(id));
 
-            if (result is null)
-                return NotFound();
-
             return Ok(result);
         }
     }

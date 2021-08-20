@@ -14,9 +14,6 @@ namespace WebChat.Api.Controllers
         {
             var result = await Mediator.Send(new GetFriendStatusByIdQuery(id));
 
-            if (result is null)
-                return NotFound();
-
             return Ok(result);
         }
     }
