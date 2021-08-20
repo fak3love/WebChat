@@ -7,9 +7,11 @@ namespace WebChat.Application.Common.Exceptions
 {
     public class ValidationException : Exception
     {
+        public IDictionary<string, string[]> Errors { get; }
+
         public ValidationException() : base("One or more validation failures have occurred.")
         {
-            Failures = new Dictionary<string, string[]>();
+            Errors = new Dictionary<string, string[]>();
         }
 
         public ValidationException(List<ValidationFailure> failures) : this()
@@ -25,10 +27,8 @@ namespace WebChat.Application.Common.Exceptions
                     .Select(e => e.ErrorMessage)
                     .ToArray();
 
-                Failures.Add(propertyName, propertyFailures);
+                Errors.Add(propertyName, propertyFailures);
             }
         }
-
-        public IDictionary<string, string[]> Failures { get; }
     }
 }
