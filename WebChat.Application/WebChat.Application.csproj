@@ -10,17 +10,16 @@
     <PackageReference Include="FluentValidation" Version="10.3.0" />
     <PackageReference Include="MediatR" Version="9.0.0" />
     <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="5.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Nanoid" Version="2.1.0" />
+    <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\WebChat.DataAccess.MsSql\WebChat.DataAccess.MsSql.csproj" />
     <ProjectReference Include="..\WebChat.Domain\WebChat.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Commands\Creates\" />
-    <Folder Include="Commands\Deletes\" />
-    <Folder Include="Commands\Updates\" />
   </ItemGroup>
 
 </Project>

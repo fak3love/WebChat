@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using WebChat.Application.Dtos.City;
+using WebChat.Application.Dtos;
 using WebChat.Domain.Entities;
 
 namespace WebChat.Application.Mappings

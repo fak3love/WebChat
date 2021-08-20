@@ -1,4 +1,4 @@
-﻿namespace WebChat.Application.Dtos.City
+﻿namespace WebChat.Application.Dtos
 {
     public class CityDto
     {

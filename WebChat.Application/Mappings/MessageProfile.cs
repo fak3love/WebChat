@@ -9,12 +9,12 @@ namespace WebChat.Application.Mappings
         public MessageProfile()
         {
             CreateMap<UserMessage, MessageDto>()
-                .ForMember(prop => prop.FirstUser, conf => conf.MapFrom(prop => prop.InitiatorUser))
-                .ForMember(prop => prop.SecondUser, conf => conf.MapFrom(prop => prop.TargetUser));
+                .ForMember(prop => prop.FirstUserId, conf => conf.MapFrom(prop => prop.InitiatorUserId))
+                .ForMember(prop => prop.SecondUserId, conf => conf.MapFrom(prop => prop.TargetUserId));
 
             CreateMap<MessageDto, UserMessage>()
-                .ForMember(prop => prop.InitiatorUser, conf => conf.MapFrom(prop => prop.FirstUser))
-                .ForMember(prop => prop.TargetUser, conf => conf.MapFrom(prop => prop.SecondUser));
+                .ForMember(prop => prop.InitiatorUserId, conf => conf.MapFrom(prop => prop.FirstUserId))
+                .ForMember(prop => prop.TargetUserId, conf => conf.MapFrom(prop => prop.SecondUserId));
         }
     }
 }

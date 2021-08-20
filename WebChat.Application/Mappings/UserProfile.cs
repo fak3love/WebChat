@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using WebChat.Application.Dtos;
+using WebChat.Application.Models;
 using WebChat.Domain.Entities;
 
 namespace WebChat.Application.Mappings
@@ -10,6 +11,9 @@ namespace WebChat.Application.Mappings
         {
             CreateMap<User, UserDto>();
             CreateMap<UserDto, User>();
+
+            CreateMap<User, GeneralUserProfileModel>();
+            CreateMap<GeneralUserProfileModel, User>();
         }
     }
 }
