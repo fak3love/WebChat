@@ -5,14 +5,26 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="LocalStorage\**" />
+    <Content Remove="LocalStorage\**" />
+    <EmbeddedResource Remove="LocalStorage\**" />
+    <None Remove="LocalStorage\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="FluentValidation" Version="10.3.0" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="10.3.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="5.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.8" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.5" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\WebChat.Application\WebChat.Application.csproj" />
     <ProjectReference Include="..\WebChat.DataAccess.MsSql\WebChat.DataAccess.MsSql.csproj" />
+    <ProjectReference Include="..\WebChat.DataAccess\WebChat.DataAccess.csproj" />
     <ProjectReference Include="..\WebChat.Domain\WebChat.Domain.csproj" />
   </ItemGroup>
 

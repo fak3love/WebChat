@@ -5,7 +5,7 @@ namespace WebChat.Api.Extensions
 {
     public static class MiddlewareExtensions
     {
-        public static IApplicationBuilder UseCustomExceptionHadnler(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseWebChatExceptionHadnler(this IApplicationBuilder builder)
         {
             return builder.UseMiddleware<ExceptionHandlerMiddleware>();
         }
