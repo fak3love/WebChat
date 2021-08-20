@@ -23,6 +23,6 @@ namespace WebChat.Domain.Collections
             };
         }, true);
 
-        public static ICollection<Country> Value => _lazyCountries.Value;
+        public static ICollection<Country> Values => _lazyCountries.Value;
     }
 }

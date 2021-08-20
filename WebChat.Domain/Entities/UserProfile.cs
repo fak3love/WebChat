@@ -1,21 +1,21 @@
-﻿using System.Collections.Generic;
-using WebChat.Domain.Common;
+﻿using System;
+using System.Collections.Generic;
+using WebChat.Domain.Interfaces;
 
 namespace WebChat.Domain.Entities
 {
     public class UserProfile : IBaseEntity
     {
         public int Id { get; set; }
-        public int CityId { get; set; }
-        public int? AvatarId { get; set; }
+        public int? CityId { get; set; }
 
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public string UserStatus { get; set; }
+        public string StatusMessage { get; set; }
+        public DateTime? Birthday { get; set; }
 
-        public User User { get; set; }
         public City City { get; set; }
-               
+
         public ICollection<UserLanguage> Languages { get; private set; }
         public ICollection<UserFriend> InitiatorFriends { get; private set; }
         public ICollection<UserFriend> TargetFriends { get; private set; }
@@ -37,6 +37,11 @@ namespace WebChat.Domain.Entities
             UserPhotoLikes = new HashSet<UserPhotoLike>();
             UserPhotoComments = new HashSet<UserPhotoComment>();
             UserPhotoCommentLikes = new HashSet<UserPhotoCommentLike>();
+        }
+        public UserProfile(string firstName, string lastName) : this()
+        {
+            FirstName = firstName;
+            LastName = lastName;
         }
     }
 }

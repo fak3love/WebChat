@@ -1,4 +1,5 @@
 ﻿using WebChat.Domain.Common;
+using WebChat.Domain.Interfaces;
 
 namespace WebChat.Domain.Entities
 {

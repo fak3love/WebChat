@@ -13,7 +13,7 @@ namespace WebChat.Domain.Collections
                 new Language()
                 {
                     Id = 1,
-                    Name = "Japan"
+                    Name = "Japanese"
                 },
                 new Language()
                 {
@@ -33,6 +33,6 @@ namespace WebChat.Domain.Collections
             };
         }, true);
 
-        public static ICollection<Language> Value => _lazyLanguages.Value;
+        public static ICollection<Language> Values => _lazyLanguages.Value;
     }
 }

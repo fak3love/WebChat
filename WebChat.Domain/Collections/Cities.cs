@@ -37,6 +37,6 @@ namespace WebChat.Domain.Collections
             };
         }, true);
 
-        public static ICollection<City> Value => _lazyCities.Value;
+        public static ICollection<City> Values => _lazyCities.Value;
     }
 }

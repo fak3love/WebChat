@@ -1,17 +1,18 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using System;
-using WebChat.Domain.Interfaces;
 
 namespace WebChat.Domain.Entities
 {
-    public class User : IdentityUser, IAuditable
+    public class User : IdentityUser
     {
         public int ProfileId { get; set; }
 
-        public DateTime CreatedAt { get; set; }
-        public DateTime? DeletedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-
         public UserProfile Profile { get; set; }
+
+        public User() { }
+        public User(string userName, string email, int profileId) : base(userName)
+        {
+            ProfileId = profileId;
+            Email = email;
+        }
     }
 }
