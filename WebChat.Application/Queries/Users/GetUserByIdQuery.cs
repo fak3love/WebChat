@@ -11,9 +11,9 @@ namespace WebChat.Application.Queries
 {
     public class GetUserByIdQuery : IRequest<UserDto>
     {
-        public string Id { get; set; }
+        public int Id { get; set; }
 
-        public GetUserByIdQuery(string id)
+        public GetUserByIdQuery(int id)
         {
             Id = id;
         }
@@ -31,7 +31,7 @@ namespace WebChat.Application.Queries
 
             public async Task<UserDto> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
             {
-                var entity = await _userManager.FindByIdAsync(request.Id);
+                var entity = await _userManager.FindByIdAsync(request.Id.ToString());
 
                 if (entity is null)
                     throw new NotFoundException(nameof(UserProfile), request.Id);

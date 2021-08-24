@@ -34,7 +34,7 @@ namespace WebChat.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> AddFriend([FromBody] AddFriendCommand command)
         {
-            command.ProfileId = (await UserManager.FindByIdAsync(UserManager.GetUserId(User))).ProfileId;
+            command.ProfileId = UserId;
 
             await Mediator.Send(command);
 
@@ -44,7 +44,7 @@ namespace WebChat.Api.Controllers
         [HttpDelete]
         public async Task<IActionResult> RemoveFriend([FromBody] RemoveFriendCommand command)
         {
-            command.ProfileId = (await UserManager.FindByIdAsync(UserManager.GetUserId(User))).ProfileId;
+            command.ProfileId = UserId;
 
             await Mediator.Send(command);
 

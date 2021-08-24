@@ -12,7 +12,7 @@ namespace WebChat.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetChats()
         {
-            var profileId = (await UserManager.FindByIdAsync(UserManager.GetUserId(User))).ProfileId;
+            var profileId = UserId;
 
             var result = await Mediator.Send(new GetChatsByProfileIdQuery(profileId));
 
@@ -22,7 +22,7 @@ namespace WebChat.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetChatLastMessages([FromBody] GetChatLastMessagesByProfileIdQuery query)
         {
-            query.ProfileId = (await UserManager.FindByIdAsync(UserManager.GetUserId(User))).ProfileId;
+            query.ProfileId = UserId;
 
             var result = await Mediator.Send(query);
 
@@ -32,7 +32,7 @@ namespace WebChat.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> WriteMessage([FromBody] WriteMessageCommand command)
         {
-            command.ProfileId = (await UserManager.FindByIdAsync(UserManager.GetUserId(User))).ProfileId;
+            command.ProfileId = UserId;
 
             await Mediator.Send(command);
 
@@ -42,7 +42,7 @@ namespace WebChat.Api.Controllers
         [HttpPatch]
         public async Task<IActionResult> UpdateMessage([FromBody] UpdateMessageCommand command)
         {
-            command.ProfileId = (await UserManager.FindByIdAsync(UserManager.GetUserId(User))).ProfileId;
+            command.ProfileId = UserId;
 
             await Mediator.Send(command);
 
@@ -52,7 +52,7 @@ namespace WebChat.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteMessage([FromBody] DeleteMessageCommand command)
         {
-            command.ProfileId = (await UserManager.FindByIdAsync(UserManager.GetUserId(User))).ProfileId;
+            command.ProfileId = UserId;
 
             await Mediator.Send(command);
 

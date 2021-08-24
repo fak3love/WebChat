@@ -21,9 +21,7 @@ namespace WebChat.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var user = await UserManager.FindByIdAsync(UserManager.GetUserId(User));
-
-            var result = await Mediator.Send(new GetUserByIdQuery(user.Id));
+            var result = await Mediator.Send(new GetUserByIdQuery(UserId));
 
             return Ok(result);
         }
@@ -31,7 +29,7 @@ namespace WebChat.Api.Controllers
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] UpdateAccountCommand command)
         {
-            if (command.Id != UserManager.GetUserId(User))
+            if (command.Id != UserId)
                 return BadRequest();
 
             await Mediator.Send(command);
@@ -42,7 +40,7 @@ namespace WebChat.Api.Controllers
         [HttpDelete]
         public async Task<IActionResult> Delete()
         {
-            await Mediator.Send(new DeleteAccountCommand(UserManager.GetUserId(User)));
+            await Mediator.Send(new DeleteAccountCommand(UserId));
 
             return Ok();
         }

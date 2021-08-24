@@ -9,12 +9,12 @@ namespace WebChat.Application.Commands.Updates
 {
     public class UpdateAccountCommand : IRequest
     {
-        public string Id { get; set; }
+        public int Id { get; set; }
         public string UserName { get; set; }
         public string Password { get; set; }
         public string Email { get; set; }
 
-        public UpdateAccountCommand(string id, string userName, string password, string email)
+        public UpdateAccountCommand(int id, string userName, string password, string email)
         {
             Id = id;
             UserName = userName;
@@ -33,7 +33,7 @@ namespace WebChat.Application.Commands.Updates
 
             public async Task<Unit> Handle(UpdateAccountCommand request, CancellationToken cancellationToken)
             {
-                var user = await _userManager.FindByIdAsync(request.Id);
+                var user = await _userManager.FindByIdAsync(request.Id.ToString());
 
                 if (user is null)
                     throw new NotFoundException(nameof(User), request.Id);

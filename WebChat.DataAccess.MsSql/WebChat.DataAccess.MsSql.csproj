@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Configurations\UserProfileConfiguration.cs~RF19e6dee.TMP" />
     <None Remove="WebChatContext.cs~RF70aa44ba.TMP" />
   </ItemGroup>
 

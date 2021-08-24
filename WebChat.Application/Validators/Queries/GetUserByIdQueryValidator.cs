@@ -7,7 +7,7 @@ namespace WebChat.Application.Validators
     {
         public GetUserByIdQueryValidator()
         {
-            RuleFor(prop => prop.Id).MaximumLength(450).WithMessage("Field length must be 450 characters");
+            RuleFor(prop => prop.Id).GreaterThan(0).WithMessage("Must be greater than 0");
         }
     }
 }

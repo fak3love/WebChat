@@ -12,9 +12,7 @@ namespace WebChat.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var user = await UserManager.FindByIdAsync(UserManager.GetUserId(User));
-
-            var result = await Mediator.Send(new GetUserProfileByIdQuery(user.ProfileId));
+            var result = await Mediator.Send(new GetUserProfileByIdQuery(UserId));
 
             return Ok(result);
         }
@@ -46,7 +44,7 @@ namespace WebChat.Api.Controllers
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] UpdateUserProfileCommand command)
         {
-            command.Id = (await UserManager.FindByIdAsync(UserManager.GetUserId(User))).ProfileId;
+            command.Id = UserId;
 
             await Mediator.Send(command);
 
@@ -56,7 +54,7 @@ namespace WebChat.Api.Controllers
         [HttpPatch]
         public async Task<IActionResult> Patch([FromBody] JsonPatchDocument<UserProfile> jsonPatch)
         {
-            await Mediator.Send(new PatchUserProfileCommand((await UserManager.FindByIdAsync(UserManager.GetUserId(User))).ProfileId, jsonPatch));
+            await Mediator.Send(new PatchUserProfileCommand(UserId, jsonPatch));
 
             return Ok();
         }

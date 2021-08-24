@@ -10,9 +10,9 @@ namespace WebChat.Application.Commands.Deletes
 {
     public class DeleteAccountCommand : IRequest
     {
-        public string Id { get; set; }
+        public int Id { get; set; }
 
-        public DeleteAccountCommand(string id)
+        public DeleteAccountCommand(int id)
         {
             Id = id;
         }
@@ -30,15 +30,12 @@ namespace WebChat.Application.Commands.Deletes
 
             public async Task<Unit> Handle(DeleteAccountCommand request, CancellationToken cancellationToken)
             {
-                var user = await _userManager.FindByIdAsync(request.Id);
+                var user = await _userManager.FindByIdAsync(request.Id.ToString());
 
                 if (user is null)
                     throw new NotFoundException(nameof(User), request.Id);
 
                 await _userManager.DeleteAsync(user);
-                _context.UserProfiles.Remove(await _context.UserProfiles.FindAsync(new object[] { user.ProfileId }, cancellationToken));
-
-                await _context.SaveChangesAsync(cancellationToken);
 
                 return Unit.Value;
             }

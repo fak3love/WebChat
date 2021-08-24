@@ -36,7 +36,7 @@ namespace WebChat.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> WriteComment([FromBody] WriteCommentCommand command)
         {
-            command.ProfileId = (await UserManager.FindByIdAsync(UserManager.GetUserId(User))).ProfileId;
+            command.ProfileId = UserId;
 
             await Mediator.Send(command);
 
@@ -46,7 +46,7 @@ namespace WebChat.Api.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateComment([FromBody] UpdateCommentCommand command)
         {
-            command.ProfileId = (await UserManager.FindByIdAsync(UserManager.GetUserId(User))).ProfileId;
+            command.ProfileId = UserId;
 
             await Mediator.Send(command);
 
@@ -56,7 +56,7 @@ namespace WebChat.Api.Controllers
         [HttpDelete]
         public async Task<IActionResult> DeleteComment([FromBody] DeleteCommentCommand command)
         {
-            command.ProfileId = (await UserManager.FindByIdAsync(UserManager.GetUserId(User))).ProfileId;
+            command.ProfileId = UserId;
 
             await Mediator.Send(command);
 
@@ -66,7 +66,7 @@ namespace WebChat.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> LikeComment([FromBody] LikeCommentCommand command)
         {
-            command.ProfileId = (await UserManager.FindByIdAsync(UserManager.GetUserId(User))).ProfileId;
+            command.ProfileId = UserId;
 
             await Mediator.Send(command);
 
@@ -76,7 +76,7 @@ namespace WebChat.Api.Controllers
         [HttpDelete]
         public async Task<IActionResult> RemoveLikeComment([FromBody] RemoveLikeCommentCommand command)
         {
-            command.ProfileId = (await UserManager.FindByIdAsync(UserManager.GetUserId(User))).ProfileId;
+            command.ProfileId = UserId;
 
             await Mediator.Send(command);
 

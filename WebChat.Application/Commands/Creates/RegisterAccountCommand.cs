@@ -42,22 +42,21 @@ namespace WebChat.Application.Commands.Creates
 
             public async Task<LoginModel> Handle(RegisterAccountCommand request, CancellationToken cancellationToken)
             {
-                var userProfile = (await _context.UserProfiles.AddAsync(new UserProfile(request.FirstName, request.LastName), cancellationToken)).Entity;
-                await _context.SaveChangesAsync(cancellationToken);
-
-                var user = new User(request.UserName, request.Email, userProfile.Id);
+                var user = new User(request.UserName, request.Email);
 
                 var createResult = await _userManager.CreateAsync(user, request.Password);
 
                 if (!createResult.Succeeded)
                     throw new IdentityException(createResult.Errors);
 
+                await _context.UserProfiles.AddAsync(new UserProfile(user.Id, request.FirstName, request.LastName));
+                await _context.SaveChangesAsync();
+
                 var model = new LoginModel()
                 {
                     UserName = request.UserName,
                     Token = _jwtGenerator.CreateToken(user)
                 };
-
 
                 return model;
             }

@@ -8,7 +8,6 @@ namespace WebChat.DataAccess.MsSql.Configurations
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            builder.HasIndex(prop => prop.ProfileId).IsUnique();
         }
     }
 }

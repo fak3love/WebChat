@@ -15,7 +15,7 @@ namespace WebChat.Api.Extensions
     {
         public static IServiceCollection AddWebChatIdentity(this IServiceCollection services)
         {
-            services.AddIdentity<User, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+            services.AddIdentity<User, IdentityRole<int>>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<WebChatContext>()
                 .AddSignInManager<SignInManager<User>>();
 

@@ -43,7 +43,7 @@ namespace WebChat.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> UploadPhoto([FromBody] UploadPhotoCommand command)
         {
-            command.ProfileId = (await UserManager.FindByIdAsync(UserManager.GetUserId(User))).ProfileId;
+            command.ProfileId = UserId;
 
             var slug = await Mediator.Send(command);
 
@@ -53,7 +53,7 @@ namespace WebChat.Api.Controllers
         [HttpDelete]
         public async Task<IActionResult> RemovePhoto([FromBody] DeletePhotoCommand command)
         {
-            command.ProfileId = (await UserManager.FindByIdAsync(UserManager.GetUserId(User))).ProfileId;
+            command.ProfileId = UserId;
 
             await Mediator.Send(command);
 
@@ -63,7 +63,7 @@ namespace WebChat.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> LikePhoto([FromBody] LikePhotoCommand command)
         {
-            command.ProfileId = (await UserManager.FindByIdAsync(UserManager.GetUserId(User))).ProfileId;
+            command.ProfileId = UserId;
 
             await Mediator.Send(command);
 
@@ -73,7 +73,7 @@ namespace WebChat.Api.Controllers
         [HttpDelete]
         public async Task<IActionResult> RemoveLike([FromBody] RemoveLikePhotoCommand command)
         {
-            command.ProfileId = (await UserManager.FindByIdAsync(UserManager.GetUserId(User))).ProfileId;
+            command.ProfileId = UserId;
 
             await Mediator.Send(command);
 

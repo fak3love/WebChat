@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading;
@@ -8,7 +9,7 @@ using WebChat.Domain.Interfaces;
 
 namespace WebChat.DataAccess.MsSql
 {
-    public class WebChatContext : IdentityDbContext<User>
+    public class WebChatContext : IdentityDbContext<User, IdentityRole<int>, int>
     {
         public DbSet<Country> Countries { get; set; }
         public DbSet<City> Cities { get; set; }
@@ -22,12 +23,6 @@ namespace WebChat.DataAccess.MsSql
         public DbSet<UserPhotoLike> UserPhotoLikes { get; set; }
         public DbSet<UserPhotoComment> UserPhotoComments { get; set; }
         public DbSet<UserPhotoCommentLike> UserPhotoCommentLikes { get; set; }
-
-        public WebChatContext()
-        {
-            //Database.EnsureDeleted();
-            Database.EnsureCreated();
-        }
 
         public WebChatContext(DbContextOptions options) : base(options)
         {
