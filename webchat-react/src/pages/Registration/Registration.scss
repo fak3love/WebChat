@@ -1,0 +1,44 @@
+.Registration {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+
+  &__box {
+    width: auto;
+    height: auto;
+    background: white;
+    border-radius: 6px;
+    padding: 30px 90px 30px 90px;
+  }
+  &__title {
+    text-align: center;
+    font-size: 24px;
+    margin: 0 0 20px 0;
+  }
+  &__form {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+  }
+  &__textBox {
+    width: 270px;
+  }
+  &__buttons {
+    display: flex;
+    width: 270px;
+    margin-top: 10px;
+    flex: none;
+    justify-content: space-between;
+  }
+  &__checkBoxSaveMe {
+    width: 270px;
+    align-self: center;
+  }
+  &__btnLogin {
+    width: 80px;
+  }
+  &__btnRegistration {
+    width: 180px;
+  }
+
+}

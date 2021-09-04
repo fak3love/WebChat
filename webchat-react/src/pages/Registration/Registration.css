@@ -1,0 +1,44 @@
+.Registration {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+}
+.Registration__box {
+  width: auto;
+  height: auto;
+  background: white;
+  border-radius: 6px;
+  padding: 30px 90px 30px 90px;
+}
+.Registration__title {
+  text-align: center;
+  font-size: 24px;
+  margin: 0 0 20px 0;
+}
+.Registration__form {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+.Registration__textBox {
+  width: 270px;
+}
+.Registration__buttons {
+  display: flex;
+  width: 270px;
+  margin-top: 10px;
+  flex: none;
+  justify-content: space-between;
+}
+.Registration__checkBoxSaveMe {
+  width: 270px;
+  align-self: center;
+}
+.Registration__btnLogin {
+  width: 80px;
+}
+.Registration__btnRegistration {
+  width: 180px;
+}
+
+/*# sourceMappingURL=Registration.css.map */
