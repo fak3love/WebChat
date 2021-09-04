@@ -58,6 +58,8 @@ namespace WebChat.Api
             services.AddWebChatIdentity();
 
             services.AddJwtAuthentication(Configuration);
+
+            services.AddWebChatCors();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -74,6 +76,8 @@ namespace WebChat.Api
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors("default");
 
             app.UseAuthentication();
             app.UseAuthorization();

@@ -75,5 +75,22 @@ namespace WebChat.Api.Extensions
 
             return services;
         }
+        public static IServiceCollection AddWebChatCors(this IServiceCollection services)
+        {
+            services.AddCors(options =>
+            {
+                // this defines a CORS policy called "default"
+                options.AddPolicy("default", policy =>
+                {
+
+                    policy.AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowAnyOrigin();
+                });
+            });
+
+            return services;
+        }
+
     }
 }
