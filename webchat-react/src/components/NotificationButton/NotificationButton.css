@@ -1,0 +1,20 @@
+.NotificationButton__description {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 14px;
+}
+.NotificationButton__link {
+  color: #2a5885;
+  text-decoration: none;
+}
+.NotificationButton__link:hover {
+  text-decoration: underline;
+}
+.NotificationButton__no-link {
+  color: #37424e;
+  text-decoration: none;
+}
+
+/*# sourceMappingURL=NotificationButton.css.map */

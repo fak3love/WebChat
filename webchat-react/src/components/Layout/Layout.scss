@@ -1,0 +1,29 @@
+.Layout {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+          "Header"
+          "Content"
+          "Footer";
+
+  height: 100%;
+  background: #EDEEF0;
+
+  &__header {
+    grid-area: Header;
+    background: rgb(27 146 216);
+  }
+  &__content {
+    grid-area: Content;
+  }
+  &__footer {
+    grid-area: Footer;
+  }
+
+  &__menu {
+    max-width: 165px;
+  }
+  &__section {
+
+  }
+}

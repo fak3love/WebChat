@@ -1,0 +1,21 @@
+.NotificationButton {
+  &__description {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 14px;
+  }
+  &__link {
+    color: #2a5885;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+  &__no-link {
+    color: #37424e;
+    text-decoration: none;
+  }
+}
