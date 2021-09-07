@@ -9,14 +9,16 @@ import {Friends} from "./pages/Friends";
 import {Messages} from "./pages/Messages";
 import {Photos} from "./pages/Photos";
 import {Notifications} from "./pages/Notifications";
-import './App.css';
 import './assets/fonts.css';
+import './App.css';
 
 function App() {
     return (
         <div className="App">
             <BrowserRouter>
                 <Layout>
+                    <Route exact path="/" component={Profile} />
+                    <Route exact path="/Profile" component={Profile} />
                     <Route exact path="/Profile/:id" component={Profile} />
                     <Route exact path='/Authorization' component={Authorization} />
                     <Route exact path='/Registration' component={Registration} />

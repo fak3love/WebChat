@@ -1,20 +1,18 @@
 import React, {useState} from 'react';
-import IconButton from "@material-ui/core/IconButton";
-import Badge from "@material-ui/core/Badge";
+import {makeStyles, Theme, createStyles} from '@material-ui/core/styles';
+import {Link} from "react-router-dom";
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faBell} from "@fortawesome/free-solid-svg-icons";
 import {faCog} from "@fortawesome/free-solid-svg-icons";
-import {faHeart} from "@fortawesome/free-regular-svg-icons";
 import {faUser} from "@fortawesome/free-regular-svg-icons";
 import {faComment} from "@fortawesome/free-regular-svg-icons";
+import {Button} from "@material-ui/core";
+import {Scrollbars} from 'react-custom-scrollbars';
+import IconButton from "@material-ui/core/IconButton";
+import Badge from "@material-ui/core/Badge";
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import Menu from "@material-ui/core/Menu";
-import MenuItem from "@material-ui/core/MenuItem";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {makeStyles, Theme, createStyles} from '@material-ui/core/styles';
-import { Scrollbars } from 'react-custom-scrollbars';
 import "./NotificationButton.css";
-import {Link} from "react-router-dom";
-import {Button, Color} from "@material-ui/core";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({

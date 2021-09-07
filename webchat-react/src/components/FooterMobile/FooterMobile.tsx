@@ -1,13 +1,11 @@
 import React from 'react';
-import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
+import {makeStyles, Theme, createStyles} from '@material-ui/core/styles';
+import {Badge} from "@material-ui/core";
 import BottomNavigation from '@material-ui/core/BottomNavigation';
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import MailIcon from '@material-ui/icons/Mail';
 import AddAPhotoIcon from '@material-ui/icons/AddAPhoto';
-import {Badge} from "@material-ui/core";
-import "./FooterMobile.css";
-
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
