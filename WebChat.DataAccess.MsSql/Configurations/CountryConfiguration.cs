@@ -8,7 +8,7 @@ namespace WebChat.DataAccess.MsSql.Configurations
     {
         public void Configure(EntityTypeBuilder<Country> builder)
         {
-            builder.Property(prop => prop.Name).HasMaxLength(40).IsRequired();
+            builder.Property(prop => prop.Name).HasMaxLength(30).IsRequired();
             builder.HasIndex(prop => prop.Name).IsUnique();
         }
     }
