@@ -1,7 +1,6 @@
 import React from 'react';
 import {createStyles, makeStyles, Theme} from "@material-ui/core/styles";
 import {Header} from "../Header";
-import {FooterMobile} from "../FooterMobile";
 import {SideMenu} from "../SideMenu";
 import {Container} from "@material-ui/core";
 
@@ -33,7 +32,8 @@ const useStyles = makeStyles((theme: Theme) =>
         content: {
             display: 'flex',
             gridArea: 'Content',
-            marginTop: 15
+            marginTop: 15,
+            background: '#EDEEF0'
         },
         section: {
             width: '100%',
@@ -66,9 +66,6 @@ export const Layout = ({children}: Props): any => {
                     {children}
                 </section>
             </Container>
-            <div className={classes.footer}>
-                <FooterMobile/>
-            </div>
         </div>
     );
 };

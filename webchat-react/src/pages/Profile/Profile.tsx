@@ -14,6 +14,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import avatar2 from "../../assets/images/avatar2.jpg";
 import AddAPhotoIcon from "@material-ui/icons/AddAPhoto";
 import Scrollbars from "react-custom-scrollbars";
+import {getTimeDurationByDate} from "../../utils/dates";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -182,36 +183,7 @@ export const Profile = () => {
                 <Section name="friends" count={49}/>
                 <Section name="followers" count={13}/>
                 <Section name="photos" count={14}/>
-                <Section name="reactions" count={10}/>
             </div>
-        );
-    }
-    const RecommendationBlock = () => {
-        return (
-            <div style={{display: 'flex', flexDirection: 'column'}}>
-                <Avatar src={avatarSrc} style={{width: 50, height: 50, alignSelf: 'center', marginTop: 10}}/>
-                <div style={{display: 'flex', flexDirection: 'column', alignSelf: 'center', padding: 5}}>
-                    <div style={{fontSize: 14, overflow: 'hidden', textAlign: 'center', whiteSpace: 'nowrap', textOverflow: 'ellipsis', width: 100}}>Faust</div>
-                    <div style={{fontSize: 12, color: '#909499', textAlign: 'center'}}>online</div>
-                </div>
-                <Link to="/Profile" style={{position: 'absolute', width: 110, height: '100%'}}/>
-            </div>
-        );
-    }
-    const RecommendationSection = () => {
-        return (
-            <React.Fragment>
-                <div style={{color: '#6d7885', fontSize: 13, textTransform: 'uppercase', fontWeight: 500, paddingBottom: 10}}>Recommendations</div>
-                <Scrollbars style={{width: '100%', height: 101, paddingBottom: 10}} autoHide>
-                    <div style={{display: 'flex'}}>
-                        <RecommendationBlock/>
-                        <RecommendationBlock/>
-                        <RecommendationBlock/>
-                        <RecommendationBlock/>
-                        <RecommendationBlock/>
-                    </div>
-                </Scrollbars>
-            </React.Fragment>
         );
     }
 
@@ -235,7 +207,7 @@ export const Profile = () => {
                     <Paper variant="outlined" style={{height: 'max-content', padding: 15, marginLeft: 15}}>
                         <div style={{display: 'flex', justifyContent: 'space-between'}}>
                             <div style={{fontSize: 19, marginLeft: 8, overflow: 'hidden', maxWidth: '100%'}}>Faust King</div>
-                            <div style={{color: '#939393', fontSize: 12.5, minWidth: 50, textAlign: 'right'}}>online</div>
+                            <div style={{color: '#939393', fontSize: 12.5, minWidth: 50, textAlign: 'right'}}>online | last seen {getTimeDurationByDate({startDate: new Date(2021, 6, 1), endDate: new Date()})}</div>
                         </div>
                         <Button classes={statusButtonClasses} disableTouchRipple={true} onClick={handleClickOpen}>
                             I'm tired..
@@ -285,7 +257,7 @@ export const Profile = () => {
                         <Avatar src={avatarSrc} style={{width: 70, height: 70, alignSelf: 'center'}}/>
                         <div style={{display: 'flex', flexDirection: 'column', alignSelf: 'center', padding: 15}}>
                             <div style={{fontSize: 18, overflow: 'hidden', overflowWrap: 'anywhere'}}>Faust King</div>
-                            <div style={{fontSize: 14, color: '#909499'}}>online</div>
+                            <div style={{fontSize: 14, color: '#909499'}}>online | last seen {getTimeDurationByDate({startDate: new Date(2021, 6, 1, 10, 10), endDate: new Date(2021, 6, 1, 10, 25), include: 'hoursWithMinutes'})}</div>
                         </div>
                     </div>
                     <div style={{display: 'flex', fontSize: 15, marginTop: 15}}>
@@ -304,9 +276,6 @@ export const Profile = () => {
                     <MainInformation isMobile={true}/>
                     <Divider style={{margin: '10px 0'}}/>
                     <Sections isMobile={true}/>
-                </Paper>
-                <Paper variant='outlined' style={{background: 'white', padding: 10, marginTop: 15}}>
-                    <RecommendationSection/>
                 </Paper>
             </div>
         </React.Fragment>

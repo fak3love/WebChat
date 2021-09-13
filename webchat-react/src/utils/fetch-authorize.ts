@@ -1,5 +1,5 @@
-import {post} from "./fetch-requests";
-import {SERVER_NAME} from "./constants";
+import {post} from "../ts/requests";
+import {environment} from "../ts/environment";
 
 export type AuthorizeType = {
     login: string | undefined,
@@ -27,7 +27,7 @@ export async function checkToken() {
         "Authorization": "Bearer " + token
     };
 
-    return (await post({url: SERVER_NAME + "account/checkToken", headers: headers, body: undefined})).ok;
+    return (await post({url: environment.apiUrl + "account/checkToken", headers: headers, body: undefined})).ok;
 }
 export async function authorize({login, password, saveToStorage}: AuthorizeType) {
     const body: BodyInit = JSON.stringify({login, password});
@@ -36,7 +36,7 @@ export async function authorize({login, password, saveToStorage}: AuthorizeType)
         "Content-Type": "application/json"
     }
 
-    const response = await post({url: SERVER_NAME + "account/login", headers: headers, body: body});
+    const response = await post({url: environment.apiUrl + "account/login", headers: headers, body: body});
     const json = JSON.parse(await response.text());
 
     if (response.ok) {
@@ -58,7 +58,7 @@ export async function register({userName, password, email, firstName, lastName, 
         "Content-Type": "application/json"
     }
 
-    const response = await post({url: SERVER_NAME + "account/register", headers: headers, body: body});
+    const response = await post({url: environment.apiUrl + "account/register", headers: headers, body: body});
     const json = JSON.parse(await response.text());
 
     if (response.ok) {

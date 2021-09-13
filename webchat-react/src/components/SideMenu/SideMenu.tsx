@@ -94,28 +94,6 @@ export const SideMenu = () => {
                 <ListItemText classes={listItemTextClasses} disableTypography={true}>Photos</ListItemText>
                 <Link to="/Photos?#userId" style={{position: 'absolute', display: 'block', width: '100%', height: '100%'}}/>
             </MenuItem>
-            <MenuItem classes={listItemClasses} disableTouchRipple={true}>
-                <ListItemIcon classes={listItemIconClasses}>
-                    <FontAwesomeIcon icon={faCommentDots} style={{width: 20, height: 20, color: 'rgb(27 146 216)'}}/>
-                </ListItemIcon>
-                <ListItemText classes={listItemTextClasses} disableTypography={true}>Comments</ListItemText>
-                <Link to="/Comments" style={{position: 'absolute', display: 'block', width: '100%', height: '100%'}}/>
-            </MenuItem>
-            <MenuItem classes={listItemClasses} disableTouchRipple={true}>
-                <ListItemIcon classes={listItemIconClasses}>
-                    <FontAwesomeIcon icon={faGrinHearts} style={{width: 20, height: 20, color: 'rgb(27 146 216)'}}/>
-                </ListItemIcon>
-                <ListItemText classes={listItemTextClasses} disableTypography={true}>Reactions</ListItemText>
-                <Badge color="secondary" overlap="circular" badgeContent={10} style={{marginRight: 16}}/>
-                <Link to="/Reactions" style={{position: 'absolute', display: 'block', width: '100%', height: '100%'}}/>
-            </MenuItem>
-            <MenuItem classes={listItemClasses} disableTouchRipple={true}>
-                <ListItemIcon classes={listItemIconClasses}>
-                    <FavoriteBorderIcon style={{width: 20, height: 20, color: 'rgb(27 146 216)'}}/>
-                </ListItemIcon>
-                <ListItemText classes={listItemTextClasses} disableTypography={true}>Favorites</ListItemText>
-                <Link to="/Favorites" style={{position: 'absolute', display: 'block', width: '100%', height: '100%'}}/>
-            </MenuItem>
         </MenuList>
     );
 };

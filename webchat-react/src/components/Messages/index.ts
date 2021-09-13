@@ -1,2 +1,2 @@
 import {Messages} from "./Messages";
-export {Messages}
+export {Messages};
