@@ -149,123 +149,123 @@ export const Search = () => {
 
     return (
         <Paper variant='outlined' style={{height: 'max-content', background: 'white', marginBottom: 15}}>
-                <div className={classes.search}>
-                    <SearchIcon className={classes.searchIcon} />
-                    <InputBase
-                        placeholder="Search…"
-                        classes={{
-                            root: classes.inputRoot,
-                            input: classes.inputInput,
-                        }}
-                    />
-                    <IconButton style={{position: 'absolute', right: 0, top: 0, width: 32, height: 32, margin: 4}} onClick={() => setShowParameters(!showParameters)}>
-                        <FontAwesomeIcon icon={faAngleDown} style={{width: 20, height: 20, color: '#99A2AD'}}/>
-                    </IconButton>
+            <div className={classes.search}>
+                <SearchIcon className={classes.searchIcon} />
+                <InputBase
+                    placeholder="Search…"
+                    classes={{
+                        root: classes.inputRoot,
+                        input: classes.inputInput,
+                    }}
+                />
+                <IconButton style={{position: 'absolute', right: 0, top: 0, width: 32, height: 32, margin: 4}} onClick={() => setShowParameters(!showParameters)}>
+                    <FontAwesomeIcon icon={faAngleDown} style={{width: 20, height: 20, color: '#99A2AD'}}/>
+                </IconButton>
+            </div>
+            <Divider/>
+            <div className={classes.searchParameters} style={{display: showParameters ? 'block' : 'none'}}>
+                <div style={{display: 'flex', flexWrap: 'wrap'}}>
+                    <FormControl component="fieldset" style={{margin: '8px 16px'}}>
+                        <FormLabel component="legend" style={{fontSize: 13, fontWeight: 600, color: 'rgba(0, 0, 0, 0.54)'}}>Gender</FormLabel>
+                        <RadioGroup defaultValue="any" aria-label="gender" name="customized-radios">
+                            <FormControlLabel value="female" control={<StyledRadio />} label={<span style={{fontSize: 13}}>Female</span>}/>
+                            <FormControlLabel value="male" control={<StyledRadio />} label={<span style={{fontSize: 13}}>Male</span>}/>
+                            <FormControlLabel value="any" control={<StyledRadio />} label={<span style={{fontSize: 13}}>Any</span>}/>
+                        </RadioGroup>
+                    </FormControl>
+                    <FormControl component="fieldset" style={{margin: '8px 16px'}}>
+                        <FormLabel component="legend" style={{fontSize: 13, fontWeight: 600, color: 'rgba(0, 0, 0, 0.54)'}}>Relationship</FormLabel>
+                        <CheckBox text="With photo"/>
+                        <CheckBox text="Online now"/>
+                    </FormControl>
+                    <FormControl style={{margin: '8px 16px'}} className={classes.formControl}>
+                        <FormLabel component="legend" style={{fontSize: 13, fontWeight: 600, color: 'rgba(0, 0, 0, 0.54)'}}>Country</FormLabel>
+                        <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            value={country}
+                            onChange={handleChangeCountry}
+                            style={{fontSize: 13, marginTop: 2}}
+                            disableUnderline
+                        >
+                            <MenuItem value={0} style={{fontSize: 13}}>Select a country</MenuItem>
+                            <MenuItem value={1} style={{fontSize: 13}}>Japan</MenuItem>
+                            <MenuItem value={2} style={{fontSize: 13}}>Korea</MenuItem>
+                            <MenuItem value={3} style={{fontSize: 13}}>USA</MenuItem>
+                            <MenuItem value={4} style={{fontSize: 13}}>Russia</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <FormControl style={{margin: '8px 16px'}} className={classes.formControl} disabled={cityDisabled}>
+                        <FormLabel component="legend" style={{fontSize: 13, fontWeight: 600, color: 'rgba(0, 0, 0, 0.54)'}}>City</FormLabel>
+                        <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            value={city}
+                            onChange={handleChangeCity}
+                            style={{fontSize: 13, marginTop: 2}}
+                            disableUnderline
+                        >
+                            <MenuItem value={0} style={{fontSize: 13}}>Select a city</MenuItem>
+                            <MenuItem value={1} style={{fontSize: 13}}>Tokyo</MenuItem>
+                            <MenuItem value={2} style={{fontSize: 13}}>Seoul</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <FormControl style={{margin: '8px 16px'}} className={classes.formControl}>
+                        <FormLabel component="legend" style={{fontSize: 13, fontWeight: 600, color: 'rgba(0, 0, 0, 0.54)'}}>Age from</FormLabel>
+                        <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            value={ageFrom}
+                            onChange={handleChangeAgeFrom}
+                            style={{fontSize: 13, marginTop: 2}}
+                            disableUnderline
+                            MenuProps={{classes: {paper: classes.menuPaper}}}
+                        >
+                            <MenuItem value={0} style={{fontSize: 13}}>From</MenuItem>
+                            {listAgeFrom}
+                        </Select>
+                    </FormControl>
+                    <FormControl style={{margin: '8px 16px'}} className={classes.formControl}>
+                        <FormLabel component="legend" style={{fontSize: 13, fontWeight: 600, color: 'rgba(0, 0, 0, 0.54)'}}>Age to</FormLabel>
+                        <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            value={ageTo}
+                            onChange={handleChangeAgeTo}
+                            style={{fontSize: 13, marginTop: 2}}
+                            disableUnderline
+                            MenuProps={{classes: {paper: classes.menuPaper}}}
+                        >
+                            <MenuItem value={0} style={{fontSize: 13}}>To</MenuItem>
+                            {listAgeTo}
+                        </Select>
+                    </FormControl>
                 </div>
-                <Divider/>
-                <div className={classes.searchParameters} style={{display: showParameters ? 'block' : 'none'}}>
-                    <div style={{display: 'flex', flexWrap: 'wrap'}}>
-                        <FormControl component="fieldset" style={{margin: '8px 16px'}}>
-                            <FormLabel component="legend" style={{fontSize: 13, fontWeight: 600, color: 'rgba(0, 0, 0, 0.54)'}}>Gender</FormLabel>
-                            <RadioGroup defaultValue="any" aria-label="gender" name="customized-radios">
-                                <FormControlLabel value="female" control={<StyledRadio />} label={<span style={{fontSize: 13}}>Female</span>}/>
-                                <FormControlLabel value="male" control={<StyledRadio />} label={<span style={{fontSize: 13}}>Male</span>}/>
-                                <FormControlLabel value="any" control={<StyledRadio />} label={<span style={{fontSize: 13}}>Any</span>}/>
-                            </RadioGroup>
-                        </FormControl>
-                        <FormControl component="fieldset" style={{margin: '8px 16px'}}>
-                            <FormLabel component="legend" style={{fontSize: 13, fontWeight: 600, color: 'rgba(0, 0, 0, 0.54)'}}>Relationship</FormLabel>
-                            <CheckBox text="With photo"/>
-                            <CheckBox text="Online now"/>
-                        </FormControl>
-                        <FormControl style={{margin: '8px 16px'}} className={classes.formControl}>
-                            <FormLabel component="legend" style={{fontSize: 13, fontWeight: 600, color: 'rgba(0, 0, 0, 0.54)'}}>Country</FormLabel>
-                            <Select
-                                labelId="demo-simple-select-label"
-                                id="demo-simple-select"
-                                value={country}
-                                onChange={handleChangeCountry}
-                                style={{fontSize: 13, marginTop: 2}}
-                                disableUnderline
-                            >
-                                <MenuItem value={0} style={{fontSize: 13}}>Select a country</MenuItem>
-                                <MenuItem value={1} style={{fontSize: 13}}>Japan</MenuItem>
-                                <MenuItem value={2} style={{fontSize: 13}}>Korea</MenuItem>
-                                <MenuItem value={3} style={{fontSize: 13}}>USA</MenuItem>
-                                <MenuItem value={4} style={{fontSize: 13}}>Russia</MenuItem>
-                            </Select>
-                        </FormControl>
-                        <FormControl style={{margin: '8px 16px'}} className={classes.formControl} disabled={cityDisabled}>
-                            <FormLabel component="legend" style={{fontSize: 13, fontWeight: 600, color: 'rgba(0, 0, 0, 0.54)'}}>City</FormLabel>
-                            <Select
-                                labelId="demo-simple-select-label"
-                                id="demo-simple-select"
-                                value={city}
-                                onChange={handleChangeCity}
-                                style={{fontSize: 13, marginTop: 2}}
-                                disableUnderline
-                            >
-                                <MenuItem value={0} style={{fontSize: 13}}>Select a city</MenuItem>
-                                <MenuItem value={1} style={{fontSize: 13}}>Tokyo</MenuItem>
-                                <MenuItem value={2} style={{fontSize: 13}}>Seoul</MenuItem>
-                            </Select>
-                        </FormControl>
-                        <FormControl style={{margin: '8px 16px'}} className={classes.formControl}>
-                            <FormLabel component="legend" style={{fontSize: 13, fontWeight: 600, color: 'rgba(0, 0, 0, 0.54)'}}>Age from</FormLabel>
-                            <Select
-                                labelId="demo-simple-select-label"
-                                id="demo-simple-select"
-                                value={ageFrom}
-                                onChange={handleChangeAgeFrom}
-                                style={{fontSize: 13, marginTop: 2}}
-                                disableUnderline
-                                MenuProps={{classes: {paper: classes.menuPaper}}}
-                            >
-                                <MenuItem value={0} style={{fontSize: 13}}>From</MenuItem>
-                                {listAgeFrom}
-                            </Select>
-                        </FormControl>
-                        <FormControl style={{margin: '8px 16px'}} className={classes.formControl}>
-                            <FormLabel component="legend" style={{fontSize: 13, fontWeight: 600, color: 'rgba(0, 0, 0, 0.54)'}}>Age to</FormLabel>
-                            <Select
-                                labelId="demo-simple-select-label"
-                                id="demo-simple-select"
-                                value={ageTo}
-                                onChange={handleChangeAgeTo}
-                                style={{fontSize: 13, marginTop: 2}}
-                                disableUnderline
-                                MenuProps={{classes: {paper: classes.menuPaper}}}
-                            >
-                                <MenuItem value={0} style={{fontSize: 13}}>To</MenuItem>
-                                {listAgeTo}
-                            </Select>
-                        </FormControl>
-                    </div>
+            </div>
+            <Divider style={{display: showParameters ? 'block' : 'none'}}/>
+            <Scrollbars style={{height: 500}} autoHide>
+                <div style={{display: 'flex', flexDirection: 'column', padding: 15}}>
+                    <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={true} avatarSrc={avatar1} info="I'm tired.."/>
+                    <Divider style={{margin: '15px -15px'}}/>
+                    <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
+                    <Divider style={{margin: '15px -15px'}}/>
+                    <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
+                    <Divider style={{margin: '15px -15px'}}/>
+                    <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
+                    <Divider style={{margin: '15px -15px'}}/>
+                    <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
+                    <Divider style={{margin: '15px -15px'}}/>
+                    <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
+                    <Divider style={{margin: '15px -15px'}}/>
+                    <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
+                    <Divider style={{margin: '15px -15px'}}/>
+                    <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
+                    <Divider style={{margin: '15px -15px'}}/>
+                    <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
+                    <Divider style={{margin: '15px -15px'}}/>
+                    <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
                 </div>
-                <Divider style={{display: showParameters ? 'block' : 'none'}}/>
-                <Scrollbars style={{height: 500}} autoHide>
-                    <div style={{display: 'flex', flexDirection: 'column', padding: 15}}>
-                        <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={true} avatarSrc={avatar1} info="I'm tired.."/>
-                        <Divider style={{margin: '15px -15px'}}/>
-                        <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
-                        <Divider style={{margin: '15px -15px'}}/>
-                        <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
-                        <Divider style={{margin: '15px -15px'}}/>
-                        <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
-                        <Divider style={{margin: '15px -15px'}}/>
-                        <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
-                        <Divider style={{margin: '15px -15px'}}/>
-                        <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
-                        <Divider style={{margin: '15px -15px'}}/>
-                        <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
-                        <Divider style={{margin: '15px -15px'}}/>
-                        <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
-                        <Divider style={{margin: '15px -15px'}}/>
-                        <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
-                        <Divider style={{margin: '15px -15px'}}/>
-                        <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
-                    </div>
-                </Scrollbars>
-            </Paper>
+            </Scrollbars>
+        </Paper>
     );
 };

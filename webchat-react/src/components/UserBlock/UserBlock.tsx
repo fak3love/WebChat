@@ -62,7 +62,7 @@ export const UserBlock = ({userId, firstName, lastName, avatarSrc, isOnline, inf
             </StyledBadge>
             <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-around', marginLeft: 15}}>
                 <Link to={`/Profile/${userId}`} className={classes.link} style={{fontWeight: 700}}>{firstName} {lastName}</Link>
-                <Link to={`/Message/${userId}`} className={classes.link} style={{margin: '5px 0'}}>Write message</Link>
+                <Link to={`/Messages/${userId}`} className={classes.link} style={{margin: '5px 0'}}>Write message</Link>
                 <div style={{fontSize: 12, color: '#939393'}}>{info}</div>
             </div>
         </div>
