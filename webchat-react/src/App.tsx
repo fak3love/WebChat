@@ -8,8 +8,9 @@ import {Chats} from "./pages/Chats";
 import {Photos} from "./pages/Photos";
 import {Notifications} from "./pages/Notifications";
 import {Search} from "./pages/Search";
-import {Messages} from "./components/Messages";
+import {Messages} from "./pages/Messages";
 import './assets/fonts.css';
+import './assets/icons.css';
 import './App.css';
 
 function App() {

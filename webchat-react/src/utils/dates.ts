@@ -1,7 +1,25 @@
-export function getTimeDurationByDate({startDate, endDate, include}: {startDate: Date, endDate: Date, include?: 'hours' | 'hoursWithMinutes' | 'time'}) {
+export const monthNames = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+];
+
+export function getTimeDurationByDate({startDate, endDate, include}: {startDate: Date, endDate: Date, include?: 'hours' | 'hoursWithMinutes' | 'time' | 'onlyDate'}) {
     let date = new Date(endDate.getTime() - startDate.getTime());
 
     let timeCount = date.getFullYear() - 1970;
+
+    if (include === 'onlyDate') {
+        if (date.getDate() === 1 || date.getDate() === 2) {
+            const days = endDate.getDate() - startDate.getDate();
+
+            if (days === 0)
+                return 'today';
+
+            if (days === 1)
+                return 'yesterday';
+        }
+
+        return `${startDate.getDate()} ${monthNames[startDate.getMonth()]} ${startDate.getFullYear()}`;
+    }
 
     if (timeCount === 1)
         return `${timeCount} year ago`;
@@ -70,4 +88,9 @@ export function getTimeDurationByDate({startDate, endDate, include}: {startDate:
         return `${timeCount} days ago`;
 
     return 'about one week ago';
+}
+export function getTimeFormat(date: Date) {
+    const minutes = date.getMinutes();
+
+    return `${date.getHours()}:${minutes >= 10 ? minutes : '0' + minutes}`;
 }

@@ -1,27 +1,32 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {createStyles, makeStyles} from "@material-ui/core/styles";
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
+import {faChevronLeft} from '@fortawesome/free-solid-svg-icons'
 import {Link} from "react-router-dom";
 import Avatar from "@material-ui/core/Avatar";
 import FavoriteIcon from "@material-ui/icons/Favorite";
 import FavoriteBorderIcon from "@material-ui/icons/FavoriteBorder";
+import {IconButton, Tooltip} from "@material-ui/core";
+import {Likebar} from "../Likebar";
 
 export type ReplyCommentType = {
     userId: string,
     firstName: string,
-    lastName: string,
     commentId: string
 }
-export type CommentBlockType = {
+export type CommentType = {
     userId: string,
     firstName: string,
     lastName: string,
     addedDate: string,
-    message: string,
+    message?: string,
     commentId: string,
     avatarSrc?: any,
     likeCount?: number,
     isLiked?: boolean,
-    reply?: ReplyCommentType
+    attachedImages?: Array<any>,
+    reply?: ReplyCommentType,
+    replyClick: any
 }
 
 const useStyles = makeStyles(() =>
@@ -44,7 +49,7 @@ const useStyles = makeStyles(() =>
             fontWeight: 600,
             display: 'inline-block',
             width: 'max-content',
-            maxWidth: 235,
+            maxWidth: 110,
             '&:hover': {
                 textDecoration: 'underline',
                 cursor: 'pointer'
@@ -64,31 +69,13 @@ const useStyles = makeStyles(() =>
         date: {
             fontSize: 12.5,
             color: '#939393',
-            alignSelf: 'center'
-        },
-        btnLike: {
-            display: 'flex',
-            position: 'absolute',
-            cursor: 'pointer',
-            right: 0,
-            bottom: 0
-        },
-        iconLike: {
-            width: 18,
-            height: 18,
-            color: '#FF3347'
-        },
-        textLike: {
-            marginLeft: 5,
             alignSelf: 'center',
-            color: 'rgb(109 109 109)',
-            fontSize: 12.5,
-            marginRight: 15
-        }
+            minWidth: 'max-content'
+        },
     }),
 );
 
-export const Comment = ({userId, firstName, lastName, addedDate, message, commentId, avatarSrc, likeCount, isLiked, reply}: CommentBlockType) => {
+export const Comment = ({userId, commentId, firstName, lastName, addedDate, avatarSrc, likeCount, isLiked, reply, message, attachedImages, replyClick}: CommentType) => {
     const classes = useStyles();
 
     return (
@@ -97,23 +84,26 @@ export const Comment = ({userId, firstName, lastName, addedDate, message, commen
                 <Avatar alt="Remy Sharp" src={avatarSrc} className={classes.linkAvatar} />
             </Link>
             <div className={classes.commentBody}>
-                <Link to={`/Profile/${userId}`} className={classes.link} style={{}}>{firstName} {lastName}</Link>
+                <div style={{display: 'flex'}}>
+                    <Link to={`/Profile/${userId}`} className={classes.link}>{firstName} {lastName}</Link>
+                    <div style={{display: reply !== undefined ? 'flex' : 'none', flex: 1, justifyContent: 'flex-end'}}>
+                        <Tooltip title={`reply to ${reply?.firstName}`} arrow>
+                            <Link to={`/Profile/${reply?.userId}`} className={classes.link} style={{fontSize: 12.5, fontWeight: 400, alignSelf: 'center', maxWidth: 100}}>{reply?.firstName}</Link>
+                        </Tooltip>
+                        <FontAwesomeIcon icon={faChevronLeft} style={{marginLeft: 2.5, width: 11, height: 11, alignSelf: 'center', color: '#828A99'}}/>
+                    </div>
+                </div>
                 <div style={{fontSize: 13, margin: '3px 0'}}>
-                    {reply !== undefined ?
-                        <React.Fragment>
-                            <Link to={`/Profile/${reply.userId}`} className={classes.link} style={{fontSize: 12.5, fontWeight: 400, alignSelf: 'center'}}>{reply.firstName} {reply.lastName},</Link>
-                            <br/>
-                        </React.Fragment>
-                        : ""}
                     {message}
+                </div>
+                <div style={{display: attachedImages !== undefined ? 'flex' : 'none', flexWrap: 'wrap', marginTop: 2.5}}>
+                    {attachedImages?.map(src => <img style={{maxHeight: 120, margin: '5px 10px 5px 0'}} src={src} alt={src}/>)}
                 </div>
                 <div className={classes.actionBody}>
                     <div className={classes.date}>{addedDate}</div>
-                    <div className={classes.link} style={{fontSize: 12.5, fontWeight: 400, marginLeft: 5, alignSelf: 'center'}}>Reply</div>
-                    <div className={classes.btnLike}>
-                        {isLiked ? <FavoriteIcon className={classes.iconLike}/> : <FavoriteBorderIcon className={classes.iconLike}/>}
-                        <div className={classes.textLike}>{likeCount}</div>
-                    </div>
+                    <div className={classes.link} style={{fontSize: 12.5, fontWeight: 400, marginLeft: 5, alignSelf: 'center', minWidth: 'max-content'}} onClick={() => replyClick(commentId, firstName)}>Reply</div>
+                    <div style={{width: '100%'}}/>
+                    <Likebar likeCount={likeCount} isLiked={isLiked}/>
                 </div>
             </div>
         </div>
