@@ -1,20 +1,33 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useReducer, useRef} from 'react';
 import {createStyles, makeStyles, Theme} from "@material-ui/core/styles";
-import {Avatar, Paper, Tooltip, Button, Divider} from "@material-ui/core";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {Link} from "react-router-dom";
+import {Button, Divider, Avatar, Paper, Tooltip} from "@material-ui/core";
 import {faTimes} from '@fortawesome/free-solid-svg-icons'
 import {faWrench} from '@fortawesome/free-solid-svg-icons'
+import DialogContentText from '@material-ui/core/DialogContentText';
+import AddAPhotoIcon from "@material-ui/icons/AddAPhoto";
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import avatar2 from "../../assets/images/avatar2.jpg";
-import AddAPhotoIcon from "@material-ui/icons/AddAPhoto";
-import Scrollbars from "react-custom-scrollbars";
-import {getTimeDurationByDate} from "../../utils/dates";
+import {LoadingScreen} from "../../components/LoadingScreen";
+import {getUserId, isEmptyStorage} from "../../ts/authorization";
+import {ImageViewer} from "../../components/ImageViewer";
+import {Sections} from "./Sections";
+import {MainInformation} from "./MainInformation";
+import {UnderAvatar} from "./UnderAvatar";
+import {
+    getProfile,
+    getUserProfileByJsonText,
+    getVisitorId,
+    goToAuthorization, handleAddFriend, handleDeleteAvatar, handleFileSelect, handleRemoveFriend, handleUpdateStatus,
+    isVisitor,
+    tryRedirectByOk
+} from "./utils";
+import "./Profile.css";
+import {initialState, init, reducer} from "./reducer";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -33,34 +46,14 @@ const useStyles = makeStyles((theme: Theme) =>
             },
         },
         square: {
-            width: '100%',
+            width: 205,
             height: '275px'
         },
-        btnEdit: {
-            display: 'block',
-            marginTop: 15,
-            width: '100%',
-            height: 30,
-            background: '#e5ebf1',
-            color: '#55677d',
-            textAlign: 'center',
-            lineHeight: '30px',
-            borderRadius: '4px',
-            textDecoration: 'none',
-            fontSize: 12.5
+        tooltip: {
+            background: 'rgba(0,0,0,0.7)'
         },
-        btnAvatarBlock: {
-            position: 'relative',
-            cursor: 'pointer'
-        },
-        btnDeleteAvatar: {
-            position: 'absolute',
-            right: 0,
-            top: 0,
-            background: 'rgba(0,0,0,0.4)',
-            width: 20,
-            height: 20,
-            cursor: 'pointer'
+        arrow: {
+            color: 'rgba(0,0,0,0.7)'
         },
         btnUpdateAvatar: {
             position: 'absolute',
@@ -73,18 +66,7 @@ const useStyles = makeStyles((theme: Theme) =>
             textTransform: 'none',
             background: 'rgb(58 58 58 / 70%)'
         },
-        tooltip: {
-            background: 'rgba(0,0,0,0.7)'
-        },
-        arrow: {
-            color: 'rgba(0,0,0,0.7)'
-        }
-    }),
-);
-
-const useStatusButtonStyles = makeStyles(() =>
-    createStyles({
-        root: {
+        btnStatusRoot: {
             padding: '2px 8px',
             fontSize: 13,
             marginTop: 5,
@@ -93,13 +75,15 @@ const useStatusButtonStyles = makeStyles(() =>
             width: '100%',
             justifyContent: 'left',
             borderRadius: 0,
-            overflowWrap: 'anywhere'
-        }
-    }),
-);
-const useChangeStatusButtonStyles = makeStyles(() =>
-    createStyles({
-        root: {
+            overflowWrap: 'anywhere',
+            minHeight: 22
+        },
+        btnStatusLabel: {
+            display: 'block',
+            height: 22,
+            textAlign: 'left'
+        },
+        btnChangeStatusRoot: {
             color: '#4986cc',
             fontSize: 14,
             background: 'transparent',
@@ -107,21 +91,11 @@ const useChangeStatusButtonStyles = makeStyles(() =>
             fontWeight: 400,
             marginLeft: -4,
             padding: '2px 4px'
-        }
-    }),
-);
-
-const useStatusDialogTitleStyles = makeStyles(() =>
-    createStyles({
-        root: {
+        },
+        dialogTitleRoot: {
             padding: '8px 16px'
-        }
-    }),
-);
-
-const useStatusDialogContentStyles = makeStyles(() =>
-    createStyles({
-        root: {
+        },
+        dialogContentRoot: {
             padding: '4px 16px'
         }
     }),
@@ -129,103 +103,96 @@ const useStatusDialogContentStyles = makeStyles(() =>
 
 export const Profile = () => {
     const classes = useStyles();
-    const statusButtonClasses = useStatusButtonStyles();
-    const changeStatusButtonClasses = useChangeStatusButtonStyles();
-    const statusDialogTitleClasses = useStatusDialogTitleStyles();
-    const statusDialogContentClasses = useStatusDialogContentStyles();
-    const [visibility, setVisibility] = useState<'visible' | 'collapse'>('collapse');
-    const [open, setOpen] = useState(false);
-    const [avatarSrc, setAvatarSrc] = useState<any>(avatar2);
+    const mainUserId: any = getUserId();
     const inputUpdatePhotoRef = useRef<any>();
     const inputAddPhotoRef = useRef<any>();
+    const inputStatusRef = useRef<any>();
+
+    /* eslint-disable */
+    const [state, dispatch] = useReducer(reducer, initialState);
+
+    console.log(state);
 
     const handleUpdatePhoto = () => {
-        inputAddPhotoRef.current.click();
+        inputUpdatePhotoRef.current.click();
     };
     const handleAddPhoto = () => {
         inputAddPhotoRef.current.click();
     };
-    const handleClickOpen = () => {
-        setOpen(true);
-    };
-    const handleClose = () => {
-        setOpen(false);
-    };
 
-    const Section = ({name, count}: {name: string, count: number}) => {
-        return (
-            <div style={{padding: '15px 7px', cursor: 'pointer', minWidth: 60}}>
-                <div style={{textAlign: 'center', color: '#2A5885', fontSize: 19}}>{count}</div>
-                <div style={{textAlign: 'center', fontSize: 13, color: '#626d7a'}}>{name}</div>
-            </div>
-        );
-    }
-    const Property = ({name, value}: {name: string, value: string}) => {
-        return (
-            <div style={{display: 'flex', margin: '5px 0'}}>
-                <div style={{minWidth: 165, color: '#818c99', fontSize: 13}}>{name}:</div>
-                <div style={{color: '#2a5885', fontSize: 13}}>{value}</div>
-            </div>
-        );
-    }
-    const MainInformation = ({isMobile}: {isMobile?: boolean}) => {
-        return (
-            <div style={{display: 'flex', flexDirection: 'column', marginLeft: isMobile ? 0 : 8}}>
-                <Property name="Birthday" value="October 20"/>
-                <Property name="City" value="Tokyo"/>
-                <Property name="Languages" value="Japanese, Korean, Russian, English"/>
-            </div>
-        );
-    }
-    const Sections = ({isMobile}: {isMobile?: boolean}) => {
-        return (
-            <div style={{display: 'flex', padding: isMobile ? 0 : '0 20px', justifyContent: 'center', margin: isMobile ? '-10px 0 -15px 0' : -15}}>
-                <Section name="friends" count={49}/>
-                <Section name="followers" count={13}/>
-                <Section name="photos" count={14}/>
-            </div>
-        );
-    }
+    useEffect(() => {
+        if (isEmptyStorage())
+            goToAuthorization();
+
+        const visitor = isVisitor();
+        const visitorId = getVisitorId();
+
+        const handleResponse = (response: any) => {
+            tryRedirectByOk(response.ok, visitor);
+
+            response.text().then(async (text: string) => {
+                dispatch({type: 'hideLoading'});
+                dispatch({type: 'updateUser', payload: getUserProfileByJsonText(text, visitor)})
+            });
+        }
+
+        if (!visitor) {
+            getProfile(mainUserId).then(handleResponse);
+            return;
+        }
+
+        getProfile(mainUserId, visitorId).then(handleResponse);
+    }, []);
+
+    if (state.loading)
+        return <LoadingScreen open={state.loading}/>
 
     return (
         <React.Fragment>
             <div className={classes.sectionDesktop}>
-                <Paper variant='outlined' style={{minWidth: 205, height: 'max-content', background: 'white', padding: 15}}>
-                    <div className={classes.btnAvatarBlock} onMouseMove={() => {setVisibility('visible')}} onMouseLeave={() => {setVisibility('collapse')}}>
-                        <Avatar variant="square" className={classes.square} src={avatarSrc}/>
+                <Paper variant='outlined' className="avatarPaper">
+                    <div className="btnAvatarBlock" style={{cursor: state.user.avatar !== undefined ? 'pointer' : 'default'}}>
+                        <Avatar variant="square" className={classes.square} src={state.user.avatar?.src} onClick={state.user.avatar !== undefined ? () => dispatch({type: 'showViewer'}) : undefined}/>
                         <Tooltip title="Delete photo" arrow classes={classes}>
-                            <div className={classes.btnDeleteAvatar} style={{visibility: avatarSrc !== null ? visibility : 'collapse'}} onClick={() => {setAvatarSrc(null);}}>
-                                <FontAwesomeIcon icon={faTimes} style={{width: 12, height: 12, color: 'white', margin: 4}}/>
+                            <div className="btnDeleteAvatar" style={{visibility: !state.user.visitor && state.user.avatar !== undefined ? 'visible' : 'collapse'}} onClick={() => handleDeleteAvatar(state, dispatch)}>
+                                <FontAwesomeIcon icon={faTimes} className="deleteAvatarIcon"/>
                             </div>
                         </Tooltip>
-                        <Button className={classes.btnUpdateAvatar} style={{visibility: visibility}} disableTouchRipple={false} onClick={handleUpdatePhoto}>Update photo</Button>
-                        <input ref={inputUpdatePhotoRef} type="file" style={{display: 'none'}}/>
-                    </div>
-                    <Link to="/Profile" className={classes.btnEdit}>Edit</Link>
-                </Paper>
-                <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
-                    <Paper variant="outlined" style={{height: 'max-content', padding: 15, marginLeft: 15}}>
-                        <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                            <div style={{fontSize: 19, marginLeft: 8, overflow: 'hidden', maxWidth: '100%'}}>Faust King</div>
-                            <div style={{color: '#939393', fontSize: 12.5, minWidth: 50, textAlign: 'right'}}>online | last seen {getTimeDurationByDate({startDate: new Date(2021, 6, 1), endDate: new Date()})}</div>
-                        </div>
-                        <Button classes={statusButtonClasses} disableTouchRipple={true} onClick={handleClickOpen}>
-                            I'm tired..
+                        <Button className={classes.btnUpdateAvatar} style={{visibility: !state.user.visitor ? 'visible' : 'collapse'}} disableTouchRipple={false} onClick={() => {inputUpdatePhotoRef.current.value = null; handleUpdatePhoto();}}>
+                            Update photo
                         </Button>
+                        <input ref={inputUpdatePhotoRef} type="file" className="displayNone" onChange={event => handleFileSelect(event, true, state, dispatch)}/>
+                    </div>
+                    <UnderAvatar mainUserId={mainUserId} userId={state.user.id} visitor={state.user.visitor} friendStatus={state.user.friendStatus} handleAddFriend={() => handleAddFriend(state, dispatch)} handleRemoveFriend={() => handleRemoveFriend(state, dispatch)}/>
+                </Paper>
+                <div className="infoSection">
+                    <Paper variant="outlined" className="infoSectionPaper">
+                        <div className="infoSectionUser">
+                            <div className="infoSectionName">{state.user.firstName} {state.user.lastName}</div>
+                            <div className="infoSectionOnline">{state.user.onlineStatus}</div>
+                        </div>
+                        {!state.user.visitor ?
+                            <Button classes={{root: classes.btnStatusRoot, label: classes.btnStatusLabel}} disableTouchRipple onClick={() => dispatch({type: 'showDialog'})}>
+                                {state.user.status}
+                            </Button> :
+                            <div className={classes.btnStatusRoot}>
+                                {state.user.status}
+                            </div>
+                        }
                         <Divider style={{margin: '14px 0 14px 8px'}}/>
-                        <MainInformation/>
+                        <MainInformation birthday={state.user.birthday} gender={state.user.gender} city={state.user.city} languages={state.user.languages}/>
                         <Divider style={{margin: '14px 0 14px 8px'}}/>
-                        <Sections/>
+                        <Sections userId={state.user.id} friends={state.user.friends} followers={state.user.followers} subscriptions={state.user.subscriptions} photos={state.user.photos} visitor={state.user.visitor}/>
                     </Paper>
-                    <Paper variant="outlined" style={{display: 'flex', height: 'max-content', justifyContent: 'center', padding: 25.5, marginLeft: 15, marginTop: 15, cursor: 'pointer'}} onClick={handleAddPhoto}>
+                    <Paper variant="outlined" className="photoPaper" style={{display: state.user.visitor ? 'none' : 'flex'}} onClick={() => {inputAddPhotoRef.current.value = null; handleAddPhoto();}}>
                         <AddAPhotoIcon style={{width: 27, height: 27, color: 'rgb(70 107 142)'}}/>
-                        <div style={{marginLeft: 10, fontSize: 13, color: '#2a5885', alignSelf: 'center'}}>Add photos</div>
-                        <input ref={inputAddPhotoRef} type="file" style={{display: 'none'}}/>
+                        <div className="photoText">Add photos</div>
+                        <input ref={inputAddPhotoRef} type="file" style={{display: 'none'}} onChange={event => handleFileSelect(event, false, state, dispatch)}/>
                     </Paper>
                 </div>
-                <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
-                    <DialogTitle id="form-dialog-title" classes={statusDialogTitleClasses}>Your status</DialogTitle>
-                    <DialogContent classes={statusDialogContentClasses}>
+                <Dialog open={state.openDialog} onClose={() => dispatch({type: 'hideDialog'})} aria-labelledby="form-dialog-title">
+                    <DialogTitle id="form-dialog-title" classes={{root: classes.dialogTitleRoot}}>Your status</DialogTitle>
+                    <DialogContent classes={{root: classes.dialogContentRoot}}>
                         <DialogContentText>
                             Write any information about yourself, or information about your mood :)
                         </DialogContentText>
@@ -236,48 +203,50 @@ export const Profile = () => {
                             label="Status"
                             type="email"
                             fullWidth
+                            inputProps={{ref: inputStatusRef}}
                         />
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={handleClose} color="primary">
+                        <Button onClick={() => dispatch({type: 'hideDialog'})} color="primary">
                             Cancel
                         </Button>
-                        <Button onClick={handleClose} color="primary">
+                        <Button onClick={async () => {dispatch({type: 'hideDialog'}); await handleUpdateStatus((inputStatusRef.current as HTMLInputElement)?.value, state, dispatch)}} color="primary">
                             Ok
                         </Button>
                     </DialogActions>
                 </Dialog>
             </div>
             <div className={classes.sectionMobile}>
-                <Link to="/Settings" style={{position: 'absolute', right: 0, padding: 10}}>
-                    <FontAwesomeIcon icon={faWrench} style={{width: 20, height: 20, color: '#495057'}}/>
+                <Link to="/Settings" className="mobileSettingsLink">
+                    <FontAwesomeIcon icon={faWrench} className="mobileSettingsIcon"/>
                 </Link>
-                <Paper variant='outlined' style={{background: 'white', padding: 15}}>
-                    <div style={{display: 'flex'}}>
-                        <Avatar src={avatarSrc} style={{width: 70, height: 70, alignSelf: 'center'}}/>
-                        <div style={{display: 'flex', flexDirection: 'column', alignSelf: 'center', padding: 15}}>
-                            <div style={{fontSize: 18, overflow: 'hidden', overflowWrap: 'anywhere'}}>Faust King</div>
-                            <div style={{fontSize: 14, color: '#909499'}}>online | last seen {getTimeDurationByDate({startDate: new Date(2021, 6, 1, 10, 10), endDate: new Date(2021, 6, 1, 10, 25), include: 'hoursWithMinutes'})}</div>
+                <Paper variant='outlined' className="mobilePaper">
+                    <div className="mobileInfoSection">
+                        <Avatar src={state.user.avatar?.src} style={{width: 70, height: 70, alignSelf: 'center'}}/>
+                        <div className="mobileInfoBlock">
+                            <div className="mobileInfoName">{state.user.firstName} {state.user.lastName}</div>
+                            <div className="mobileInfoOnline">{state.user.onlineStatus}</div>
                         </div>
                     </div>
-                    <div style={{display: 'flex', fontSize: 15, marginTop: 15}}>
-                        <svg height="20" width="20" xmlns="http://www.w3.org/2000/svg" style={{padding: '0 12px 0 0'}}>
-                            <g fill="none" fill-rule="evenodd">
+                    <div className="mobileStatusSection">
+                        <svg height="20" width="20" xmlns="http://www.w3.org/2000/svg" className="mobileStatusIcon">
+                            <g fill="none" fillRule="evenodd">
                                 <path d="M0 0h20v20H0z"/>
                                 <path d="M17.5 5.25a.75.75 0 00-.74-.75H3.24a.74.74 0 00-.74.75c0 .41.34.75.74.75h13.52c.4 0 .74-.33.74-.75zm0 5a.75.75 0 00-.74-.75H3.24a.74.74 0 00-.74.75c0 .41.34.75.74.75h13.52c.4 0 .74-.33.74-.75zm-15 5c0 .41.34.75.76.75h8.98a.75.75 0 00.76-.75.75.75 0 00-.75-.75h-9a.75.75 0 00-.75.75z" fill="#99a2ad" fill-rule="nonzero"/>
                             </g>
                         </svg>
-                        <div style={{display: 'flex', flexDirection: 'column'}}>
-                            <div>I'm tired..</div>
-                            <Button classes={changeStatusButtonClasses} onClick={handleClickOpen}>Change status</Button>
+                        <div className="mobileStatusBlock">
+                            <div>{state.user.status}</div>
+                            <Button classes={{root: classes.btnChangeStatusRoot}} style={{display: state.user.visitor ? 'none' : 'block'}} onClick={() => dispatch({type: 'showDialog'})}>Change status</Button>
                         </div>
                     </div>
                     <Divider style={{margin: '10px 0'}}/>
-                    <MainInformation isMobile={true}/>
+                    <MainInformation isMobile={true} languages={state.user.languages} city={state.user.city} gender={state.user.gender} birthday={state.user.birthday}/>
                     <Divider style={{margin: '10px 0'}}/>
-                    <Sections isMobile={true}/>
+                    <Sections isMobile={true} userId={state.user.id} friends={state.user.friends} followers={state.user.followers} subscriptions={state.user.subscriptions} photos={state.user.photos} visitor={state.user.visitor}/>
                 </Paper>
             </div>
+            <ImageViewer userId={state.user.id} photoId={state.user.avatar?.slug} isOpen={state.openViewer} closeClick={() => dispatch({type: 'hideViewer'})}/>
         </React.Fragment>
     );
 };

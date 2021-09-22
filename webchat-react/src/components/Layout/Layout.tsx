@@ -8,6 +8,8 @@ type Props = {
     children: JSX.Element | JSX.Element[]
 }
 
+const isAuthPage = document.location.pathname === '/Authorization';
+
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         root: {
@@ -19,14 +21,15 @@ const useStyles = makeStyles((theme: Theme) =>
         },
         header: {
             gridArea: 'Header',
-            background: 'rgb(27 146 216)'
+            background: 'rgb(27 146 216)',
+            display: isAuthPage ? 'none' : 'block'
         },
         menu: {
             display: 'none',
             minWidth: 190,
             maxWidth: 190,
             [theme.breakpoints.up('sm')]: {
-                display: 'block'
+                display: isAuthPage ? 'none' : 'block'
             },
         },
         content: {

@@ -9,6 +9,7 @@ import {Photos} from "./pages/Photos";
 import {Notifications} from "./pages/Notifications";
 import {Search} from "./pages/Search";
 import {Messages} from "./pages/Messages";
+import {Authorization} from "./pages/Authorization";
 import './assets/fonts.css';
 import './assets/icons.css';
 import './App.css';
@@ -26,8 +27,11 @@ function App() {
                     <Route exact path="/Search" component={Search} />
                     <Route exact path='/Settings' component={Settings} />
                     <Route exact path='/Friends' component={Friends} />
+                    <Route exact path='/Followers' component={Friends} />
+                    <Route exact path='/Subscriptions' component={Friends} />
                     <Route exact path='/Photos' component={Photos} />
                     <Route exact path='/Notifications' component={Notifications} />
+                    <Route exact path='/Authorization' component={Authorization}/>
                 </Layout>
             </BrowserRouter>
         </div>

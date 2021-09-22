@@ -55,7 +55,7 @@ export const SideMenu = () => {
                     </svg>
                 </ListItemIcon>
                 <ListItemText classes={listItemTextClasses} disableTypography={true}>My profile</ListItemText>
-                <Link to="/#profileId" style={{position: 'absolute', display: 'block', width: '100%', height: '100%'}}/>
+                <Link to="/Profile" style={{position: 'absolute', display: 'block', width: '100%', height: '100%'}}/>
             </MenuItem>
             <MenuItem classes={listItemClasses} disableTouchRipple={true}>
                 <ListItemIcon classes={listItemIconClasses}>
@@ -83,7 +83,7 @@ export const SideMenu = () => {
                 </ListItemIcon>
                 <ListItemText classes={listItemTextClasses} disableTypography={true}>Friends</ListItemText>
                 <Badge color="secondary" overlap="circular" badgeContent={10} style={{marginRight: 16}}/>
-                <Link to="/Friends?#userId" style={{position: 'absolute', display: 'block', width: '100%', height: '100%'}}/>
+                <Link to="/Friends" style={{position: 'absolute', display: 'block', width: '100%', height: '100%'}}/>
             </MenuItem>
             <MenuItem classes={listItemClasses} disableTouchRipple={true}>
                 <ListItemIcon classes={listItemIconClasses}>
@@ -92,7 +92,7 @@ export const SideMenu = () => {
                     </svg>
                 </ListItemIcon>
                 <ListItemText classes={listItemTextClasses} disableTypography={true}>Photos</ListItemText>
-                <Link to="/Photos?#userId" style={{position: 'absolute', display: 'block', width: '100%', height: '100%'}}/>
+                <Link to="/Photos" style={{position: 'absolute', display: 'block', width: '100%', height: '100%'}}/>
             </MenuItem>
         </MenuList>
     );

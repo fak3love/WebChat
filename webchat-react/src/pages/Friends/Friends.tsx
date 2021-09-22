@@ -115,7 +115,7 @@ const useTabStyles = makeStyles((theme: Theme) =>
 export const Friends = () => {
     const classes = useStyles();
     const tabClasses = useTabStyles();
-    const [value, setValue] = React.useState(0);
+    const [value, setValue] = React.useState(document.location.pathname === "/Friends" ? 0 : document.location.pathname === "/Followers" ? 1 : 2);
 
     const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
         setValue(newValue);

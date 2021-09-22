@@ -1,0 +1,111 @@
+.avatarPaper {
+  min-width: 205px;
+  height: max-content;
+  background: white;
+  padding: 15px;
+}
+.btnAvatarBlock {
+  position: relative
+}
+.deleteAvatarIcon {
+  width: 12px;
+  height: 12px;
+  color: white;
+  margin: 4px
+}
+.displayNone {
+  display: none;
+}
+.btnDeleteAvatar {
+  position: absolute;
+  right: 0;
+  top: 0;
+  background: rgba(0,0,0,0.4);
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+.infoSection {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.infoSectionPaper {
+  height: max-content;
+  padding: 15px;
+  margin-left: 15px
+}
+.infoSectionUser {
+  display: flex;
+  justify-content: space-between;
+}
+.infoSectionName {
+  font-size: 19px;
+  margin-left: 8px;
+  overflow: hidden;
+  max-width: 100%;
+}
+.infoSectionOnline {
+  color: #939393;
+  font-size: 12.5px;
+  min-width: 50px;
+  text-align: right;
+}
+.photoPaper {
+  height: max-content;
+  justify-content: center;
+  padding: 25.5px;
+  margin-left: 15px;
+  margin-top: 15px;
+  cursor: pointer;
+}
+.photoText {
+  margin-left: 10px;
+  font-size: 13px;
+  color: #2a5885;
+  align-self: center;
+}
+.mobilePaper {
+  background: white;
+  padding: 15px;
+}
+.mobileSettingsLink {
+  position: absolute;
+  right: 0;
+  padding: 10px;
+}
+.mobileSettingsIcon {
+  width: 20px;
+  height: 20px;
+  color: #495057;
+}
+.mobileInfoSection {
+  display: flex;
+}
+.mobileInfoBlock {
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  padding: 15px;
+}
+.mobileInfoName {
+  font-size: 18px;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.mobileInfoOnline {
+  font-size: 14px;
+  color: #909499;
+}
+.mobileStatusSection {
+  display: flex;
+  font-size: 15px;
+  margin-top: 15px;
+}
+.mobileStatusIcon {
+  padding: 0 12px 0 0;
+}
+.mobileStatusBlock {
+  display: flex;
+  flex-direction: column;
+}

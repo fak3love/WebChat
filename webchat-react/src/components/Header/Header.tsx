@@ -29,6 +29,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Menu from "@material-ui/core/Menu";
 import deadInsideLogo from '../../assets/images/deadinside400.jpg';
+import {logout} from "../../ts/authorization";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -295,7 +296,7 @@ export const Header = () => {
                         <Link to="/Settings" style={{position: 'absolute', marginLeft: -16, display: 'block', width: '100%', height: '100%'}}/>
                     </MenuItem>
                     <Divider style={{margin: "8px 0"}}/>
-                    <MenuItem onClick={handleClose} disableTouchRipple={true} style={{width: 133, fontSize: 14}}>Sign out</MenuItem>
+                    <MenuItem onClick={() => {handleClose(); logout(); document.location.pathname = "/Authorization"}} disableTouchRipple={true} style={{width: 133, fontSize: 14}}>Sign out</MenuItem>
                 </React.Fragment>
             </Menu>
         </div>

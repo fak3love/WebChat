@@ -8,17 +8,7 @@ export function getTimeDurationByDate({startDate, endDate, include}: {startDate:
     let timeCount = date.getFullYear() - 1970;
 
     if (include === 'onlyDate') {
-        if (date.getDate() === 1 || date.getDate() === 2) {
-            const days = endDate.getDate() - startDate.getDate();
 
-            if (days === 0)
-                return 'today';
-
-            if (days === 1)
-                return 'yesterday';
-        }
-
-        return `${startDate.getDate()} ${monthNames[startDate.getMonth()]} ${startDate.getFullYear()}`;
     }
 
     if (timeCount === 1)
@@ -54,23 +44,26 @@ export function getTimeDurationByDate({startDate, endDate, include}: {startDate:
         }
 
         if (include === 'hoursWithMinutes') {
-            timeCount = date.getUTCHours();
+            if (date.getUTCHours() === 0 && date.getMinutes() < 15) {
+                timeCount = date.getMinutes();
 
-            if (timeCount === 1)
-                return `${timeCount} hour ago`;
+                if (timeCount === 0)
+                    return 'just now';
 
-            if (timeCount > 1)
-                return `${timeCount} hours ago`;
+                if (timeCount === 1)
+                    return `${timeCount} minute ago`;
 
-            timeCount = date.getMinutes();
+                if (timeCount <= 5)
+                    return '5 minutes ago';
 
-            if (timeCount === 1)
-                return `${timeCount} minute ago`;
+                if (timeCount <= 10)
+                    return '10 minutes ago';
 
-            if (timeCount > 1)
-                return `${timeCount} minutes ago`;
+                if (timeCount <= 15)
+                    return '15 minutes ago';
+            }
 
-            return 'just now';
+            return getTimeFormat(date);
         }
 
         if (include === 'time') {
@@ -89,8 +82,65 @@ export function getTimeDurationByDate({startDate, endDate, include}: {startDate:
 
     return 'about one week ago';
 }
+
+// export function todayMinusDate(date: Date) {
+//     const today = new Date();
+//     const other_date = '15.11.2013';
+//     const dateparts = other_date.split('.');
+//     const otherDate = new Date(dateparts[2], dateparts[1]-1, dateparts[0]); // substract 1 month because month starting with 0
+//
+//     var difference = today.getTime() - otherDate.getTime(); // difference in ms
+// }
 export function getTimeFormat(date: Date) {
     const minutes = date.getMinutes();
 
     return `${date.getHours()}:${minutes >= 10 ? minutes : '0' + minutes}`;
+}
+export function getDateFormat(date: Date) {
+    return `${date.getDate()} ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+}
+export function getDateForStatus(statusDate: string) {
+    const date = new Date(Date.now() - new Date(statusDate).getTime());
+
+    if (date.getUTCHours() === 0 && date.getMinutes() < 15) {
+        const timeCount = date.getMinutes();
+
+        if (timeCount === 0)
+            return 'just now';
+
+        if (timeCount === 1)
+            return `${timeCount} minute ago`;
+
+        if (timeCount <= 5)
+            return '5 minutes ago';
+
+        if (timeCount <= 10)
+            return '10 minutes ago';
+
+        if (timeCount <= 15)
+            return '15 minutes ago';
+    }
+
+    return getTimeFormat(date);
+}
+export function getDateForMessageSection(startDate: string | Date) {
+    startDate = new Date(startDate);
+    const nowDate = new Date();
+
+    let date = new Date(nowDate.getTime() - startDate.getTime());
+
+    if (date.getDate() === 1 || date.getDate() === 2) {
+        const days = nowDate.getDate() - startDate.getDate();
+
+        if (days === 0)
+            return 'today';
+
+        if (days === 1)
+            return 'yesterday';
+    }
+
+    return getDateFormat(startDate);
+}
+export function getDateForMessages() {
+
 }

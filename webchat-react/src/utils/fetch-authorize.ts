@@ -1,5 +1,5 @@
 import {post} from "../ts/requests";
-import {environment} from "../ts/environment";
+import {setToken, setUserId} from "../ts/authorization";
 
 export type AuthorizeType = {
     login: string | undefined,
@@ -12,23 +12,10 @@ export type RegisterType = {
     email: string,
     firstName: string,
     lastName: string,
+    gender: string,
     saveToStorage: boolean
 }
 
-export async function checkToken() {
-    const token = sessionStorage.getItem("token") !== null ? sessionStorage.getItem("token") : localStorage.getItem("token");
-
-    if (token === null)
-        return false;
-
-    const headers: HeadersInit = {
-        "Access-Control-Allow-Headers": "*",
-        "Accept": "application/json",
-        "Authorization": "Bearer " + token
-    };
-
-    return (await post({url: environment.apiUrl + "account/checkToken", headers: headers, body: undefined})).ok;
-}
 export async function authorize({login, password, saveToStorage}: AuthorizeType) {
     const body: BodyInit = JSON.stringify({login, password});
     const headers: HeadersInit = {
@@ -36,43 +23,33 @@ export async function authorize({login, password, saveToStorage}: AuthorizeType)
         "Content-Type": "application/json"
     }
 
-    const response = await post({url: environment.apiUrl + "account/login", headers: headers, body: body});
+    const response = await post({url: "account/login", headers: headers, body: body});
     const json = JSON.parse(await response.text());
 
     if (response.ok) {
-        const token = json.token;
-
-        if (saveToStorage)
-            localStorage.setItem("token", token);
-
-        sessionStorage.setItem("token", token);
+        if (response.ok) {
+            setToken(json.token, saveToStorage);
+            setUserId(json.id, saveToStorage);
+        }
     }
 
     return {status: response.status, json};
 }
-export async function register({userName, password, email, firstName, lastName, saveToStorage}: RegisterType) {
-    const body: BodyInit = JSON.stringify({userName, password, email, firstName, lastName});
+export async function register({userName, password, email, firstName, lastName, gender, saveToStorage}: RegisterType) {
+    const body: BodyInit = JSON.stringify({userName, password, email, firstName, lastName, gender});
 
     const headers: HeadersInit = {
         "Accept": "application/json",
         "Content-Type": "application/json"
     }
 
-    const response = await post({url: environment.apiUrl + "account/register", headers: headers, body: body});
+    const response = await post({url: "account/register", headers: headers, body: body});
     const json = JSON.parse(await response.text());
 
     if (response.ok) {
-        const token = json.token;
-
-        if (saveToStorage)
-            localStorage.setItem("token", token);
-
-        sessionStorage.setItem("token", token);
+        setToken(json.token, saveToStorage);
+        setUserId(json.id, saveToStorage);
     }
 
     return {status: response.status, json};
-}
-export function logout() {
-    sessionStorage.removeItem("token");
-    localStorage.removeItem("token");
 }
