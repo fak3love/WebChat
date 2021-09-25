@@ -9,5 +9,9 @@ namespace WebChat.Api.Extensions
         {
             return builder.UseMiddleware<ExceptionHandlerMiddleware>();
         }
+        public static IApplicationBuilder UseUserLastAction(this IApplicationBuilder builder)
+        {
+            return builder.UseMiddleware<UserLastActionMiddleware>();
+        }
     }
 }

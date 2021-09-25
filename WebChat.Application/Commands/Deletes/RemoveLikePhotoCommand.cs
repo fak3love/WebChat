@@ -41,7 +41,7 @@ namespace WebChat.Application.Commands.Deletes
                 if (userPhoto is null)
                     throw new NotFoundException(nameof(UserPhoto), request.PhotoSlug);
 
-                var userPhotoLike = _context.UserPhotoLikes.FirstOrDefault(userPhotoLike => userPhotoLike.UserProfileId == request.ProfileId);
+                var userPhotoLike = _context.UserPhotoLikes.FirstOrDefault(userPhotoLike => userPhotoLike.UserProfileId == request.ProfileId && userPhotoLike.UserPhotoId == userPhoto.Id);
 
                 if (userPhotoLike is null)
                     throw new BadRequestException();

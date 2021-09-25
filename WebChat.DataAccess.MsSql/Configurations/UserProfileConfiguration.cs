@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
 using WebChat.Domain.Entities;
 
 namespace WebChat.DataAccess.MsSql.Configurations
@@ -13,6 +14,8 @@ namespace WebChat.DataAccess.MsSql.Configurations
             builder.Property(prop => prop.FirstName).HasMaxLength(30).IsRequired();
             builder.Property(prop => prop.LastName).HasMaxLength(30).IsRequired();
             builder.Property(prop => prop.StatusMessage).HasMaxLength(200);
+            builder.Property(prop => prop.Gender).HasMaxLength(6);
+            builder.Property(prop => prop.LastActionDate).HasDefaultValue(DateTime.Now);
         }
     }
 }

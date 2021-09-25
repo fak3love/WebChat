@@ -2,6 +2,7 @@ using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using System.IO;
 using WebChat.Api.Extensions;
+using WebChat.Api.Middlewares;
 using WebChat.Application;
 using WebChat.DataAccess;
 using WebChat.DataAccess.MsSql;
@@ -82,6 +84,8 @@ namespace WebChat.Api
             app.UseAuthentication();
             app.UseAuthorization();
 
+            app.UseUserLastAction();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
@@ -90,8 +94,7 @@ namespace WebChat.Api
 
         private void InitializeLocalStorage(bool autoClear = true)
         {
-            Environment.WebRootPath = System.Environment.CurrentDirectory;
-            LocalStoragePath = Environment.WebRootPath + "\\LocalStorage";
+            LocalStoragePath = Environment.ContentRootPath + "\\LocalStorage";
 
             if (autoClear && Directory.Exists(LocalStoragePath))
                 Directory.Delete(LocalStoragePath, true);

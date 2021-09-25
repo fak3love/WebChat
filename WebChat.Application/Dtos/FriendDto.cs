@@ -4,8 +4,8 @@ namespace WebChat.Application.Dtos
 {
     public class FriendDto : BaseAuditable
     {
-        public UserProfileDto FirstUser { get; set; }
-        public UserProfileDto SecondUser { get; set; }
-        public FriendStatusDto Status { get; set; }
+        public int InitiatorUserId { get; set; }
+        public int TargetUserId { get; set; }
+        public int StatusId { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 using System.Threading.Tasks;
 using WebChat.Application.Commands.Creates;
 using WebChat.Application.Commands.Deletes;
@@ -8,26 +9,60 @@ namespace WebChat.Api.Controllers
 {
     public class UserPhotosController : WebChatBaseController
     {
-        [HttpGet]
-        public async Task<IActionResult> GetPhotoSlugs([FromBody] GetPhotoSlugsByProfileIdQuery query)
+        [HttpGet("{profileId}")]
+        public async Task<IActionResult> GetAvatar(int? profileId = null)
         {
-            var result = await Mediator.Send(query);
+            if (profileId == null)
+                profileId = UserId;
+
+            var result = await Mediator.Send(new GetAvatarSlugByProfileIdQuery(profileId.Value));
+
+            return result == null ? NotFound() : Ok(result);
+        }
+
+        [HttpGet("{profileId}")]
+        public async Task<IActionResult> GetPhotos(int? profileId = null)
+        {
+            if (profileId == null)
+                profileId = UserId;
+
+            int.TryParse(Request.Query["loadFrom"].FirstOrDefault(), out int loadFrom);
+            var result = await Mediator.Send(new GetPhotosByProfileIdQuery(profileId.Value, loadFrom));
+
+            return result.Count == 0 ? NotFound() : Ok(result);
+        }
+
+        [HttpGet("{profileId}")]
+        public async Task<IActionResult> GetPhotoSlugs(int? profileId = null)
+        {
+            if (profileId == null)
+                profileId = UserId;
+
+            var result = await Mediator.Send(new GetPhotoSlugsByProfileIdQuery(profileId.Value));
 
             return Ok(result);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetPhotoBaseString([FromBody] GetPhotoBaseStringBySlugQuery query)
+        [HttpGet("{photoSlug}")]
+        public async Task<IActionResult> GetPhotoBaseString(string photoSlug)
         {
-            var result = await Mediator.Send(query);
+            var result = await Mediator.Send(new GetPhotoBaseStringBySlugQuery(photoSlug));
 
             return Ok(result);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetPhotoInfo([FromBody] GetPhotoInfoBySlugQuery query)
+        [HttpGet("{photoSlug}")]
+        public async Task<IActionResult> GetPhoto(string photoSlug)
         {
-            var result = await Mediator.Send(query);
+            var result = await Mediator.Send(new GetPhotoBySlugQuery(photoSlug));
+
+            return File(result, "image/jpeg");
+        }
+
+        [HttpGet("{profileId}/{photoSlug}")]
+        public async Task<IActionResult> GetPhotoInfo(int profileId, string photoSlug)
+        {
+            var result = await Mediator.Send(new GetPhotoInfoBySlugQuery(profileId, photoSlug));
 
             return Ok(result);
         }

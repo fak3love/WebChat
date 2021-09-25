@@ -79,13 +79,12 @@ namespace WebChat.Api.Extensions
         {
             services.AddCors(options =>
             {
-                // this defines a CORS policy called "default"
                 options.AddPolicy("default", policy =>
                 {
-
                     policy.AllowAnyHeader()
                           .AllowAnyMethod()
-                          .AllowAnyOrigin();
+                          .AllowAnyOrigin()
+                          .WithMethods("PATCH");
                 });
             });
 

@@ -41,6 +41,7 @@ namespace WebChat.Application.Queries
 
 				var model = new LoginModel()
 				{
+					Id = user.Id.ToString(),
 					UserName = user.UserName,
 					Token = _jwtGenerator.CreateToken(user)
 				};

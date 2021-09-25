@@ -1,25 +1,29 @@
 ﻿using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using WebChat.Application.Common.Exceptions;
 using WebChat.Application.Dtos;
+using WebChat.Application.Models;
 using WebChat.DataAccess.MsSql;
 using WebChat.Domain.Entities;
 
 namespace WebChat.Application.Queries
 {
-    public class GetPhotoInfoBySlugQuery : IRequest<UserPhotoDto>
+    public class GetPhotoInfoBySlugQuery : IRequest<PhotoInfoModel>
     {
+        public int ProfileId { get; set; }
         public string PhotoSlug { get; set; }
 
-        public GetPhotoInfoBySlugQuery(string photoSlug)
+        public GetPhotoInfoBySlugQuery(int profileId, string photoSlug)
         {
+            ProfileId = profileId;
             PhotoSlug = photoSlug;
         }
 
-        public class Handler : IRequestHandler<GetPhotoInfoBySlugQuery, UserPhotoDto>
+        public class Handler : IRequestHandler<GetPhotoInfoBySlugQuery, PhotoInfoModel>
         {
             private readonly WebChatContext _context;
             private readonly IMapper _mapper;
@@ -30,16 +34,24 @@ namespace WebChat.Application.Queries
                 _mapper = mapper;
             }
 
-            public async Task<UserPhotoDto> Handle(GetPhotoInfoBySlugQuery request, CancellationToken cancellationToken)
+            public async Task<PhotoInfoModel> Handle(GetPhotoInfoBySlugQuery request, CancellationToken cancellationToken)
             {
                 var userPhoto = await _context.UserPhotos.FirstOrDefaultAsync(photo => photo.Slug == request.PhotoSlug);
 
                 if (userPhoto is null)
                     throw new NotFoundException(nameof(UserPhoto), request.PhotoSlug);
 
-                var dto = _mapper.Map<UserPhotoDto>(userPhoto);
+                var likesProfileId = await _context.UserPhotoLikes.Where(prop => prop.UserPhotoId == userPhoto.Id).Select(prop => prop.UserProfileId).ToListAsync();
 
-                return dto;
+                var photoInfoModel = new PhotoInfoModel()
+                {
+                    CreatedDate = userPhoto.CreatedAt,
+                    Likes = likesProfileId.Count,
+                    Liked = likesProfileId.Contains(request.ProfileId),
+                    Editable = userPhoto.UserProfileId == request.ProfileId
+                };
+
+                return photoInfoModel;
             }
         }
     }

@@ -40,7 +40,7 @@ namespace WebChat.Application.Commands.Deletes
                 if (message.InitiatorUserId != request.ProfileId)
                     throw new BadRequestException();
 
-                message.DeletedAt = DateTime.UtcNow;
+                message.DeletedAt = DateTime.Now;
 
                 await _context.SaveChangesAsync(cancellationToken);
 

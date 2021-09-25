@@ -12,6 +12,8 @@ namespace WebChat.Domain.Entities
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string StatusMessage { get; set; }
+        public string Gender { get; set; }
+        public DateTime LastActionDate { get; set; }
         public DateTime? Birthday { get; set; }
 
         public City City { get; set; }
@@ -39,11 +41,12 @@ namespace WebChat.Domain.Entities
             UserPhotoComments = new HashSet<UserPhotoComment>();
             UserPhotoCommentLikes = new HashSet<UserPhotoCommentLike>();
         }
-        public UserProfile(int userId, string firstName, string lastName) : this()
+        public UserProfile(int userId, string firstName, string lastName, string gender) : this()
         {
             Id = userId;
             FirstName = firstName;
             LastName = lastName;
+            Gender = gender;
         }
     }
 }

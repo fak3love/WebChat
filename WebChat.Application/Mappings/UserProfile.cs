@@ -11,9 +11,6 @@ namespace WebChat.Application.Mappings
         {
             CreateMap<User, UserDto>();
             CreateMap<UserDto, User>();
-
-            CreateMap<User, GeneralUserProfileModel>();
-            CreateMap<GeneralUserProfileModel, User>();
         }
     }
 }

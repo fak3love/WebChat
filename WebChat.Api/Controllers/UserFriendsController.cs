@@ -7,26 +7,43 @@ namespace WebChat.Api.Controllers
 {
     public class UserFriendsController : WebChatBaseController
     {
-        [HttpGet]
-        public async Task<IActionResult> GetFriends([FromBody] GetUserFriendsByProfileIdQuery query)
+        [HttpGet("{targetId}")]
+        public async Task<IActionResult> GetStatus(int targetId)
         {
-            var result = await Mediator.Send(query);
+            var result = await Mediator.Send(new GetUserFriendStatusByUserIdQuery(UserId, targetId));
 
             return Ok(result);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetFollowers([FromBody] GetUserFollowersByProfileIdQuery query)
+        [HttpGet("{profileId}")]
+        public async Task<IActionResult> GetFriends(int? profileId = null)
         {
-            var result = await Mediator.Send(query);
+            if (profileId == null)
+                profileId = UserId;
+
+            var result = await Mediator.Send(new GetUserFriendsByProfileIdQuery(profileId.Value));
+
+            return Ok(result);
+        }
+        
+        [HttpGet("{profileId}")]
+        public async Task<IActionResult> GetFollowers(int? profileId = null)
+        {
+            if (profileId == null)
+                profileId = UserId;
+
+            var result = await Mediator.Send(new GetUserFollowersByProfileIdQuery(profileId.Value));
 
             return Ok(result);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetSubscriptions([FromBody] GetUserSubscriptionsByProfileIdQuery query)
+        [HttpGet("{profileId}")]
+        public async Task<IActionResult> GetSubscriptions(int? profileId = null)
         {
-            var result = await Mediator.Send(query);
+            if (profileId == null)
+                profileId = UserId;
+
+            var result = await Mediator.Send(new GetUserSubscriptionsByProfileIdQuery(profileId.Value));
 
             return Ok(result);
         }

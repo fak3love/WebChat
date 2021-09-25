@@ -16,10 +16,9 @@ namespace WebChat.Application.Validators
 
         private bool BeAValidBase64String(string baseString)
         {
-            byte[] imageBytes = Convert.FromBase64String(baseString);
-
             try
             {
+                byte[] imageBytes = Convert.FromBase64String(baseString);
                 using var imageStream = new MemoryStream(imageBytes);
                 Image.FromStream(imageStream);
             }

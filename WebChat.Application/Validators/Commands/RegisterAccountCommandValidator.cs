@@ -11,6 +11,14 @@ namespace WebChat.Application.Validators
             RuleFor(prop => prop.Password).Length(8, 20).WithMessage($"Minimum password length {8} Maximum length ${20} characters");
             RuleFor(prop => prop.FirstName).NotEmpty().WithMessage("The field cannot be empty").MaximumLength(30).WithMessage($"Maximum field length {30} characters");
             RuleFor(prop => prop.LastName).NotEmpty().WithMessage("The field cannot be empty").MaximumLength(30).WithMessage($"Maximum field length {30} characters");
+            RuleFor(prop => prop.Gender).Must(BeMaleOrFemale).WithMessage("The field must be male or female");
+        }
+
+        public bool BeMaleOrFemale(string value)
+        {
+            var gender = value.ToLower();
+
+            return gender == "male" || gender == "female";
         }
     }
 }

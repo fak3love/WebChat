@@ -41,7 +41,7 @@ namespace WebChat.Application.Commands.Creates
                 if (userPhoto is null)
                     throw new NotFoundException(nameof(UserPhoto), request.PhotoSlug);
 
-                var userPhotoLike = _context.UserPhotoLikes.FirstOrDefault(userPhotoLike => userPhotoLike.UserProfileId == request.ProfileId);
+                var userPhotoLike = _context.UserPhotoLikes.FirstOrDefault(userPhotoLike => userPhotoLike.UserProfileId == request.ProfileId && userPhotoLike.UserPhotoId == userPhoto.Id);
 
                 if (userPhotoLike is not null)
                     throw new BadRequestException();

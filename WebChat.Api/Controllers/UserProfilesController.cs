@@ -9,10 +9,29 @@ namespace WebChat.Api.Controllers
 {
     public class UserProfilesController : WebChatBaseController
     {
-        [HttpGet]
-        public async Task<IActionResult> Get()
+        [HttpGet("{profileId}/{targetId?}")]
+        public async Task<IActionResult> Get(int profileId, int? targetId)
         {
-            var result = await Mediator.Send(new GetUserProfileByIdQuery(UserId));
+            var result = await Mediator.Send(new GetUserProfileByIdWithTargetIdQuery(profileId, targetId));
+
+            return Ok(result);
+        }
+
+        [HttpGet("{profileId?}")]
+        public async Task<IActionResult> GetHeader(int? profileId = null)
+        {
+            if (profileId == null)
+                profileId = UserId;
+
+            var result = await Mediator.Send(new GetUserProfileHeaderByIdQuery(profileId.Value));
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Search()
+        {
+            var result = await Mediator.Send(new GetUserProfilesByParamsQuery(HttpContext.Request.Query));
 
             return Ok(result);
         }

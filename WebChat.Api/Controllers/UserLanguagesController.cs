@@ -8,10 +8,13 @@ namespace WebChat.Api.Controllers
 {
     public class UserLanguagesController : WebChatBaseController
     {
-        [HttpGet]
-        public async Task<IActionResult> GetLanguages([FromBody] GetUserLanguagesByIdQuery query)
+        [HttpGet("{profileId}")]
+        public async Task<IActionResult> GetLanguages(int? profileId = null)
         {
-            var result = await Mediator.Send(query);
+            if (profileId == null)
+                profileId = UserId;
+
+            var result = await Mediator.Send(new GetUserLanguagesByIdQuery(profileId.Value));
 
             return Ok(result);
         }
