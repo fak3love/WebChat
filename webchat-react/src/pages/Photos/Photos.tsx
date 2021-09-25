@@ -1,10 +1,17 @@
-import React, {useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {Theme, createStyles, makeStyles} from '@material-ui/core/styles';
-import {Paper, Button, Divider, IconButton} from "@material-ui/core";
+import {Paper} from "@material-ui/core";
 import Scrollbars from "react-custom-scrollbars";
-import avatar from '../../assets/images/avatar2.jpg';
-import avatar2 from '../../assets/images/deadinside400.jpg';
+import ImageList from '@mui/material/ImageList';
+import ImageListItem from '@mui/material/ImageListItem';
 import {ImageViewer} from "../../components/ImageViewer";
+import {Tooltip} from "@mui/material";
+import moment from "moment";
+import {get} from "../../ts/requests";
+import {getUserId, headers} from "../../ts/authorization";
+import {getVisitorId, isVisitor} from "../../utils/common";
+import {LoadingScreen} from "../../components/LoadingScreen";
+import {LayoutContext} from "../../components/Layout/Layout";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -89,51 +96,108 @@ const useStyles = makeStyles((theme: Theme) =>
     }),
 );
 
+type Image = {
+    id: string,
+    slug: string,
+    src: string,
+    createdAt: string
+}
+
 export const Photos = () => {
     const classes = useStyles();
     const [openImageViewer, setOpenImageViewer] = useState<boolean>(false);
+    const [images, setImages] = useState<Image[]>([]);
+    const [loadingTimeout, setLoadingTimeout] = useState<number>(0);
+    const [loadFrom, setLoadFrom] = useState<number>(0);
+    const [hasNoPhotos, setHasNoPhotos] = useState<boolean>(false);
+    const [selectedPhoto, setSelectedPhoto] = useState<{slug: string, src: string}>();
+    const [loading, setLoading] = useState<boolean>(true);
 
-    const ImageItem = ({img}: {img: any}) => {
-        return (
-            <img src={img} alt="" className={classes.imageItem} onClick={() => setOpenImageViewer(true)}/>
-        );
+    const layoutValue = useContext(LayoutContext);
+
+    const loadImages = () => {
+        clearTimeout(loadingTimeout);
+
+        const timeoutId: any = setTimeout(async () => {
+            const response = await get({url: `UserPhotos/GetPhotos/${isVisitor('/Photos') ? getVisitorId() : getUserId()}?loadFrom=${loadFrom}`, headers: headers});
+
+            if (response.ok) {
+                const json = await response.json();
+
+                setImages(images.concat(json));
+                setLoadFrom(loadFrom + 10);
+            }
+            else
+                setHasNoPhotos(true);
+
+            setLoading(false);
+        }, 500);
+
+        setLoadingTimeout(timeoutId);
+    }
+    const handleOpenImageViewer = (event: any) => {
+        const image = images.filter(image => image.slug.toString() === event.target.dataset.imageslug.toString())[0];
+        setSelectedPhoto({slug: image.slug, src: image.src});
+        setOpenImageViewer(true);
+    };
+    const handleDeletedPhoto = (slug: string) => {
+        setImages(images.filter(img => img.slug !== slug));
+        setOpenImageViewer(false);
+
+        get({url: `UserProfiles/GetHeader/${getUserId()}`, headers: headers}).then(async response => {
+            if (response.ok) {
+                const json = await response.json();
+                layoutValue.updateHeader(json.firstName, json.lastName, json.avatar);
+            }
+        });
     }
 
-    const ImageSection = ({title, children}: {title: string, children?: JSX.Element | JSX.Element[]}) => {
-        return (
-            <div style={{display: 'flex', flexDirection: 'column'}}>
-                <div style={{marginLeft: 5, marginBottom: 12, fontSize: 13, fontWeight: 500, color: '#626d7a'}}>{title}</div>
-                <div style={{display: 'flex', flexWrap: 'wrap', marginBottom: 12}}>
-                    {children}
-                </div>
-            </div>
-        );
-    }
+    useEffect(() => {
+        loadImages();
+    }, []);
+
+    if (loading)
+        return <LoadingScreen open={loading}/>
 
     return (
         <div className={classes.root}>
             <Paper variant="outlined" className={classes.paper}>
-                <Scrollbars className={classes.scrollbars}>
-                    <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
-                        <ImageSection title="20 September 2020">
-                            <ImageItem img={avatar}/>
-                            <ImageItem img={avatar}/>
-                            <ImageItem img={avatar2}/>
-                            <ImageItem img={avatar}/>
-                            <ImageItem img={avatar2}/>
-                        </ImageSection>
-                        <ImageSection title="20 September 2021">
-                            <ImageItem img={avatar}/>
-                            <ImageItem img={avatar}/>
-                            <ImageItem img={avatar2}/>
-                            <ImageItem img={avatar}/>
-                            <ImageItem img={avatar2}/>
-                            <ImageItem img={avatar2}/>
-                        </ImageSection>
-                    </div>
+                <Scrollbars onScrollFrame={(value) => {
+                    if (!hasNoPhotos && value.top >= 0.8)
+                        loadImages();
+                }}>
+                    <ImageList
+                        sx={{
+                            width: 640,
+                            transform: 'translateZ(0)',
+                        }}
+                        rowHeight={200}
+                        gap={5}
+                        style={{margin: 0}}
+                    >
+                        {images.map((item, index) => {
+                            let cols = index % 5 === 0 ? 2 : 1;
+                            let rows = index % 5 === 0 ? 2 : 1;
+
+                            return (
+                                <Tooltip title={moment(item.createdAt).format('LL')} arrow placement="bottom" enterDelay={1000} enterNextDelay={1000}>
+                                    <ImageListItem key={item.slug} cols={cols} rows={rows}>
+                                        <img
+                                            src={item.src}
+                                            style={{width: '100%', height: 200, cursor: 'pointer'}}
+                                            alt={item.slug}
+                                            loading="lazy"
+                                            onClick={handleOpenImageViewer}
+                                            data-imageSlug={item.slug}
+                                        />
+                                    </ImageListItem>
+                                </Tooltip>
+                            );
+                        })}
+                    </ImageList>
                 </Scrollbars>
             </Paper>
-            <ImageViewer userId="1" photoId="1" isOpen={openImageViewer} closeClick={() => setOpenImageViewer(false)}/>
+            <ImageViewer userId={isVisitor('/Photos') ? getVisitorId() : getUserId()} viewPhoto={selectedPhoto} isOpen={openImageViewer} closeClick={() => setOpenImageViewer(false)} onDeleted={handleDeletedPhoto}/>
         </div>
     );
 };

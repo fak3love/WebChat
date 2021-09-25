@@ -1,10 +1,20 @@
-import React, {useEffect, useReducer, useRef} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {createStyles, makeStyles, Theme} from "@material-ui/core/styles";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {Link} from "react-router-dom";
+import {LoadingScreen} from "../../components/LoadingScreen";
+import {getUserId, headers, isEmptyStorage} from "../../ts/authorization";
+import {ImageViewer} from "../../components/ImageViewer";
+import {Sections} from "./Sections";
+import {MainInformation} from "./MainInformation";
+import {UnderAvatar} from "./UnderAvatar";
+import {deleteRequest, get, patch, post} from "../../ts/requests";
+import {
+    getProfile,
+    getUserProfileByJsonText,
+    tryRedirectByOk
+} from "./utils";
 import {Button, Divider, Avatar, Paper, Tooltip} from "@material-ui/core";
 import {faTimes} from '@fortawesome/free-solid-svg-icons'
-import {faWrench} from '@fortawesome/free-solid-svg-icons'
 import DialogContentText from '@material-ui/core/DialogContentText';
 import AddAPhotoIcon from "@material-ui/icons/AddAPhoto";
 import TextField from '@material-ui/core/TextField';
@@ -12,22 +22,10 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import {LoadingScreen} from "../../components/LoadingScreen";
-import {getUserId, isEmptyStorage} from "../../ts/authorization";
-import {ImageViewer} from "../../components/ImageViewer";
-import {Sections} from "./Sections";
-import {MainInformation} from "./MainInformation";
-import {UnderAvatar} from "./UnderAvatar";
-import {
-    getProfile,
-    getUserProfileByJsonText,
-    getVisitorId,
-    goToAuthorization, handleAddFriend, handleDeleteAvatar, handleFileSelect, handleRemoveFriend, handleUpdateStatus,
-    isVisitor,
-    tryRedirectByOk
-} from "./utils";
+
 import "./Profile.css";
-import {initialState, init, reducer} from "./reducer";
+import {getVisitorId, goToAuthorization, isVisitor} from "../../utils/common";
+import {LayoutContext} from "../../components/Layout/Layout";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -101,6 +99,53 @@ const useStyles = makeStyles((theme: Theme) =>
     }),
 );
 
+export enum FriendStatuses {
+    friends = 1,
+    followerTarget = 2,
+    targetFollower = 3
+}
+export type FriendStatus = {
+    initiatorId: string,
+    targetId: string,
+    status: FriendStatuses
+}
+type User = {
+    visitor: boolean,
+    id: string,
+    firstName: string,
+    lastName: string,
+    status: string | null,
+    gender: string,
+    birthday: string | null,
+    city: string | null,
+    languages: string[],
+    avatar: {slug: string, src: string} | undefined,
+    onlineStatus: string,
+    friends: number,
+    followers: number,
+    subscriptions: number,
+    photos: number,
+    friendStatus: FriendStatus | undefined
+}
+const defaultUser: User = {
+    visitor: true,
+    id: '1',
+    firstName: 'FirstName',
+    lastName: 'LastName',
+    status: 'Status message',
+    gender: 'Male',
+    birthday: null,
+    city: null,
+    languages: ['Language1', 'Language2', 'Language3'],
+    avatar: undefined,
+    onlineStatus: 'online',
+    friends: 49,
+    followers: 13,
+    subscriptions: 33,
+    photos: 11,
+    friendStatus: undefined
+}
+
 export const Profile = () => {
     const classes = useStyles();
     const mainUserId: any = getUserId();
@@ -108,10 +153,12 @@ export const Profile = () => {
     const inputAddPhotoRef = useRef<any>();
     const inputStatusRef = useRef<any>();
 
-    /* eslint-disable */
-    const [state, dispatch] = useReducer(reducer, initialState);
+    const layoutValue = useContext(LayoutContext);
 
-    console.log(state);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [openDialog, setOpenDialog] = useState<boolean>(false);
+    const [openViewer, setOpenViewer] = useState<boolean>(false);
+    const [user, setUser] = useState<User>(defaultUser);
 
     const handleUpdatePhoto = () => {
         inputUpdatePhotoRef.current.click();
@@ -120,19 +167,146 @@ export const Profile = () => {
         inputAddPhotoRef.current.click();
     };
 
+    const handleFileSelect = async (event: any, isAvatar: boolean) => {
+        const reader = new FileReader();
+
+        reader.readAsArrayBuffer((event.target.files as any)[0]);
+
+        reader.onload = async (file: any) => {
+            const imageBaseString = btoa(
+                new Uint8Array(file.target.result)
+                    .reduce((data, byte) => data + String.fromCharCode(byte), '')
+            );
+
+            const response = await post({url: 'UserPhotos/UploadPhoto', headers: headers, body: JSON.stringify({isAvatar: isAvatar, imageBaseString: imageBaseString})});
+
+            if (response.status === 201) {
+                const src = 'data:image/png;base64, ' + imageBaseString;
+
+                setUser({
+                    ...user,
+                    avatar: isAvatar ? {
+                        slug: await response.text(),
+                        src: src,
+                    } : user.avatar,
+                    photos: user.photos + 1
+                });
+
+                if (isAvatar)
+                    layoutValue.updateHeader(user.firstName, user.lastName, src);
+            }
+        }
+    }
+    const handleDeleteAvatar = async () => {
+        const handleDeleteAvatarResponse = await deleteRequest({url: 'UserPhotos/RemovePhoto', headers: headers, body: JSON.stringify({photoSlug: user.avatar?.slug})});
+
+        if (handleDeleteAvatarResponse.ok)
+            handleUpdateAvatar();
+    }
+    const handleUpdateAvatar = async () => {
+        const response = await get({url: `UserPhotos/GetAvatar/${mainUserId}`, headers: headers});
+
+        let slug: string = '';
+        let src: string = '';
+
+        if (response.ok) {
+            slug = await response.text();
+            src = 'data:image/png;base64, ' + (await (await get({url: `UserPhotos/GetPhotoBaseString/${slug}`, headers: headers})).text());
+        }
+
+        setUser({
+            ...user,
+            avatar: slug !== '' ? {slug: slug, src: src} : undefined,
+            photos: user.photos - 1
+        });
+
+        layoutValue.updateHeader(user.firstName, user.lastName, src);
+    }
+    const handleUpdateStatus = async (statusValue: any) => {
+        const patchResponse = await patch({url: 'UserProfiles/Patch', headers, body: JSON.stringify([{op: 'replace', path: '/statusMessage', value: statusValue}])});
+
+        if (patchResponse.ok)
+            setUser({
+                ...user,
+                status: statusValue === undefined ? '' : statusValue
+            });
+    }
+    const handleAddFriend = async () => {
+        const postResponse = await post({url: 'UserFriends/AddFriend', headers: headers, body: JSON.stringify({targetId: user.id})});
+
+        let friends = user.friends;
+        let followers = user.followers;
+        let subscriptions = user.subscriptions;
+
+        if (user.friendStatus !== undefined) {
+            friends++;
+            subscriptions--;
+        }
+        else
+            followers++;
+
+        if (postResponse.ok) {
+            setUser({
+                ...user,
+                friends: friends,
+                followers: followers,
+                subscriptions: subscriptions,
+                friendStatus: user.friendStatus === undefined ? {
+                    initiatorId: mainUserId,
+                    targetId: user.id.toString(),
+                    status: FriendStatuses.followerTarget
+                } : {
+                    ...user.friendStatus,
+                    status: FriendStatuses.friends
+                }
+            });
+        }
+    }
+    const handleRemoveFriend = async () => {
+        const handleRemoveFriendResponse = await deleteRequest({url: 'UserFriends/RemoveFriend', headers: headers, body: JSON.stringify({targetId: user.id})});
+
+        let friends = user.friends;
+        let followers = user.followers;
+        let subscriptions = user.subscriptions;
+
+        if (user.friendStatus?.status === FriendStatuses.friends) {
+            friends--;
+            subscriptions++;
+        }
+        else
+            followers--;
+
+        if (handleRemoveFriendResponse.ok) {
+            setUser({
+                ...user,
+                friends: friends,
+                followers: followers,
+                subscriptions: subscriptions,
+                friendStatus: user.friendStatus?.status === FriendStatuses.friends ? {
+                    ...user.friendStatus,
+                    status: user.friendStatus.initiatorId === mainUserId ? FriendStatuses.targetFollower : FriendStatuses.followerTarget
+                } : undefined
+            });
+        }
+    }
+    const handleDeletedAvatar = (slug: string) => {
+        setOpenViewer(false);
+        handleUpdateAvatar();
+    }
+
     useEffect(() => {
         if (isEmptyStorage())
             goToAuthorization();
 
-        const visitor = isVisitor();
+        const visitor = isVisitor('/Profile')
         const visitorId = getVisitorId();
 
         const handleResponse = (response: any) => {
             tryRedirectByOk(response.ok, visitor);
 
             response.text().then(async (text: string) => {
-                dispatch({type: 'hideLoading'});
-                dispatch({type: 'updateUser', payload: getUserProfileByJsonText(text, visitor)})
+                setLoading(false);
+                setUser(getUserProfileByJsonText(text, visitor));
             });
         }
 
@@ -144,53 +318,53 @@ export const Profile = () => {
         getProfile(mainUserId, visitorId).then(handleResponse);
     }, []);
 
-    if (state.loading)
-        return <LoadingScreen open={state.loading}/>
+    if (loading)
+        return <LoadingScreen open={loading}/>
 
     return (
         <React.Fragment>
             <div className={classes.sectionDesktop}>
                 <Paper variant='outlined' className="avatarPaper">
-                    <div className="btnAvatarBlock" style={{cursor: state.user.avatar !== undefined ? 'pointer' : 'default'}}>
-                        <Avatar variant="square" className={classes.square} src={state.user.avatar?.src} onClick={state.user.avatar !== undefined ? () => dispatch({type: 'showViewer'}) : undefined}/>
+                    <div className="btnAvatarBlock" style={{cursor: user.avatar !== undefined ? 'pointer' : 'default'}}>
+                        <Avatar variant="square" className={classes.square} src={user.avatar?.src} onClick={user.avatar !== undefined ? () => setOpenViewer(true) : undefined}/>
                         <Tooltip title="Delete photo" arrow classes={classes}>
-                            <div className="btnDeleteAvatar" style={{visibility: !state.user.visitor && state.user.avatar !== undefined ? 'visible' : 'collapse'}} onClick={() => handleDeleteAvatar(state, dispatch)}>
+                            <div className="btnDeleteAvatar" style={{visibility: !user.visitor && user.avatar !== undefined ? 'visible' : 'collapse'}} onClick={() => handleDeleteAvatar()}>
                                 <FontAwesomeIcon icon={faTimes} className="deleteAvatarIcon"/>
                             </div>
                         </Tooltip>
-                        <Button className={classes.btnUpdateAvatar} style={{visibility: !state.user.visitor ? 'visible' : 'collapse'}} disableTouchRipple={false} onClick={() => {inputUpdatePhotoRef.current.value = null; handleUpdatePhoto();}}>
+                        <Button className={classes.btnUpdateAvatar} style={{visibility: !user.visitor ? 'visible' : 'collapse'}} disableTouchRipple={false} onClick={() => {inputUpdatePhotoRef.current.value = null; handleUpdatePhoto();}}>
                             Update photo
                         </Button>
-                        <input ref={inputUpdatePhotoRef} type="file" className="displayNone" onChange={event => handleFileSelect(event, true, state, dispatch)}/>
+                        <input ref={inputUpdatePhotoRef} type="file" className="displayNone" onChange={event => handleFileSelect(event, true)}/>
                     </div>
-                    <UnderAvatar mainUserId={mainUserId} userId={state.user.id} visitor={state.user.visitor} friendStatus={state.user.friendStatus} handleAddFriend={() => handleAddFriend(state, dispatch)} handleRemoveFriend={() => handleRemoveFriend(state, dispatch)}/>
+                    <UnderAvatar mainUserId={mainUserId} userId={user.id} visitor={user.visitor} friendStatus={user.friendStatus} handleAddFriend={() => handleAddFriend()} handleRemoveFriend={() => handleRemoveFriend()}/>
                 </Paper>
                 <div className="infoSection">
                     <Paper variant="outlined" className="infoSectionPaper">
                         <div className="infoSectionUser">
-                            <div className="infoSectionName">{state.user.firstName} {state.user.lastName}</div>
-                            <div className="infoSectionOnline">{state.user.onlineStatus}</div>
+                            <div className="infoSectionName">{user.firstName} {user.lastName}</div>
+                            <div className="infoSectionOnline">{user.onlineStatus}</div>
                         </div>
-                        {!state.user.visitor ?
-                            <Button classes={{root: classes.btnStatusRoot, label: classes.btnStatusLabel}} disableTouchRipple onClick={() => dispatch({type: 'showDialog'})}>
-                                {state.user.status}
+                        {!user.visitor ?
+                            <Button classes={{root: classes.btnStatusRoot, label: classes.btnStatusLabel}} disableTouchRipple onClick={() => setOpenDialog(true)}>
+                                {user.status}
                             </Button> :
                             <div className={classes.btnStatusRoot}>
-                                {state.user.status}
+                                {user.status}
                             </div>
                         }
                         <Divider style={{margin: '14px 0 14px 8px'}}/>
-                        <MainInformation birthday={state.user.birthday} gender={state.user.gender} city={state.user.city} languages={state.user.languages}/>
+                        <MainInformation birthday={user.birthday} gender={user.gender} city={user.city} languages={user.languages}/>
                         <Divider style={{margin: '14px 0 14px 8px'}}/>
-                        <Sections userId={state.user.id} friends={state.user.friends} followers={state.user.followers} subscriptions={state.user.subscriptions} photos={state.user.photos} visitor={state.user.visitor}/>
+                        <Sections userId={user.id} friends={user.friends} followers={user.followers} subscriptions={user.subscriptions} photos={user.photos} visitor={user.visitor}/>
                     </Paper>
-                    <Paper variant="outlined" className="photoPaper" style={{display: state.user.visitor ? 'none' : 'flex'}} onClick={() => {inputAddPhotoRef.current.value = null; handleAddPhoto();}}>
+                    <Paper variant="outlined" className="photoPaper" style={{display: user.visitor ? 'none' : 'flex'}} onClick={() => {inputAddPhotoRef.current.value = null; handleAddPhoto();}}>
                         <AddAPhotoIcon style={{width: 27, height: 27, color: 'rgb(70 107 142)'}}/>
-                        <div className="photoText">Add photos</div>
-                        <input ref={inputAddPhotoRef} type="file" style={{display: 'none'}} onChange={event => handleFileSelect(event, false, state, dispatch)}/>
+                        <div className="photoText">Add photo</div>
+                        <input ref={inputAddPhotoRef} type="file" style={{display: 'none'}} onChange={event => handleFileSelect(event, false)}/>
                     </Paper>
                 </div>
-                <Dialog open={state.openDialog} onClose={() => dispatch({type: 'hideDialog'})} aria-labelledby="form-dialog-title">
+                <Dialog open={openDialog} onClose={() => setOpenDialog(false)} aria-labelledby="form-dialog-title">
                     <DialogTitle id="form-dialog-title" classes={{root: classes.dialogTitleRoot}}>Your status</DialogTitle>
                     <DialogContent classes={{root: classes.dialogContentRoot}}>
                         <DialogContentText>
@@ -207,25 +381,22 @@ export const Profile = () => {
                         />
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => dispatch({type: 'hideDialog'})} color="primary">
+                        <Button onClick={() => setOpenDialog(false)} color="primary">
                             Cancel
                         </Button>
-                        <Button onClick={async () => {dispatch({type: 'hideDialog'}); await handleUpdateStatus((inputStatusRef.current as HTMLInputElement)?.value, state, dispatch)}} color="primary">
+                        <Button onClick={() => {setOpenDialog(false); handleUpdateStatus((inputStatusRef.current as HTMLInputElement)!.value)}} color="primary">
                             Ok
                         </Button>
                     </DialogActions>
                 </Dialog>
             </div>
             <div className={classes.sectionMobile}>
-                <Link to="/Settings" className="mobileSettingsLink">
-                    <FontAwesomeIcon icon={faWrench} className="mobileSettingsIcon"/>
-                </Link>
                 <Paper variant='outlined' className="mobilePaper">
                     <div className="mobileInfoSection">
-                        <Avatar src={state.user.avatar?.src} style={{width: 70, height: 70, alignSelf: 'center'}}/>
+                        <Avatar src={user.avatar?.src} style={{width: 70, height: 70, alignSelf: 'center'}} onClick={() => handleUpdatePhoto()}/>
                         <div className="mobileInfoBlock">
-                            <div className="mobileInfoName">{state.user.firstName} {state.user.lastName}</div>
-                            <div className="mobileInfoOnline">{state.user.onlineStatus}</div>
+                            <div className="mobileInfoName">{user.firstName} {user.lastName}</div>
+                            <div className="mobileInfoOnline">{user.onlineStatus}</div>
                         </div>
                     </div>
                     <div className="mobileStatusSection">
@@ -236,17 +407,19 @@ export const Profile = () => {
                             </g>
                         </svg>
                         <div className="mobileStatusBlock">
-                            <div>{state.user.status}</div>
-                            <Button classes={{root: classes.btnChangeStatusRoot}} style={{display: state.user.visitor ? 'none' : 'block'}} onClick={() => dispatch({type: 'showDialog'})}>Change status</Button>
+                            <div>{user.status}</div>
+                            <Button classes={{root: classes.btnChangeStatusRoot}} style={{display: user.visitor ? 'none' : 'block'}} onClick={() => setOpenDialog(true)}>Change status</Button>
                         </div>
                     </div>
                     <Divider style={{margin: '10px 0'}}/>
-                    <MainInformation isMobile={true} languages={state.user.languages} city={state.user.city} gender={state.user.gender} birthday={state.user.birthday}/>
+                    <MainInformation isMobile={true} languages={user.languages} city={user.city} gender={user.gender} birthday={user.birthday}/>
                     <Divider style={{margin: '10px 0'}}/>
-                    <Sections isMobile={true} userId={state.user.id} friends={state.user.friends} followers={state.user.followers} subscriptions={state.user.subscriptions} photos={state.user.photos} visitor={state.user.visitor}/>
+                    <Sections isMobile={true} userId={user.id} friends={user.friends} followers={user.followers} subscriptions={user.subscriptions} photos={user.photos} visitor={user.visitor}/>
+                    <Divider style={{margin: '14px 0'}}/>
+                    <UnderAvatar mainUserId={mainUserId} userId={user.id} visitor={user.visitor} friendStatus={user.friendStatus} handleAddFriend={handleAddFriend} handleRemoveFriend={handleRemoveFriend}/>
                 </Paper>
             </div>
-            <ImageViewer userId={state.user.id} photoId={state.user.avatar?.slug} isOpen={state.openViewer} closeClick={() => dispatch({type: 'hideViewer'})}/>
+            <ImageViewer userId={isVisitor('/Profile') ? getVisitorId() : mainUserId} viewPhoto={user.avatar !== undefined ? {...user.avatar} : undefined} isOpen={openViewer} closeClick={() => setOpenViewer(false)} onDeleted={handleDeletedAvatar}/>
         </React.Fragment>
     );
 };

@@ -6,7 +6,6 @@ import {Settings} from "./pages/Settings";
 import {Friends} from "./pages/Friends";
 import {Chats} from "./pages/Chats";
 import {Photos} from "./pages/Photos";
-import {Notifications} from "./pages/Notifications";
 import {Search} from "./pages/Search";
 import {Messages} from "./pages/Messages";
 import {Authorization} from "./pages/Authorization";
@@ -24,13 +23,16 @@ function App() {
                     <Route exact path="/Profile/:id" component={Profile} />
                     <Route exact path='/Messages' component={Chats} />
                     <Route exact path='/Messages/:id' component={Messages} />
+                    <Route exact path='/Friends' component={Friends} />
+                    <Route exact path='/Friends/:id' component={Friends} />
+                    <Route exact path='/Followers' component={Friends} />
+                    <Route exact path='/Followers/:id' component={Friends} />
+                    <Route exact path='/Subscriptions' component={Friends} />
+                    <Route exact path='/Subscriptions/:id' component={Friends} />
+                    <Route exact path='/Photos' component={Photos} />
+                    <Route exact path='/Photos/:id' component={Photos} />
                     <Route exact path="/Search" component={Search} />
                     <Route exact path='/Settings' component={Settings} />
-                    <Route exact path='/Friends' component={Friends} />
-                    <Route exact path='/Followers' component={Friends} />
-                    <Route exact path='/Subscriptions' component={Friends} />
-                    <Route exact path='/Photos' component={Photos} />
-                    <Route exact path='/Notifications' component={Notifications} />
                     <Route exact path='/Authorization' component={Authorization}/>
                 </Layout>
             </BrowserRouter>

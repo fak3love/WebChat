@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Button, Divider, IconButton, Tooltip} from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
 import avatar2 from "../../assets/images/deadinside400.jpg";
@@ -18,6 +18,10 @@ import {Likebar} from "../Likebar";
 import {nanoid} from "nanoid";
 import {CommentType} from "../Comment/Comment";
 import {getTimeDurationByDate} from "../../utils/dates";
+import {deleteRequest, get, post} from "../../ts/requests";
+import {getUserId, headers} from "../../ts/authorization";
+import {isVisitor} from "../../utils/common";
+import moment from "moment";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -146,38 +150,44 @@ const useInputStyles = makeStyles(() =>
 );
 
 export type ImageViewerType = {
-    userId: string,
-    photoId: any,
+    userId: string | undefined | null,
+    viewPhoto: {src: string, slug: string} | undefined,
     isOpen: boolean,
-    closeClick: any
+    closeClick: any,
+    onDeleted: any
 }
 
-export const ImageViewer = ({userId, photoId, isOpen = false, closeClick}: ImageViewerType) => {
+const defaultPhoto = {
+    createdDate: '',
+    likes: 0,
+    liked: false,
+    editable: false
+}
+
+export const ImageViewer = ({userId, viewPhoto, isOpen, closeClick, onDeleted}: ImageViewerType) => {
     const classes = useStyles();
     const inputClasses = useInputStyles();
 
     const [attachedImages, setAttachedImages] = useState<Array<{src: any, uniqueKey: string}>>([]);
     const [replaying, setReplaying] = useState<{commentId: string, firstName: string} | null>(null);
-    const [user, setUser] = useState<{firstName: string, lastName: string, avatarSrc: any, liked: boolean}>({firstName: 'Faust', lastName: 'King', avatarSrc: avatar, liked: false});
-    const [photo, setPhoto] = useState<{src: any, createdDate: string, likes: number, editable: boolean, comments: Array<CommentType>}>({
-        src: avatar2,
-        createdDate: getTimeDurationByDate({startDate: new Date('2021.09.17 19:07'), endDate: new Date(), include: 'onlyDate'}),
-        likes: 0,
-        editable: true,
-        comments: [
-            {
-                commentId: '1',
-                userId: '1',
-                firstName: 'test',
-                lastName: 'test',
-                addedDate: '2021.09.17',
-                attachedImages: [avatar2],
-                isLiked: false,
-                likeCount: 5,
-                message: 'test',
-                avatarSrc: avatar, replyClick: handleReplyClick, reply: undefined}
-        ]
-    });
+    const [user, setUser] = useState<{firstName: string, lastName: string, avatar: string}>();
+    const [styleInfo, setStyleInfo] = useState<object>({filter: 'blur(8px)', pointerEvents: 'none'});
+
+    const [photo, setPhoto] = useState<{createdDate: string, likes: number, liked: boolean, editable: boolean}>(defaultPhoto);
+    const [comments, setComments] = useState<CommentType[]>([
+        // {
+        //     commentId: '1',
+        //     userId: '1',
+        //     firstName: 'test',
+        //     lastName: 'test',
+        //     addedDate: '2021.09.17',
+        //     attachedImages: [avatar2],
+        //     isLiked: false,
+        //     likeCount: 5,
+        //     message: 'test',
+        //     avatarSrc: avatar, replyClick: handleReplyClick, reply: undefined
+        // }
+    ]);
 
     const inputAttachImgRef = useRef<any>();
 
@@ -219,6 +229,45 @@ export const ImageViewer = ({userId, photoId, isOpen = false, closeClick}: Image
 
         //send new comment;
     }
+    const handleChangeLike = async (liked: boolean) => {
+        let response: Response;
+
+        if (liked)
+            response = await post({url: 'UserPhotos/LikePhoto', headers: headers, body: JSON.stringify({photoSlug: viewPhoto?.slug})});
+        else
+            response = await deleteRequest({url: 'UserPhotos/RemoveLike', headers: headers, body: JSON.stringify({photoSlug: viewPhoto?.slug})});
+
+        if (response.ok)
+            setPhoto({...photo, liked: liked, likes: liked ? photo.likes + 1 : (photo.likes - 1 >= 0 ? photo.likes - 1 : 0)});
+    }
+    const handleDeletePhoto = async () => {
+        const response = await deleteRequest({url: 'UserPhotos/RemovePhoto', headers: headers, body: JSON.stringify({photoSlug: viewPhoto?.slug})});
+
+        if (response.ok) {
+            onDeleted(viewPhoto?.slug);
+        }
+    }
+
+    useEffect(() => {
+        if (viewPhoto !== undefined) {
+            setStyleInfo({filter: 'blur(8px)', pointerEvents: 'none'});
+
+            Promise.all([
+                get({url: `UserProfiles/GetHeader/${userId}`, headers: headers}),
+                get({url: `UserPhotos/GetPhotoInfo/${getUserId()}/${viewPhoto?.slug}`, headers: headers})
+            ]).then(async response => {
+                if (response[0].ok && response[1].ok) {
+                    setUser(await response[0].json());
+                    setPhoto(await response[1].json());
+                }
+            });
+        }
+    }, [viewPhoto]);
+
+    useEffect(() => {
+        if (photo !== defaultPhoto && isOpen)
+            setStyleInfo({filter: 'none', pointerEvents: 'auto'});
+    }, [photo]);
 
     return (
         <Backdrop className={`${classes.backdrop} backdrop`} open={isOpen} onClick={(event: any) => {
@@ -234,39 +283,41 @@ export const ImageViewer = ({userId, photoId, isOpen = false, closeClick}: Image
                 <div style={{display: 'flex', height: '100%', maxWidth: 1300}}>
                     <div className={classes.backdropImgSection}>
                         <div style={{display: 'flex', justifyContent: 'center', height: '100%', padding: '20px 20px 5px 20px'}}>
-                            <img src={photo?.src} style={{maxWidth: '100%', alignSelf: 'center'}} alt={photo?.src}/>
-                        </div>
-                        <div style={{display: 'flex', minHeight: 40, flexDirection: 'row-reverse', padding: '10px 20px'}}>
-                            <IconButton style={{display: photo?.editable ? 'block' : 'none', background: '#ffffff0f'}}>
-                                <FontAwesomeIcon icon={faTrashAlt} style={{width: 18, height: 18, color: 'rgb(147, 147, 147)'}}/>
-                            </IconButton>
+                            <img src={viewPhoto?.src} style={{maxWidth: '100%', alignSelf: 'center'}} alt={viewPhoto?.slug}/>
                         </div>
                     </div>
-                    <div className={classes.infoSection}>
+                    <div className={classes.infoSection} style={styleInfo}>
                         <div style={{display: 'flex', margin: 10}}>
-                            <Link to={`/Profile/${userId}`}>
-                                <Avatar alt="Remy Sharp" src={user?.avatarSrc} style={{width: 40, height: 40}} />
+                            <Link to={getUserId() === userId ? '/Profile' : `/Profile/${userId}`} onClick={closeClick}>
+                                <Avatar alt="Remy Sharp" src={user?.avatar} style={{width: 40, height: 40}} />
                             </Link>
                             <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-around', marginLeft: 15}}>
-                                <Link to="/Profile?#userId" className={classes.friendBlockLink}>{user?.firstName} {user?.lastName}</Link>
-                                <div style={{fontSize: 12, color: '#939393'}}>{photo?.createdDate}</div>
+                                <Link to={getUserId() === userId ? '/Profile' : `/Profile/${userId}`} className={classes.friendBlockLink} onClick={closeClick}>{user?.firstName} {user?.lastName}</Link>
+                                <div style={{fontSize: 12, color: '#939393'}}>{moment(photo?.createdDate).format('LL')}</div>
                             </div>
                         </div>
-                        <IconButton className={classes.btnCloseMobile}>
+                        <IconButton className={classes.btnCloseMobile} onClick={closeClick}>
                             <CloseIcon style={{width: 20, height: 20, color: 'black'}}/>
                         </IconButton>
                         <Divider/>
                         <div style={{display: 'flex', margin: 10}}>
-                            <Likebar btnWidth={36} btnHeight={36} iconWidth={24} iconHeight={24} likeCount={photo?.likes} isLiked={user?.liked} fontSize={13}/>
-                            <IconButton style={{marginLeft: 10, width: 36, height: 36}} disableTouchRipple>
-                                <svg style={{width: 22, height: 22, color: 'rgb(166 172 183)'}} aria-hidden="true" focusable="false" data-prefix="far" data-icon="share" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" className="svg-inline--fa fa-share fa-w-18 fa-2x">
-                                    <path fill="currentColor" d="M561.938 190.06L385.94 14.107C355.79-16.043 304 5.327 304 48.047v80.703C166.04 132.9 0 159.68 0 330.05c0 73.75 38.02 134.719 97.63 173.949 37.12 24.43 85.84-10.9 72.19-54.46C145.47 371.859 157.41 330.2 304 321.66v78.28c0 42.64 51.73 64.15 81.94 33.94l175.997-175.94c18.751-18.74 18.751-49.14.001-67.88zM352 400V272.09c-164.521 1.79-277.44 33.821-227.98 191.61C88 440 48 397.01 48 330.05c0-142.242 160.819-153.39 304-154.02V48l176 176-176 176z"/>
-                                </svg>
-                            </IconButton>
+                            <Likebar btnWidth={36} btnHeight={36} iconWidth={24} iconHeight={24} likeCount={photo?.likes} isLiked={photo?.liked} fontSize={13} onChange={handleChangeLike}/>
+                            <Tooltip title="Share" arrow>
+                                <IconButton style={{marginLeft: 10, width: 36, height: 36}} disableTouchRipple>
+                                    <svg style={{width: 22, height: 22, color: 'rgb(166 172 183)'}} aria-hidden="true" focusable="false" data-prefix="far" data-icon="share" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" className="svg-inline--fa fa-share fa-w-18 fa-2x">
+                                        <path fill="currentColor" d="M561.938 190.06L385.94 14.107C355.79-16.043 304 5.327 304 48.047v80.703C166.04 132.9 0 159.68 0 330.05c0 73.75 38.02 134.719 97.63 173.949 37.12 24.43 85.84-10.9 72.19-54.46C145.47 371.859 157.41 330.2 304 321.66v78.28c0 42.64 51.73 64.15 81.94 33.94l175.997-175.94c18.751-18.74 18.751-49.14.001-67.88zM352 400V272.09c-164.521 1.79-277.44 33.821-227.98 191.61C88 440 48 397.01 48 330.05c0-142.242 160.819-153.39 304-154.02V48l176 176-176 176z"/>
+                                    </svg>
+                                </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Delete" arrow>
+                                <IconButton style={{display: photo?.editable ? 'flex' : 'none', position: 'absolute', right: 12, width: 36, height: 36}} disableTouchRipple onClick={handleDeletePhoto}>
+                                    <FontAwesomeIcon icon={faTrashAlt} style={{width: 18, height: 18, color: 'rgb(166 172 183)'}}/>
+                                </IconButton>
+                            </Tooltip>
                         </div>
                         <Divider/>
                         <Scrollbars style={{color: 'black', height: '100%'}}>
-                            {photo?.comments.map(comment =>
+                            {comments.map(comment =>
                                 <Comment userId={comment.userId}
                                          firstName={comment.firstName}
                                          lastName={comment.lastName}

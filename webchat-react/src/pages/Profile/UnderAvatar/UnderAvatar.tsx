@@ -1,13 +1,13 @@
 import React from 'react';
-import {FriendStatuses, FriendStatusType} from "../reducer";
 import {Link} from "react-router-dom";
+import {FriendStatus, FriendStatuses} from "../Profile";
 import "./UnderAvatar.css";
 
 export type UnderAvatarType = {
     mainUserId: string,
     userId: string,
     visitor: boolean,
-    friendStatus: FriendStatusType | undefined,
+    friendStatus: FriendStatus | undefined,
     handleAddFriend: any,
     handleRemoveFriend: any
 }

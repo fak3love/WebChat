@@ -146,7 +146,8 @@ export const NotificationButton = () => {
                     <Scrollbars style={{marginTop: 8}} autoHide autoHideDuration={400}>
                         <div style={{display: 'flex', flexDirection: 'column'}}>
                             {notifications.length > 0 ? notifications.map(block => {
-                                return <NotificationBlock notificationType={block.notificationType}
+                                return <NotificationBlock key={block.date}
+                                                          notificationType={block.notificationType}
                                                           subjectType={block.subjectType}
                                                           subjectLink={block.subjectLink}
                                                           targetLink={block.targetLink}

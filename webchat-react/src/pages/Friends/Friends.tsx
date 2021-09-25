@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {createStyles, makeStyles, Theme} from "@material-ui/core/styles";
 import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
@@ -7,11 +7,13 @@ import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 import {Button, Divider} from "@material-ui/core";
 import {Link} from "react-router-dom";
-import avatar1 from "../../assets/images/avatar2.jpg";
-import avatar2 from "../../assets/images/deadinside400.jpg";
-import {getTimeDurationByDate} from "../../utils/dates";
 import Scrollbars from "react-custom-scrollbars";
 import {UserBlock} from "../../components/UserBlock";
+import moment from "moment";
+import {LoadingScreen} from "../../components/LoadingScreen";
+import {getFamiliars} from "./utils";
+import {getVisitorId, isVisitor} from "../../utils/common";
+import {getUserId} from "../../ts/authorization";
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -49,16 +51,9 @@ function a11yProps(index: any) {
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         sectionDesktop: {
-            display: 'none',
             [theme.breakpoints.up('md')]: {
                 display: 'flex',
                 width: 600
-            },
-        },
-        sectionMobile: {
-            display: 'flex',
-            [theme.breakpoints.up('md')]: {
-                display: 'none',
             },
         },
         tabContainerRoot: {
@@ -66,7 +61,13 @@ const useStyles = makeStyles((theme: Theme) =>
             backgroundColor: theme.palette.background.paper,
             border: '1px solid #dce1e6',
         },
-        appBar: {
+        btnFind: {
+            display: 'none',
+            [theme.breakpoints.up('md')]: {
+                display: 'grid',
+            },
+        },
+        appBarRoot: {
             display: 'flex',
             flexDirection: 'row',
             boxShadow: 'none',
@@ -75,7 +76,12 @@ const useStyles = makeStyles((theme: Theme) =>
             justifyContent: 'space-around',
         },
         tabs: {
-            background: '#fafbfc'
+            background: '#fafbfc',
+            width: 295,
+            [theme.breakpoints.up('md')]: {
+                display: 'flex',
+                width: 'auto',
+            },
         },
         indicator: {
             background: '#5181b8'
@@ -112,10 +118,23 @@ const useTabStyles = makeStyles((theme: Theme) =>
     }),
 );
 
+export type Familiar = {
+    userId: string,
+    firstName: string,
+    lastName: string,
+    isOnline: boolean,
+    avatar?: string,
+    modifiedDate: string
+}
+
 export const Friends = () => {
     const classes = useStyles();
     const tabClasses = useTabStyles();
-    const [value, setValue] = React.useState(document.location.pathname === "/Friends" ? 0 : document.location.pathname === "/Followers" ? 1 : 2);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [value, setValue] = React.useState(document.location.pathname.startsWith("/Friends") ? 0 : document.location.pathname.startsWith("/Followers") ? 1 : 2);
+    const [friends, setFriends] = useState<Familiar[]>([]);
+    const [followers, setFollowers] = useState<Familiar[]>([]);
+    const [subscriptions, setSubscriptions] = useState<Familiar[]>([]);
 
     const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
         setValue(newValue);
@@ -130,78 +149,75 @@ export const Friends = () => {
         );
     }
 
+    useEffect(() => {
+        const visitor = isVisitor('/Friends')
+        const visitorId = getVisitorId();
+        const mainUserId = getUserId();
+
+        Promise.all([
+            getFamiliars('GetFriends', visitor ? visitorId : mainUserId),
+            getFamiliars('GetFollowers', visitor ? visitorId : mainUserId),
+            getFamiliars('GetSubscriptions', visitor ? visitorId : mainUserId)
+        ]).then(result => {
+            setFriends(result[0] !== undefined ? result[0] : []);
+            setFollowers(result[1] !== undefined ? result[1] : []);
+            setSubscriptions(result[2] !== undefined ? result[2] : []);
+            setLoading(false);
+        })
+    }, []);
+
+    if (loading)
+        return <LoadingScreen open={loading}/>
+
     return (
         <React.Fragment>
             <div className={classes.sectionDesktop}>
                 <div className={classes.tabContainerRoot}>
-                    <AppBar position="static" className={classes.appBar}>
-                        <Tabs value={value} onChange={handleChange} aria-label="simple tabs example" indicatorColor="secondary" classes={classes} className={classes.tabs}>
-                            <Tab label={<TabLabel name="All friends" count={14}/>} {...a11yProps(0)} classes={tabClasses} disableTouchRipple={true}/>
-                            <Tab label={<TabLabel name="Followers" count={19}/>} {...a11yProps(1)} classes={tabClasses} disableTouchRipple={true}/>
-                            <Tab label={<TabLabel name="Subscriptions" count={16}/>} {...a11yProps(2)} classes={tabClasses} disableTouchRipple={true}/>
+                    <AppBar position="static" classes={{root: classes.appBarRoot}}>
+                        <Tabs value={value} onChange={handleChange} variant="scrollable" scrollButtons="auto" aria-label="simple tabs example" indicatorColor="secondary" classes={classes} className={classes.tabs}>
+                            <Tab label={<TabLabel name="All friends" count={friends.length}/>} {...a11yProps(0)} classes={tabClasses} disableTouchRipple={true}/>
+                            <Tab label={<TabLabel name="Followers" count={followers.length}/>} {...a11yProps(1)} classes={tabClasses} disableTouchRipple={true}/>
+                            <Tab label={<TabLabel name="Subscriptions" count={subscriptions.length}/>} {...a11yProps(2)} classes={tabClasses} disableTouchRipple={true}/>
                         </Tabs>
-                        <Button variant="contained" color="primary" style={{width: 100, height: 26, alignSelf: 'center', fontSize: 13, textTransform: 'none', padding: 0, fontWeight: 400, background: '#5181b8'}} disableTouchRipple={true}>
+                        <Button className={classes.btnFind} variant="contained" color="primary" style={{width: 100, height: 26, alignSelf: 'center', fontSize: 13, textTransform: 'none', padding: 0, fontWeight: 400, background: '#5181b8'}} disableTouchRipple={true}>
                             Find friends
-                            <Link to="/Search" style={{position: 'absolute', width: '100%', height: '100%'}}/>
+                            <Link to="/Search" style={{position: 'absolute', width: '100%', height: '100%', left: 0}}/>
                         </Button>
                     </AppBar>
                     <TabPanel value={value} index={0}>
-                        <UserBlock userId="faust"  firstName="Faust" lastName="King" isOnline={true} avatarSrc={avatar1} info={getTimeDurationByDate({startDate: new Date(2021, 6, 1), endDate: new Date()})}/>
-                        <Divider style={{margin: '24px 0'}}/>
-                        <UserBlock userId="faust"  firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info={getTimeDurationByDate({startDate: new Date(2021, 8, 8), endDate: new Date()})}/>
-                        <Divider style={{margin: '24px 0'}}/>
-                        <UserBlock userId="faust"  firstName="Faust" lastName="King" isOnline={true} avatarSrc={avatar1} info={getTimeDurationByDate({startDate: new Date(2021, 8, 13, 0, 1), endDate: new Date(), include: 'time'})}/>
-                        <Divider style={{margin: '24px 0'}}/>
-                        <UserBlock userId="faust"  firstName="Faust" lastName="King" isOnline={true} avatarSrc={avatar2} info={getTimeDurationByDate({startDate: new Date(2021, 8, 2), endDate: new Date()})}/>
-                        <Divider style={{margin: '24px 0'}}/>
-                        <UserBlock userId="faust"  firstName="Faust" lastName="King" isOnline={true} avatarSrc={avatar2} info={getTimeDurationByDate({startDate: new Date(2021, 8, 7), endDate: new Date()})}/>
-                    </TabPanel>
-                    <TabPanel value={value} index={1}>
-                        <UserBlock userId="faust"  firstName="Faust" lastName="King" isOnline={true} avatarSrc={avatar1} info={getTimeDurationByDate({startDate: new Date(2021, 6, 1), endDate: new Date()})}/>
-                        <Divider style={{margin: '24px 0'}}/>
-                        <UserBlock userId="faust"  firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info={getTimeDurationByDate({startDate: new Date(2021, 8, 8), endDate: new Date()})}/>
-                    </TabPanel>
-                    <TabPanel value={value} index={2}>
-                        <UserBlock userId="faust"  firstName="Faust" lastName="King" isOnline={true} avatarSrc={avatar1} info={getTimeDurationByDate({startDate: new Date(2021, 6, 1), endDate: new Date()})}/>
-                    </TabPanel>
-                </div>
-            </div>
-            <div className={classes.sectionMobile}>
-                <div className={classes.tabContainerRoot}>
-                    <AppBar position="static" className={classes.appBar}>
-                        <Tabs value={value} onChange={handleChange} variant="scrollable" scrollButtons="auto" aria-label="simple tabs example" indicatorColor="secondary" classes={classes} className={classes.tabs} style={{width: 295}}>
-                            <Tab label={<TabLabel name="All friends" count={14}/>} {...a11yProps(0)} classes={tabClasses} disableTouchRipple={true}/>
-                            <Tab label={<TabLabel name="Followers" count={19}/>} {...a11yProps(1)} classes={tabClasses} disableTouchRipple={true}/>
-                            <Tab label={<TabLabel name="Subscriptions" count={16}/>} {...a11yProps(2)} classes={tabClasses} disableTouchRipple={true}/>
-                        </Tabs>
-                    </AppBar>
-                    <TabPanel value={value} index={0}>
                         <Scrollbars style={{height: 450}}>
-                            <UserBlock userId="faust"  firstName="Faust" lastName="King" isOnline={true} avatarSrc={avatar1} info={getTimeDurationByDate({startDate: new Date(2021, 6, 1), endDate: new Date()})}/>
-                            <Divider style={{margin: '24px 0'}}/>
-                            <UserBlock userId="faust"  firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info={getTimeDurationByDate({startDate: new Date(2021, 8, 8), endDate: new Date()})}/>
-                            <Divider style={{margin: '24px 0'}}/>
-                            <UserBlock userId="faust"  firstName="Faust" lastName="King" isOnline={true} avatarSrc={avatar1} info={getTimeDurationByDate({startDate: new Date(2021, 8, 9), endDate: new Date()})}/>
-                            <Divider style={{margin: '24px 0'}}/>
-                            <UserBlock userId="faust"  firstName="Faust" lastName="King" isOnline={true} avatarSrc={avatar2} info={getTimeDurationByDate({startDate: new Date(2021, 8, 2), endDate: new Date()})}/>
-                            <Divider style={{margin: '24px 0'}}/>
-                            <UserBlock userId="faust"  firstName="Faust" lastName="King" isOnline={true} avatarSrc={avatar2} info={getTimeDurationByDate({startDate: new Date(2021, 8, 7), endDate: new Date()})}/>
+                            {friends.map((familiar, index) => {
+                                return (
+                                    <div key={familiar.userId}>
+                                        <UserBlock userId={familiar.userId}  firstName={familiar.firstName} lastName={familiar.lastName} isOnline={familiar.isOnline} avatarSrc={familiar.avatar} info={moment(familiar.modifiedDate).startOf('minutes').fromNow()}/>
+                                        {index < friends.length - 1 ? <Divider style={{margin: '24px 0'}}/> : ''}
+                                    </div>
+                                )
+                            })}
                         </Scrollbars>
                     </TabPanel>
                     <TabPanel value={value} index={1}>
                         <Scrollbars style={{height: 450}}>
-                            <UserBlock userId="faust"  firstName="Faust" lastName="King" isOnline={true} avatarSrc={avatar1} info={getTimeDurationByDate({startDate: new Date(2021, 8, 9), endDate: new Date()})}/>
-                            <Divider style={{margin: '24px 0'}}/>
-                            <UserBlock userId="faust"  firstName="Faust" lastName="King" isOnline={true} avatarSrc={avatar2} info={getTimeDurationByDate({startDate: new Date(2021, 8, 2), endDate: new Date()})}/>
-                            <Divider style={{margin: '24px 0'}}/>
-                            <UserBlock userId="faust"  firstName="Faust" lastName="King" isOnline={true} avatarSrc={avatar2} info={getTimeDurationByDate({startDate: new Date(2021, 8, 7), endDate: new Date()})}/>
+                            {followers.map((familiar, index) => {
+                                return (
+                                    <div key={familiar.userId}>
+                                        <UserBlock userId={familiar.userId}  firstName={familiar.firstName} lastName={familiar.lastName} isOnline={familiar.isOnline} avatarSrc={familiar.avatar} info={moment(familiar.modifiedDate).startOf('minutes').fromNow()}/>
+                                        {index < friends.length - 1 ? <Divider style={{margin: '24px 0'}}/> : ''}
+                                    </div>
+                                )
+                            })}
                         </Scrollbars>
                     </TabPanel>
                     <TabPanel value={value} index={2}>
                         <Scrollbars style={{height: 450}}>
-                            <UserBlock userId="faust"  firstName="Faust" lastName="King" isOnline={true} avatarSrc={avatar1} info={getTimeDurationByDate({startDate: new Date(2021, 6, 1), endDate: new Date()})}/>
-                            <Divider style={{margin: '24px 0'}}/>
-                            <UserBlock userId="faust"  firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info={getTimeDurationByDate({startDate: new Date(2021, 8, 8), endDate: new Date()})}/>
+                            {subscriptions.map((familiar, index) => {
+                                return (
+                                    <div key={familiar.userId}>
+                                        <UserBlock userId={familiar.userId}  firstName={familiar.firstName} lastName={familiar.lastName} isOnline={familiar.isOnline} avatarSrc={familiar.avatar} info={moment(familiar.modifiedDate).startOf('minutes').fromNow()}/>
+                                        {index < friends.length - 1 ? <Divider style={{margin: '24px 0'}}/> : ''}
+                                    </div>
+                                )
+                            })}
                         </Scrollbars>
                     </TabPanel>
                 </div>

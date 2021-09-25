@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import Checkbox, {CheckboxProps} from "@material-ui/core/Checkbox";
+import Checkbox from "@material-ui/core/Checkbox";
 import clsx from "clsx";
 import {makeStyles} from "@material-ui/core/styles";
 
@@ -47,28 +47,25 @@ const useCheckedStyles = makeStyles({
     },
 });
 
-function StyledCheckbox(props: CheckboxProps) {
+export const CheckBox = ({text, inputRef, onChange}: {text: string, inputRef: any, onChange: any}) => {
+    const [checked, setChecked] = useState<boolean>(false);
     const classes = useCheckedStyles();
 
     return (
-        <Checkbox
-            className={classes.root}
-            disableRipple
-            color="default"
-            checkedIcon={<span className={clsx(classes.icon, classes.checkedIcon)} />}
-            icon={<span className={classes.icon} />}
-            inputProps={{ 'aria-label': 'decorative checkbox' }}
-            {...props}
-        />
-    );
-}
-
-export const CheckBox = ({text}: {text: string}) => {
-    const [checked, setChecked] = useState<boolean>(false);
-
-    return (
-        <div style={{marginLeft: -9, cursor: 'pointer'}} onClick={() => setChecked(!checked)}>
-            <StyledCheckbox checked={checked}/>
+        <div style={{marginLeft: -9, cursor: 'pointer'}} onClick={() => {
+            setChecked(!checked);
+            onChange();
+        }}>
+            <Checkbox
+                className={classes.root}
+                disableRipple
+                color="default"
+                checkedIcon={<span className={clsx(classes.icon, classes.checkedIcon)} />}
+                icon={<span className={classes.icon} />}
+                inputProps={{ 'aria-label': 'decorative checkbox' }}
+                checked={checked}
+                inputRef={inputRef}
+            />
             <span style={{fontSize: 13}}>{text}</span>
         </div>
     );

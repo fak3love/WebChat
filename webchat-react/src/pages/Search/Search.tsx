@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {createStyles, makeStyles, Theme} from "@material-ui/core/styles";
 import Radio, { RadioProps } from '@material-ui/core/Radio';
 import {Divider, IconButton, Paper} from "@material-ui/core";
@@ -17,8 +17,9 @@ import FormLabel from '@material-ui/core/FormLabel';
 import SearchIcon from "@material-ui/icons/Search";
 import MenuItem from '@material-ui/core/MenuItem';
 import Scrollbars from "react-custom-scrollbars";
-import avatar1 from "../../assets/images/avatar2.jpg";
-import avatar2 from "../../assets/images/deadinside400.jpg";
+import {get} from "../../ts/requests";
+import {headers} from "../../ts/authorization";
+import countriesJson from "../../assets/json/country.json";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -114,18 +115,36 @@ function StyledRadio(props: RadioProps) {
     );
 }
 
+type User  = {
+    id: string,
+    firstName: string,
+    lastName: string,
+    status: string,
+    avatar: string | undefined,
+    isOnline: boolean
+}
+
 const listAgeFrom = range({start: 14, end: 80}).map(x => <MenuItem value={x} style={{fontSize: 13}}>from {x}</MenuItem>);
 const listAgeTo = range({start: 14, end: 80}).map(x => <MenuItem value={x} style={{fontSize: 13}}>to {x}</MenuItem>);
 
 export const Search = () => {
     const classes = useStyles();
 
+    const inputSearchRef = useRef<any>();
+    const inputCheckBoxAvatarRef = useRef<any>();
+    const inputCheckBoxOnlineRef = useRef<any>();
+    const [gender, setGender] = useState('male');
     const [ageFrom, setAgeFrom] = useState('');
     const [ageTo, setAgeTo] = useState('');
-    const [country, setCountry] = useState('');
-    const [city, setCity] = useState('');
+    const [country, setCountry] = useState('none');
+    const [city, setCity] = useState('none');
     const [cityDisabled, setCityDisabled] = useState<boolean>(true);
     const [showParameters, setShowParameters] = useState<boolean>(false);
+    const [users, setUsers] = useState<User[]>([]);
+    const [startSearch, setStartSearch] = useState<number>(0);
+    const [searchTimeout, setSearchTimeout] = useState<number>(0);
+    const [loadingTimeout, setLoadingTimeout] = useState<number>(0);
+    const [cities, setCities] = useState<string[]>([]);
 
     const handleChangeAgeFrom = (event: React.ChangeEvent<{ value: unknown }>) => {
         setAgeFrom(event.target.value as string);
@@ -133,19 +152,70 @@ export const Search = () => {
     const handleChangeAgeTo = (event: React.ChangeEvent<{ value: unknown }>) => {
         setAgeTo(event.target.value as string);
     };
-    const handleChangeCountry = (event: React.ChangeEvent<{ value: unknown }>) => {
-        setCountry(event.target.value as string);
+    const handleChangeCountry = (event: React.ChangeEvent<{ value: any }>) => {
+        setCountry(event.target.value);
 
-        if (event.target.value !== 0) {
+        if (event.target.value !== 'none') {
+            const countries: any = countriesJson;
             setCityDisabled(false);
+
+            setCities(countries[event.target.value].slice(0, 10))
             return;
         }
 
+        setCity('none');
         setCityDisabled(true);
+        searchFriends(700);
     };
-    const handleChangeCity = (event: React.ChangeEvent<{ value: unknown }>) => {
-        setCity(event.target.value as string);
+    const handleChangeCity = (event: React.ChangeEvent<{ value: any }>) => {
+        setCity(event.target.value);
+        searchFriends(700);
     };
+
+    const buildQuery = () => {
+        const textQuery: string = `&text=${inputSearchRef.current.value}`;
+        const genderQuery: string = `&gender=${gender}`;
+        const countryQuery: string = `&country=${country}`;
+        const cityQuery: string = `&city=${city}`;
+        const ageFromQuery: string = `&ageFrom=${ageFrom}`;
+        const ageToQuery: string = `&ageTo=${ageTo}`;
+        const requiredAvatarQuery: string = `&requiredAvatar=${inputCheckBoxAvatarRef.current.checked}`;
+        const requiredOnlineQuery: string = `&requiredOnline=${inputCheckBoxOnlineRef.current.checked}`;
+
+        return `${textQuery}${genderQuery}${countryQuery}${cityQuery}${ageFromQuery}${ageToQuery}${requiredAvatarQuery}${requiredOnlineQuery}`;
+    }
+
+    const searchFriends = async (timeOut: number = 500) => {
+        clearTimeout(loadingTimeout);
+        clearTimeout(searchTimeout);
+
+        const timeOutId: any = setTimeout(async () => {
+            const response = await get({url: `UserProfiles/Search?${buildQuery()}`, headers: headers});
+
+            if (response.ok) {
+                const json = await response.json();
+
+                setUsers(json);
+                setStartSearch(0);
+            }
+        }, timeOut);
+
+        setSearchTimeout(timeOutId);
+    }
+    const loadFriends = async () => {
+        const response = await get({url: `UserProfiles/Search?startSearch=${startSearch + 10}${buildQuery()}`, headers: headers});
+
+        if (response.ok) {
+            const json = await response.json();
+
+            setUsers(users.concat(json));
+            setStartSearch(startSearch + 10);
+        }
+    }
+
+    useEffect(() => {
+        searchFriends();
+    }, [gender]);
 
     return (
         <Paper variant='outlined' style={{height: 'max-content', background: 'white', marginBottom: 15}}>
@@ -157,8 +227,10 @@ export const Search = () => {
                         root: classes.inputRoot,
                         input: classes.inputInput,
                     }}
+                    inputRef={inputSearchRef}
+                    onChange={() => {searchFriends()}}
                 />
-                <IconButton style={{position: 'absolute', right: 0, top: 0, width: 32, height: 32, margin: 4}} onClick={() => setShowParameters(!showParameters)}>
+                <IconButton style={{position: 'absolute', right: 0, top: 0, width: 32, height: 32, margin: 4}} disableTouchRipple onClick={() => setShowParameters(!showParameters)}>
                     <FontAwesomeIcon icon={faAngleDown} style={{width: 20, height: 20, color: '#99A2AD'}}/>
                 </IconButton>
             </div>
@@ -167,7 +239,7 @@ export const Search = () => {
                 <div style={{display: 'flex', flexWrap: 'wrap'}}>
                     <FormControl component="fieldset" style={{margin: '8px 16px'}}>
                         <FormLabel component="legend" style={{fontSize: 13, fontWeight: 600, color: 'rgba(0, 0, 0, 0.54)'}}>Gender</FormLabel>
-                        <RadioGroup defaultValue="any" aria-label="gender" name="customized-radios">
+                        <RadioGroup defaultValue="any" aria-label="gender" name="customized-radios" onChange={(event) => setGender(event.target.value)}>
                             <FormControlLabel value="female" control={<StyledRadio />} label={<span style={{fontSize: 13}}>Female</span>}/>
                             <FormControlLabel value="male" control={<StyledRadio />} label={<span style={{fontSize: 13}}>Male</span>}/>
                             <FormControlLabel value="any" control={<StyledRadio />} label={<span style={{fontSize: 13}}>Any</span>}/>
@@ -175,8 +247,8 @@ export const Search = () => {
                     </FormControl>
                     <FormControl component="fieldset" style={{margin: '8px 16px'}}>
                         <FormLabel component="legend" style={{fontSize: 13, fontWeight: 600, color: 'rgba(0, 0, 0, 0.54)'}}>Relationship</FormLabel>
-                        <CheckBox text="With photo"/>
-                        <CheckBox text="Online now"/>
+                        <CheckBox text="With photo" inputRef={inputCheckBoxAvatarRef} onChange={() => searchFriends()}/>
+                        <CheckBox text="Online now" inputRef={inputCheckBoxOnlineRef} onChange={() => searchFriends()}/>
                     </FormControl>
                     <FormControl style={{margin: '8px 16px'}} className={classes.formControl}>
                         <FormLabel component="legend" style={{fontSize: 13, fontWeight: 600, color: 'rgba(0, 0, 0, 0.54)'}}>Country</FormLabel>
@@ -188,11 +260,13 @@ export const Search = () => {
                             style={{fontSize: 13, marginTop: 2}}
                             disableUnderline
                         >
-                            <MenuItem value={0} style={{fontSize: 13}}>Select a country</MenuItem>
-                            <MenuItem value={1} style={{fontSize: 13}}>Japan</MenuItem>
-                            <MenuItem value={2} style={{fontSize: 13}}>Korea</MenuItem>
-                            <MenuItem value={3} style={{fontSize: 13}}>USA</MenuItem>
-                            <MenuItem value={4} style={{fontSize: 13}}>Russia</MenuItem>
+                            <MenuItem value="none" style={{fontSize: 13}}>Select a country</MenuItem>
+                            {Object.keys(countriesJson).map((name, index) => {
+                                if (index < 50)
+                                    return <MenuItem key={name} value={name} style={{fontSize: 13}}>{name}</MenuItem>
+
+                                return '';
+                            })}
                         </Select>
                     </FormControl>
                     <FormControl style={{margin: '8px 16px'}} className={classes.formControl} disabled={cityDisabled}>
@@ -205,9 +279,8 @@ export const Search = () => {
                             style={{fontSize: 13, marginTop: 2}}
                             disableUnderline
                         >
-                            <MenuItem value={0} style={{fontSize: 13}}>Select a city</MenuItem>
-                            <MenuItem value={1} style={{fontSize: 13}}>Tokyo</MenuItem>
-                            <MenuItem value={2} style={{fontSize: 13}}>Seoul</MenuItem>
+                            <MenuItem value="none" style={{fontSize: 13}}>Select a city</MenuItem>
+                            {cities.map(name => <MenuItem key={name} value={name} style={{fontSize: 13}}>{name}</MenuItem>)}
                         </Select>
                     </FormControl>
                     <FormControl style={{margin: '8px 16px'}} className={classes.formControl}>
@@ -243,27 +316,26 @@ export const Search = () => {
                 </div>
             </div>
             <Divider style={{display: showParameters ? 'block' : 'none'}}/>
-            <Scrollbars style={{height: 500}} autoHide>
+            <Scrollbars style={{height: 500}} autoHide onScrollFrame={(value) => {
+                if (value.top >= 0.8) {
+                    clearTimeout(loadingTimeout);
+
+                    const timeOutId: any = setTimeout(() => {
+                        loadFriends();
+                    }, 400);
+
+                    setLoadingTimeout(timeOutId);
+                }
+            }}>
                 <div style={{display: 'flex', flexDirection: 'column', padding: 15}}>
-                    <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={true} avatarSrc={avatar1} info="I'm tired.."/>
-                    <Divider style={{margin: '15px -15px'}}/>
-                    <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
-                    <Divider style={{margin: '15px -15px'}}/>
-                    <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
-                    <Divider style={{margin: '15px -15px'}}/>
-                    <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
-                    <Divider style={{margin: '15px -15px'}}/>
-                    <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
-                    <Divider style={{margin: '15px -15px'}}/>
-                    <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
-                    <Divider style={{margin: '15px -15px'}}/>
-                    <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
-                    <Divider style={{margin: '15px -15px'}}/>
-                    <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
-                    <Divider style={{margin: '15px -15px'}}/>
-                    <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
-                    <Divider style={{margin: '15px -15px'}}/>
-                    <UserBlock userId="faust" firstName="Faust" lastName="King" isOnline={false} avatarSrc={avatar2} info="1000-7?"/>
+                    {users.map((user, index) => {
+                        return (
+                            <div key={user.id}>
+                                <UserBlock userId={user.id} firstName={user.firstName} lastName={user.lastName} isOnline={user.isOnline} avatarSrc={user.avatar} info={user.status}/>
+                                {index < users.length - 1 ? <Divider style={{margin: '15px -15px'}}/> : ''}
+                            </div>
+                        )
+                    })}
                 </div>
             </Scrollbars>
         </Paper>
