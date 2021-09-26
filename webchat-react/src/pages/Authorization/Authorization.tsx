@@ -129,8 +129,6 @@ export const Authorization = () => {
         if (emailError === '' && userNameError === '' && passwordError === '' && firstNameError === '' && lastNameError === '') {
             const {status, json} = await register({userName: userName as string, email: email as string, password: password as string, firstName: firstName as string, lastName: lastName as string, gender: gender as string, saveToStorage: false});
 
-            console.log(status);
-
             if (status === 200)
                 document.location.pathname = "/Profile";
 
