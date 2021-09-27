@@ -18,7 +18,7 @@ import MenuItem from "@material-ui/core/MenuItem";
 import AppBar from '@material-ui/core/AppBar';
 import InputBase from '@material-ui/core/InputBase';
 import Menu from "@material-ui/core/Menu";
-import {logout} from "../../ts/authorization";
+import {isEmptyStorage, logout} from "../../ts/authorization";
 import {getProfileHeader} from "./utils";
 import {MenuList} from "./MenuList";
 
@@ -123,9 +123,11 @@ export const Header = ({handleUpdate}: {handleUpdate: any}) => {
     useEffect(() => {
         handleUpdate.current = handleUpdateHeader;
 
-        getProfileHeader().then(profile => {
-            setUser(profile === undefined ? user : profile);
-        })
+        if (document.location.pathname !== '/Authorization' && !isEmptyStorage()) {
+            getProfileHeader().then(profile => {
+                setUser(profile === undefined ? user : profile);
+            });
+        }
     }, []);
 
     return (

@@ -5,8 +5,6 @@ import {Divider, Paper} from "@material-ui/core";
 import SearchIcon from "@material-ui/icons/Search";
 import InputBase from "@material-ui/core/InputBase";
 import Scrollbars from "react-custom-scrollbars";
-import avatar1 from "../../assets/images/avatar2.jpg";
-import avatar2 from "../../assets/images/deadinside400.jpg";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -54,37 +52,41 @@ export const Chats = () => {
             <Divider/>
             <Scrollbars style={{height: 500}} autoHide>
                 <div style={{display: 'flex', flexDirection: 'column'}}>
-                    <Chat avatarSrc={avatar1}
+                    <Chat
                           message="Test123456789"
                           writtenDate="14:40"
                           sender="target"
                           unreadCount={5}
                           unread={true}
-                          target={{userId: 'test', avatarSrc: avatar2, isOnline: true, firstName: 'Kaneki', lastName: 'Ken'}}/>
+                          avatarSrc=''
+                          target={{userId: 'test', avatarSrc: '', isOnline: true, firstName: 'Kaneki', lastName: 'Ken'}}/>
                     <Divider/>
-                    <Chat avatarSrc={avatar1}
+                    <Chat
                           message="Test123456789"
                           writtenDate="17:44"
                           sender="target"
                           unreadCount={5}
                           unread={false}
-                          target={{userId: 'test', avatarSrc: avatar2, isOnline: true, firstName: 'Kaneki', lastName: 'Ken'}}/>
+                          avatarSrc=''
+                          target={{userId: 'test', avatarSrc: '', isOnline: true, firstName: 'Kaneki', lastName: 'Ken'}}/>
                     <Divider/>
-                    <Chat avatarSrc={avatar1}
+                    <Chat
                           message="Test123456789"
                           writtenDate="2021.10.10"
                           sender="user"
                           unreadCount={0}
                           unread={true}
-                          target={{userId: 'test', avatarSrc: avatar2, isOnline: true, firstName: 'Kaneki', lastName: 'Ken'}}/>
+                          avatarSrc=''
+                          target={{userId: 'test', avatarSrc: '', isOnline: true, firstName: 'Kaneki', lastName: 'Ken'}}/>
                     <Divider/>
-                    <Chat avatarSrc={avatar1}
+                    <Chat
                           message="Test123456789"
                           writtenDate="yesterday"
                           sender="user"
                           unreadCount={0}
                           unread={false}
-                          target={{userId: 'test', avatarSrc: avatar2, isOnline: true, firstName: 'Kaneki', lastName: 'Ken'}}/>
+                          avatarSrc=''
+                          target={{userId: 'test', avatarSrc: '', isOnline: true, firstName: 'Kaneki', lastName: 'Ken'}}/>
                     <Divider/>
                 </div>
             </Scrollbars>

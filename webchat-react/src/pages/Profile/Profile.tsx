@@ -24,7 +24,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
 import "./Profile.css";
-import {getVisitorId, goToAuthorization, isVisitor} from "../../utils/common";
+import {getVisitorId, goToAuthorization, goToProfile, isVisitor} from "../../utils/common";
 import {LayoutContext} from "../../components/Layout/Layout";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -295,8 +295,15 @@ export const Profile = () => {
     }
 
     useEffect(() => {
-        if (isEmptyStorage())
+        if (isEmptyStorage()) {
             goToAuthorization();
+            return;
+        }
+
+        if (document.location.pathname === '/') {
+            goToProfile();
+            return;
+        }
 
         const visitor = isVisitor('/Profile')
         const visitorId = getVisitorId();

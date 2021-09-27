@@ -15,6 +15,7 @@ import {validateEmail, validateLogin, validateName, validatePassword, validateUs
 import {authorize, register} from "../../utils/fetch-authorize";
 import {LoadingScreen} from "../../components/LoadingScreen";
 import {isEmptyStorage} from "../../ts/authorization";
+import {goToProfile} from "../../utils/common";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -99,8 +100,10 @@ export const Authorization = () => {
         if (loginError === '' && passwordError === '') {
             const {status} = await authorize({login: login as string, password: password as string, saveToStorage: false});
 
-            if (status === 200)
-                document.location.pathname = "/Profile";
+            if (status === 200) {
+                goToProfile();
+                return;
+            }
 
             if (status === 401)
                 setLoginServerResponse('Incorrect username or password');
@@ -129,8 +132,10 @@ export const Authorization = () => {
         if (emailError === '' && userNameError === '' && passwordError === '' && firstNameError === '' && lastNameError === '') {
             const {status, json} = await register({userName: userName as string, email: email as string, password: password as string, firstName: firstName as string, lastName: lastName as string, gender: gender as string, saveToStorage: false});
 
-            if (status === 200)
-                document.location.pathname = "/Profile";
+            if (status === 200) {
+                goToProfile();
+                return;
+            }
 
             if (status === 400)
                 setRegistrationServerResponse(json);
@@ -147,7 +152,7 @@ export const Authorization = () => {
 
     useEffect(() => {
         if (!isEmptyStorage()) {
-            document.location.pathname = "/Profile";
+            goToProfile();
             return;
         }
 

@@ -14,8 +14,6 @@ import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
 import Scrollbars from "react-custom-scrollbars";
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-import avatar1 from "../../assets/images/avatar2.jpg";
-import avatar2 from "../../assets/images/deadinside400.jpg";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import SearchIcon from "@material-ui/icons/Search";
@@ -111,8 +109,8 @@ export const Messages = () => {
     const [showSearch, setShowSearch] = useState<boolean>(false);
     const [attachedImages, setAttachedImages] = useState<Array<{src: any, uniqueKey: string}>>([]);
     const [messages, setMessages] = useState<Array<any>>([
-        {userId: 'faust', messageId: '1', writtenDate: '2021.09.14 9:12', editedDate: '2021.09.14 9:17', firstName: 'faust', avatarSrc: avatar1, messageText: 'test123', messageImages: []},
-        {userId: 'faust', messageId: '2', writtenDate: '2021.09.14 9:13', firstName: 'faust', avatarSrc: avatar1, messageText: 'test123', messageImages: []},
+        {userId: 'faust', messageId: '1', writtenDate: '2021.09.14 9:12', editedDate: '2021.09.14 9:17', firstName: 'faust', avatarSrc: '', messageText: 'test123', messageImages: []},
+        {userId: 'faust', messageId: '2', writtenDate: '2021.09.14 9:13', firstName: 'faust', avatarSrc: '', messageText: 'test123', messageImages: []},
     ]);
     const [inputMessageId, setInputMessageId] = useState<string>('');
     const [selectedMessages, setSelectedMessages] = useState<Array<string>>([]);
@@ -222,7 +220,7 @@ export const Messages = () => {
                             <MoreHorizIcon style={{marginTop: 10, width: 30, height: 30, color: 'rgba(0, 0, 0, 0.40)'}}/>
                         </div>
                         <Link to="/Profile" style={{display: 'flex', justifyContent: 'center', height: 50, width: 50}}>
-                            <Avatar alt="Remy Sharp" src={avatar1} style={{marginTop: 10, width: 30, height: 30}} />
+                            <Avatar alt="Remy Sharp" style={{marginTop: 10, width: 30, height: 30}} />
                         </Link>
                     </div>
                 </div>
