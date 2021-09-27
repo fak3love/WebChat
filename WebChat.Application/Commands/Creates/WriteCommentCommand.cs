@@ -61,7 +61,6 @@ namespace WebChat.Application.Commands.Creates
                 var comment = new UserPhotoComment()
                 {
                     MessageText = request.MessageText,
-                    MessageImageSlug = request.MessageImageSlug,
                     UserProfileId = request.ProfileId,
                     UserPhotoId = userPhoto.Id,
                     ReplyToCommentId = request.ReplyCommentId

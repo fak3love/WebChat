@@ -23,6 +23,8 @@ namespace WebChat.DataAccess.MsSql
         public DbSet<UserPhotoLike> UserPhotoLikes { get; set; }
         public DbSet<UserPhotoComment> UserPhotoComments { get; set; }
         public DbSet<UserPhotoCommentLike> UserPhotoCommentLikes { get; set; }
+        public DbSet<CommentMessagePhoto> UserPhotoCommentMessagePhotos { get; set; }
+        public DbSet<MessagePhoto> UserMessagePhotos { get; set; }
 
         public WebChatContext(DbContextOptions options) : base(options)
         {

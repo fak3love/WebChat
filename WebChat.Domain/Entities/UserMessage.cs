@@ -1,4 +1,5 @@
-﻿using WebChat.Domain.Common;
+﻿using System.Collections.Generic;
+using WebChat.Domain.Common;
 using WebChat.Domain.Interfaces;
 
 namespace WebChat.Domain.Entities
@@ -11,5 +12,12 @@ namespace WebChat.Domain.Entities
 
         public UserProfile InitiatorUser { get; set; }
         public UserProfile TargetUser { get; set; }
+
+        public ICollection<MessagePhoto> MessagePhotos { get; set; }
+
+        public UserMessage()
+        {
+            MessagePhotos = new HashSet<MessagePhoto>();
+        }
     }
 }

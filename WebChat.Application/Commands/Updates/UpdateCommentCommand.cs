@@ -48,7 +48,6 @@ namespace WebChat.Application.Commands.Updates
                     throw new NotFoundException(nameof(UserPhotoComment), request.CommentId);
 
                 comment.MessageText = request.MessageText;
-                comment.MessageImageSlug = request.MessageImageSlug;
 
                 await _context.SaveChangesAsync(cancellationToken);
 

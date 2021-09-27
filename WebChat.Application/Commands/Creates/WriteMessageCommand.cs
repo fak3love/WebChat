@@ -40,7 +40,6 @@ namespace WebChat.Application.Commands.Creates
                 var message = new BaseMessage()
                 {
                     MessageText = request.MessageText,
-                    MessageImageSlug = request.MessageImageSlug
                 };
 
                 var userProfile = await _context.UserProfiles.FindAsync(new object[] { request.ProfileId }, cancellationToken);
@@ -58,7 +57,6 @@ namespace WebChat.Application.Commands.Creates
                     InitiatorUserId = request.ProfileId,
                     TargetUserId = request.TargetProfileId,
                     MessageText = message.MessageText,
-                    MessageImageSlug = message.MessageImageSlug
                 };
 
                 userMessage = (await _context.UserMessages.AddAsync(userMessage, cancellationToken)).Entity;

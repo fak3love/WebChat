@@ -40,7 +40,6 @@ namespace WebChat.Application.Commands.Updates
                 var message = new BaseMessage()
                 {
                     MessageText = request.MessageText,
-                    MessageImageSlug = request.MessageImageSlug
                 };
 
                 var userProfile = await _context.UserProfiles.FindAsync(new object[] { request.ProfileId }, cancellationToken);
@@ -57,7 +56,6 @@ namespace WebChat.Application.Commands.Updates
                     throw new BadRequestException();
 
                 userMessage.MessageText = message.MessageText;
-                userMessage.MessageImageSlug = message.MessageImageSlug;
 
                 await _context.SaveChangesAsync(cancellationToken);
 

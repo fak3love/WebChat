@@ -17,11 +17,13 @@ namespace WebChat.Domain.Entities
 
         public ICollection<UserPhotoComment> RepliesToComment { get; private set; }
         public ICollection<UserPhotoCommentLike> Likes { get; private set; }
+        public ICollection<CommentMessagePhoto> MessagePhotos { get; private set; }
 
         public UserPhotoComment()
         {
             RepliesToComment = new HashSet<UserPhotoComment>();
             Likes = new HashSet<UserPhotoCommentLike>();
+            MessagePhotos = new HashSet<CommentMessagePhoto>();
         }
     }
 }
