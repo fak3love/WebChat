@@ -22,6 +22,7 @@ import {deleteRequest, get, post} from "../../ts/requests";
 import {getUserId, headers} from "../../ts/authorization";
 import {isVisitor} from "../../utils/common";
 import moment from "moment";
+import {isEmptyOrSpaces} from "../../utils/validators";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -158,6 +159,7 @@ export type ImageViewerType = {
 }
 
 const defaultPhoto = {
+    slug: '',
     createdDate: '',
     likes: 0,
     liked: false,
@@ -172,28 +174,22 @@ export const ImageViewer = ({userId, viewPhoto, isOpen, closeClick, onDeleted}: 
     const [replaying, setReplaying] = useState<{commentId: string, firstName: string} | null>(null);
     const [user, setUser] = useState<{firstName: string, lastName: string, avatar: string}>();
     const [styleInfo, setStyleInfo] = useState<object>({filter: 'blur(8px)', pointerEvents: 'none'});
+    const [loadFrom, setLoadFrom] = useState<number>(0);
+    const [hasNoComments, setHasNoComments] = useState<boolean>(false);
+    const [lockLoading, setLockLoading] = useState<boolean>(false);
+    const [disabledControls, setDisabledControl] = useState<boolean>(false);
 
-    const [photo, setPhoto] = useState<{createdDate: string, likes: number, liked: boolean, editable: boolean}>(defaultPhoto);
-    const [comments, setComments] = useState<CommentType[]>([
-        // {
-        //     commentId: '1',
-        //     userId: '1',
-        //     firstName: 'test',
-        //     lastName: 'test',
-        //     addedDate: '2021.09.17',
-        //     attachedImages: [avatar2],
-        //     isLiked: false,
-        //     likeCount: 5,
-        //     message: 'test',
-        //     avatarSrc: avatar, replyClick: handleReplyClick, reply: undefined
-        // }
-    ]);
+    const [photo, setPhoto] = useState<{slug: string, createdDate: string, likes: number, liked: boolean, editable: boolean}>(defaultPhoto);
+    const [comments, setComments] = useState<CommentType[]>([]);
 
+    const inputCommentRef = useRef<any>();
     const inputAttachImgRef = useRef<any>();
+    const scrollbarRef = useRef<any>();
 
     const handleUndoReplyingClick = () => {
         setReplaying(null);
         setAttachedImages([]);
+        inputCommentRef.current.value = null;
     }
     const handleFileSelect = (event: any) => {
         const files: Array<Blob> = event.target.files;
@@ -221,13 +217,47 @@ export const ImageViewer = ({userId, viewPhoto, isOpen, closeClick, onDeleted}: 
     function handleReplyClick(commentId: string, firstName: string) {
         setAttachedImages([]);
         setReplaying({commentId: commentId, firstName: firstName});
+        inputCommentRef.current.value = `${firstName}, `;
+        inputCommentRef.current.focus();
     }
-    const handleSendComment = () => {
-        if (replaying !== null) {
-            //send replaying comment;
+    const handleSendComment = async () => {
+        if (attachedImages.length > 10 || (attachedImages.length === 0 && isEmptyOrSpaces(inputCommentRef.current.value)))
+            return;
+
+        setDisabledControl(true);
+
+        const response = await post({url: 'UserPhotoComments/WriteComment', headers: headers, body: JSON.stringify({
+                replyCommentId: replaying?.commentId,
+                photoSlug: viewPhoto?.slug,
+                messageText: inputCommentRef.current.value,
+                messagePhotos: attachedImages.map(img => img.src)
+            })});
+
+        if (response.ok) {
+            const json = await response.json();
+
+            setComments(comments.concat({
+                userId: json.userId,
+                commentId: json.commentId,
+                firstName: json.firstName,
+                lastName: json.lastName,
+                avatar: json.avatar,
+                createdDate: json.createdDate,
+                likes: 0,
+                liked: false,
+                message: json.message,
+                attachedImages: attachedImages.length > 0 ? attachedImages.map(img => img.src) : [],
+                reply: json.reply
+            } as CommentType));
+
+            setLoadFrom(loadFrom + 1);
+            setAttachedImages([]);
+            setReplaying(null);
+            inputCommentRef.current.value = null;
+            scrollbarRef.current.scrollToBottom();
         }
 
-        //send new comment;
+        setDisabledControl(false);
     }
     const handleChangeLike = async (liked: boolean) => {
         let response: Response;
@@ -243,29 +273,72 @@ export const ImageViewer = ({userId, viewPhoto, isOpen, closeClick, onDeleted}: 
     const handleDeletePhoto = async () => {
         const response = await deleteRequest({url: 'UserPhotos/RemovePhoto', headers: headers, body: JSON.stringify({photoSlug: viewPhoto?.slug})});
 
-        if (response.ok) {
+        if (response.ok)
             onDeleted(viewPhoto?.slug);
+    }
+    const handleDeleteComment = async (commentId: string) => {
+        await deleteRequest({url: 'UserPhotoComments/RemoveComment', headers: headers, body: JSON.stringify({commentId: commentId})});
+
+        setComments(comments.filter(comment => comment.commentId !== commentId));
+    }
+    const handleShowReply = (commentId: string, replyCommentId: string) => {
+        const commentDiv: any = document.getElementById(commentId);
+        const replyCommentDiv: any = document.getElementById(replyCommentId);
+        const scrollTop = commentDiv.scrollTop;
+
+        replyCommentDiv.style.background = '#F0F2F5';
+
+        setTimeout(() => {
+            replyCommentDiv.style.background = 'transparent';
+        }, 2000);
+
+        scrollbarRef.current.scrollToTop(scrollTop);
+    }
+
+    const loadComments = async () => {
+        if (lockLoading)
+            return;
+
+        setLockLoading(true);
+        const response = await get({url: `UserPhotoComments/GetByPhotoSlug/${viewPhoto?.slug}?loadFrom=${loadFrom + 10}`, headers: headers});
+
+        if (response.ok) {
+            setComments(comments.concat(await response.json()));
+            setLoadFrom(loadFrom + 10);
         }
+
+        if (response.status === 404)
+            setHasNoComments(true);
+
+        setLockLoading(false);
     }
 
     useEffect(() => {
-        if (viewPhoto !== undefined) {
+        if (viewPhoto !== undefined && viewPhoto.slug !== photo.slug) {
+            setHasNoComments(false);
+            setLoadFrom(0);
             setStyleInfo({filter: 'blur(8px)', pointerEvents: 'none'});
 
             Promise.all([
                 get({url: `UserProfiles/GetHeader/${userId}`, headers: headers}),
-                get({url: `UserPhotos/GetPhotoInfo/${getUserId()}/${viewPhoto?.slug}`, headers: headers})
+                get({url: `UserPhotos/GetPhotoInfo/${getUserId()}/${viewPhoto?.slug}`, headers: headers}),
+                get({url: `UserPhotoComments/GetByPhotoSlug/${viewPhoto?.slug}?loadFrom=0`, headers: headers})
             ]).then(async response => {
                 if (response[0].ok && response[1].ok) {
                     setUser(await response[0].json());
                     setPhoto(await response[1].json());
                 }
+
+                if (response[2].ok)
+                    setComments(await response[2].json());
+                else if (response[2].status === 404)
+                    setHasNoComments(true);
             });
         }
     }, [viewPhoto]);
 
     useEffect(() => {
-        if (photo !== defaultPhoto && isOpen)
+        if (photo !== defaultPhoto)
             setStyleInfo({filter: 'none', pointerEvents: 'auto'});
     }, [photo]);
 
@@ -316,46 +389,52 @@ export const ImageViewer = ({userId, viewPhoto, isOpen, closeClick, onDeleted}: 
                             </Tooltip>
                         </div>
                         <Divider/>
-                        <Scrollbars style={{color: 'black', height: '100%'}}>
+                        <Scrollbars ref={scrollbarRef} style={{color: 'black', height: '100%'}} onScrollFrame={value => {
+                            if (value.top >= 0.8 && !hasNoComments)
+                                loadComments();
+                        }}>
                             {comments.map(comment =>
                                 <Comment userId={comment.userId}
+                                         commentId={comment.commentId}
                                          firstName={comment.firstName}
                                          lastName={comment.lastName}
-                                         addedDate={comment.addedDate}
-                                         avatarSrc={comment.avatarSrc}
+                                         avatar={comment.avatar}
+                                         createdDate={comment.createdDate}
+                                         likes={comment.likes}
+                                         liked={comment.liked}
                                          message={comment.message}
-                                         commentId={comment.commentId}
-                                         isLiked={comment.isLiked}
-                                         likeCount={comment.likeCount}
                                          attachedImages={comment.attachedImages}
                                          reply={comment.reply}
+                                         editable={photo.editable}
+                                         deleteClick={handleDeleteComment}
                                          replyClick={handleReplyClick}
+                                         showReplyClick={handleShowReply}
                                 />
                             )}
                         </Scrollbars>
                         <Divider/>
                         <Scrollbars style={{display: attachedImages.length > 0 ? 'block' : 'none', height: 325}}>
                             <div style={{display: 'flex', flexWrap: 'wrap'}}>
-                                {attachedImages.map(img => <AttachedImage key={img.uniqueKey} src={img.src} uniqueKey={img.uniqueKey} maxHeight={100} unpinClick={handleUnpinImage}/>)}
+                                {attachedImages.map(img => <AttachedImage disabled={disabledControls} key={img.uniqueKey} src={img.src} uniqueKey={img.uniqueKey} maxHeight={100} unpinClick={handleUnpinImage}/>)}
                             </div>
                         </Scrollbars>
                         <div style={{display: 'flex', minHeight: 'max-content', padding: 0}}>
                             <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
-                                <TextField placeholder="Leave a comment..." multiline fullWidth maxRows={6} variant="outlined" style={{margin: 8}} InputProps={{classes: inputClasses, className: classes.inputRoot, id: "input-message"}}/>
+                                <TextField placeholder="Leave a comment..." disabled={disabledControls} multiline fullWidth maxRows={6} variant="outlined" style={{margin: 8}} InputProps={{classes: inputClasses, className: classes.inputRoot, id: "input-message"}} inputRef={inputCommentRef}/>
                             </div>
                             <Tooltip title="Undo replying" arrow>
-                                <Button disableTouchRipple={true} style={{display: replaying !== null ? 'grid' : 'none', minWidth: 36, height: 36, borderRadius: '50%', margin: 5}} onClick={handleUndoReplyingClick}>
+                                <Button disableTouchRipple={true} disabled={disabledControls} style={{display: replaying !== null ? 'grid' : 'none', minWidth: 36, height: 36, borderRadius: '50%', margin: 5}} onClick={handleUndoReplyingClick}>
                                     <FontAwesomeIcon icon={faTimes} style={{width: 18, height: 18, color: '#A6ACB7'}}/>
                                 </Button>
                             </Tooltip>
                             <Tooltip title="Attach a photo" arrow>
-                                <Button disableTouchRipple={true} style={{minWidth: 36, height: 36, borderRadius: '50%', margin: 5}} onClick={() => {inputAttachImgRef.current.value = null; inputAttachImgRef.current.click()}}>
+                                <Button disableTouchRipple={true} disabled={disabledControls} style={{minWidth: 36, height: 36, borderRadius: '50%', margin: 5}} onClick={() => {inputAttachImgRef.current.value = null; inputAttachImgRef.current.click()}}>
                                     <FontAwesomeIcon icon={faCamera} style={{width: 18, height: 18, color: '#A6ACB7'}}/>
                                     <input ref={inputAttachImgRef} style={{display: 'none'}} type="file" multiple={true} accept="image/*" onChange={handleFileSelect}/>
                                 </Button>
                             </Tooltip>
                             <Tooltip title={'Send a comment'} arrow>
-                                <Button disableTouchRipple={true} style={{minWidth: 36, height: 36, borderRadius: '50%', margin: 5}} onClick={handleSendComment}>
+                                <Button disableTouchRipple={true} disabled={disabledControls} style={{minWidth: 36, height: 36, borderRadius: '50%', margin: 5}} onClick={handleSendComment}>
                                     <FontAwesomeIcon icon={faPaperPlane} style={{width: 18, height: 18, color: '#A6ACB7'}}/>
                                 </Button>
                             </Tooltip>

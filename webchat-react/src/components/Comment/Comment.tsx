@@ -1,13 +1,15 @@
 import React, {useState} from 'react';
 import {createStyles, makeStyles} from "@material-ui/core/styles";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faChevronLeft} from '@fortawesome/free-solid-svg-icons'
+import {faArrowCircleRight} from '@fortawesome/free-solid-svg-icons'
+import {faTimesCircle} from '@fortawesome/free-solid-svg-icons'
 import {Link} from "react-router-dom";
 import Avatar from "@material-ui/core/Avatar";
-import FavoriteIcon from "@material-ui/icons/Favorite";
-import FavoriteBorderIcon from "@material-ui/icons/FavoriteBorder";
 import {IconButton, Tooltip} from "@material-ui/core";
 import {Likebar} from "../Likebar";
+import moment from "moment";
+import {getUserId, headers} from "../../ts/authorization";
+import {deleteRequest, post} from "../../ts/requests";
 
 export type ReplyCommentType = {
     userId: string,
@@ -16,24 +18,27 @@ export type ReplyCommentType = {
 }
 export type CommentType = {
     userId: string,
+    commentId: string,
     firstName: string,
     lastName: string,
-    addedDate: string,
+    avatar?: string,
+    createdDate: string,
+    likes?: number,
+    liked?: boolean,
     message?: string,
-    commentId: string,
-    avatarSrc?: any,
-    likeCount?: number,
-    isLiked?: boolean,
-    attachedImages?: Array<any>,
-    reply?: ReplyCommentType,
-    replyClick: any
+    attachedImages?: string[],
+    reply?: ReplyCommentType | null,
+    editable: boolean,
+    replyClick: any,
+    showReplyClick: any,
+    deleteClick: any
 }
 
 const useStyles = makeStyles(() =>
     createStyles({
         root: {
             display: 'flex',
-            margin: 10
+            padding: 10
         },
         linkAvatar: {
             width: 40,
@@ -75,22 +80,39 @@ const useStyles = makeStyles(() =>
     }),
 );
 
-export const Comment = ({userId, commentId, firstName, lastName, addedDate, avatarSrc, likeCount, isLiked, reply, message, attachedImages, replyClick}: CommentType) => {
+export const Comment = ({userId, commentId, firstName, lastName, createdDate, avatar, likes, liked, reply, message, attachedImages, editable, replyClick, showReplyClick, deleteClick}: CommentType) => {
     const classes = useStyles();
 
+    const [replyVisible, setReplyVisible] = useState<boolean>(false);
+
+    const handleChangeLike = async (liked: boolean) => {
+        if (liked) {
+            await post({url: 'UserPhotoComments/LikeComment', headers: headers, body: JSON.stringify({commentId: commentId})});
+            return;
+        }
+
+        await deleteRequest({url: 'UserPhotoComments/RemoveLike', headers: headers, body: JSON.stringify({commentId: commentId})});
+    }
+
     return (
-        <div id={commentId} className={classes.root} data-commentId={commentId} data-replyToCommentId={reply !== undefined ? reply.commentId : ""}>
-            <Link to={`/Profile/${userId}`}>
-                <Avatar alt="Remy Sharp" src={avatarSrc} className={classes.linkAvatar} />
+        <div id={commentId} className={classes.root} onMouseMove={() => setReplyVisible(true)} onMouseLeave={() => setReplyVisible(false)}>
+            <Link to={userId.toString() === getUserId() ? '/Profile' : `/Profile/${userId}`} style={{height: 'max-content'}}>
+                <Avatar alt="Remy Sharp" src={avatar} className={classes.linkAvatar} />
             </Link>
             <div className={classes.commentBody}>
                 <div style={{display: 'flex'}}>
-                    <Link to={`/Profile/${userId}`} className={classes.link}>{firstName} {lastName}</Link>
-                    <div style={{display: reply !== undefined ? 'flex' : 'none', flex: 1, justifyContent: 'flex-end'}}>
-                        <Tooltip title={`reply to ${reply?.firstName}`} arrow>
-                            <Link to={`/Profile/${reply?.userId}`} className={classes.link} style={{fontSize: 12.5, fontWeight: 400, alignSelf: 'center', maxWidth: 100}}>{reply?.firstName}</Link>
+                    <Link to={userId.toString() === getUserId() ? '/Profile' : `/Profile/${userId}`} className={classes.link} style={{alignSelf: 'center', width: 'max-content'}}>{firstName} {lastName}</Link>
+                    <div style={{display: 'flex', flex: 1, justifyContent: 'flex-end'}}>
+                        <Tooltip title={`Reply to ${reply?.firstName}'s comment`} arrow>
+                            <div className={classes.link} style={{visibility: reply !== undefined && reply !== null ? 'visible' : 'collapse', fontSize: 12.5, fontWeight: 400, alignSelf: 'center', marginRight: 10}} onClick={() => showReplyClick(commentId, reply?.commentId)}>
+                                <FontAwesomeIcon icon={faArrowCircleRight} style={{width: 14, height: 14, marginRight: 6, color: 'rgb(178 181 187)'}}/>
+                            </div>
                         </Tooltip>
-                        <FontAwesomeIcon icon={faChevronLeft} style={{marginLeft: 2.5, width: 11, height: 11, alignSelf: 'center', color: '#828A99'}}/>
+                        <Tooltip title={`Delete comment`} arrow>
+                            <div className={classes.link} style={{display: editable || userId.toString() === getUserId() ? 'block' : 'none', fontSize: 12.5, fontWeight: 400, alignSelf: 'center', marginRight: 10}} onClick={() => deleteClick(commentId)}>
+                                <FontAwesomeIcon icon={faTimesCircle} style={{width: 14, height: 14, marginRight: 6, color: 'rgb(178 181 187)'}}/>
+                            </div>
+                        </Tooltip>
                     </div>
                 </div>
                 <div style={{fontSize: 13, margin: '3px 0'}}>
@@ -100,10 +122,10 @@ export const Comment = ({userId, commentId, firstName, lastName, addedDate, avat
                     {attachedImages?.map(src => <img style={{maxHeight: 120, margin: '5px 10px 5px 0'}} src={src} alt={src}/>)}
                 </div>
                 <div className={classes.actionBody}>
-                    <div className={classes.date}>{addedDate}</div>
-                    <div className={classes.link} style={{fontSize: 12.5, fontWeight: 400, marginLeft: 5, alignSelf: 'center', minWidth: 'max-content'}} onClick={() => replyClick(commentId, firstName)}>Reply</div>
+                    <div className={classes.date}>{moment(createdDate).format('lll')}</div>
+                    <div className={classes.link} style={{visibility: replyVisible ? 'visible' : 'hidden', fontSize: 12.5, fontWeight: 400, marginLeft: 5, alignSelf: 'center', minWidth: 'max-content'}} onClick={() => replyClick(commentId, firstName)}>Reply</div>
                     <div style={{width: '100%'}}/>
-                    <Likebar likeCount={likeCount} isLiked={isLiked}/>
+                    <Likebar likeCount={likes} isLiked={liked} onChange={handleChangeLike}/>
                 </div>
             </div>
         </div>

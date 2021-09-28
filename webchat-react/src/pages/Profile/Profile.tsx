@@ -305,6 +305,7 @@ export const Profile = () => {
             return;
         }
 
+        document.body.style.overflow = 'hidden';
         const visitor = isVisitor('/Profile')
         const visitorId = getVisitorId();
 
@@ -317,12 +318,14 @@ export const Profile = () => {
             });
         }
 
-        if (!visitor) {
+        if (!visitor)
             getProfile(mainUserId).then(handleResponse);
-            return;
-        }
+        else
+            getProfile(mainUserId, visitorId).then(handleResponse);
 
-        getProfile(mainUserId, visitorId).then(handleResponse);
+        return () => {
+            document.body.style.overflow = 'auto';
+        }
     }, []);
 
     if (loading)

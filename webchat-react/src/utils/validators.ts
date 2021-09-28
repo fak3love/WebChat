@@ -40,3 +40,6 @@ export function validateName(value: string) {
 
     return "";
 }
+export function isEmptyOrSpaces(str: string | undefined | null) {
+    return str === null || str === undefined || str.match(/^ *$/) !== null;
+}

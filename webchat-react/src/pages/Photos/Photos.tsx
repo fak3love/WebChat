@@ -154,6 +154,11 @@ export const Photos = () => {
 
     useEffect(() => {
         loadImages();
+
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = 'auto';
+        }
     }, []);
 
     if (loading)

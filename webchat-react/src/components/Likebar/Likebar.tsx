@@ -22,10 +22,10 @@ const useStyles = makeStyles(() =>
             minWidth: 'max-content'
         },
         textLike: {
-            marginLeft: 5,
             alignSelf: 'center',
             fontWeight: 700,
-            marginRight: 15,
+            marginRight: 10,
+            marginLeft: -5
         }
     }),
 );
@@ -68,7 +68,7 @@ export const Likebar = ({likeCount, isLiked, btnWidth = 26, btnHeight = 26, icon
     return (
         <div className={classes.likeSection}>
             <Tooltip title={liked ? 'Unlike' : 'Like'} arrow>
-                <IconButton style={{width: btnWidth, height: btnHeight}} disableTouchRipple onClick={handleClick} onMouseMove={handleMove} onMouseLeave={handleLeave}>
+                <IconButton style={{width: btnWidth, height: btnHeight, marginRight: 10}} disableTouchRipple onClick={handleClick} onMouseMove={handleMove} onMouseLeave={handleLeave}>
                     <FavoriteIcon style={{width: iconWidth, height: iconHeight, color: iconLikeColor}}/>
                 </IconButton>
             </Tooltip>
