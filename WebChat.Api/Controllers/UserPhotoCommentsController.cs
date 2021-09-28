@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 using System.Threading.Tasks;
 using WebChat.Application.Commands.Creates;
 using WebChat.Application.Commands.Deletes;
@@ -9,28 +10,13 @@ namespace WebChat.Api.Controllers
 {
     public class UserPhotoCommentsController : WebChatBaseController
     {
-        [HttpGet]
-        public async Task<IActionResult> GetByPhotoSlug([FromBody] GetUserPhotoCommentsByPhotoSlugQuery query)
+        [HttpGet("{photoSlug}")]
+        public async Task<IActionResult> GetByPhotoSlug(string photoSlug)
         {
-            var result = await Mediator.Send(query);
+            int.TryParse(Request.Query["loadFrom"].FirstOrDefault(), out int loadFrom);
+            var result = await Mediator.Send(new GetUserPhotoCommentsByPhotoSlugQuery(photoSlug, UserId, loadFrom));
 
-            return Ok(result);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetRepliesById([FromBody] GetUserPhotoCommentRepliesByIdQuery query)
-        {
-            var result = await Mediator.Send(query);
-
-            return Ok(result);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetCommentLikesById([FromBody] GetUserPhotoCommentLikesByIdQuery query)
-        {
-            var result = await Mediator.Send(query);
-
-            return Ok(result);
+            return result.Count == 0 ? NotFound() : Ok(result);
         }
 
         [HttpPost]
@@ -38,9 +24,9 @@ namespace WebChat.Api.Controllers
         {
             command.ProfileId = UserId;
 
-            await Mediator.Send(command);
+            var result = await Mediator.Send(command);
 
-            return CreatedAtAction(nameof(WriteComment), command);
+            return CreatedAtAction(nameof(WriteComment), result);
         }
 
         [HttpPut]
@@ -54,7 +40,7 @@ namespace WebChat.Api.Controllers
         }
 
         [HttpDelete]
-        public async Task<IActionResult> DeleteComment([FromBody] DeleteCommentCommand command)
+        public async Task<IActionResult> RemoveComment([FromBody] DeleteCommentCommand command)
         {
             command.ProfileId = UserId;
 
@@ -74,7 +60,7 @@ namespace WebChat.Api.Controllers
         }
 
         [HttpDelete]
-        public async Task<IActionResult> RemoveLikeComment([FromBody] RemoveLikeCommentCommand command)
+        public async Task<IActionResult> RemoveLike([FromBody] RemoveLikeCommentCommand command)
         {
             command.ProfileId = UserId;
 

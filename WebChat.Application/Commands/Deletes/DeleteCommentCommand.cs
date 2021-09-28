@@ -35,12 +35,14 @@ namespace WebChat.Application.Commands.Deletes
                 if (userProfile is null)
                     throw new NotFoundException(nameof(UserProfile), request.ProfileId);
 
-                var comment = await _context.UserPhotoComments.FirstOrDefaultAsync(userPhotoComment => userPhotoComment.Id == request.CommentId, cancellationToken);
+                var comment = await _context.UserPhotoComments
+                    .Include(prop => prop.UserPhoto)
+                    .FirstOrDefaultAsync(userPhotoComment => userPhotoComment.Id == request.CommentId, cancellationToken);
 
                 if (comment is null)
                     throw new NotFoundException(nameof(UserPhotoComment), request.CommentId);
 
-                if (comment.UserProfileId != request.ProfileId)
+                if (comment.UserProfileId != request.ProfileId && comment.UserPhoto.UserProfileId != request.ProfileId)
                     throw new BadRequestException();
 
                 _context.UserPhotoComments.Remove(comment);

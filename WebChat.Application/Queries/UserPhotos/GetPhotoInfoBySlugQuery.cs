@@ -45,6 +45,7 @@ namespace WebChat.Application.Queries
 
                 var photoInfoModel = new PhotoInfoModel()
                 {
+                    Slug = userPhoto.Slug,
                     CreatedDate = userPhoto.CreatedAt,
                     Likes = likesProfileId.Count,
                     Liked = likesProfileId.Contains(request.ProfileId),

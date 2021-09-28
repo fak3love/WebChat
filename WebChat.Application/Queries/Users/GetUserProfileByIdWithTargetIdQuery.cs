@@ -89,7 +89,13 @@ namespace WebChat.Application.Queries
                 #endregion
 
                 #region Photos
-                var photos = await _context.UserPhotos.CountAsync(userPhoto => userPhoto.UserProfileId == entity.Id);
+                var photos = await _context.UserPhotos
+                    .Include(prop => prop.CommentMessagePhotos)
+                    .Include(prop => prop.MessagePhotos)
+                    .CountAsync(prop =>
+                        prop.UserProfileId == entity.Id &&
+                        prop.CommentMessagePhotos.Count == 0 &&
+                        prop.MessagePhotos.Count == 0);
                 #endregion
 
                 #region FriendStatus

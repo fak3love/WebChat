@@ -36,10 +36,16 @@ namespace WebChat.Application.Queries
             public async Task<ICollection<PhotoModel>> Handle(GetPhotosByProfileIdQuery request, CancellationToken cancellationToken)
             {
                 var photos = await _context.UserPhotos
+                    .Include(prop => prop.CommentMessagePhotos)
+                    .Include(prop => prop.MessagePhotos)
+                    .Where(prop =>
+                        prop.UserProfileId == request.ProfileId &&
+                        prop.CommentMessagePhotos.Count == 0 &&
+                        prop.MessagePhotos.Count == 0
+                    )
                     .OrderByDescending(prop => prop.CreatedAt)
                     .Skip(request.LoadFrom)
                     .Take(10)
-                    .Where(prop => prop.UserProfileId == request.ProfileId)
                     .Select(prop => new PhotoModel() { Id = prop.Id, Slug = prop.Slug, CreatedAt = prop.CreatedAt })
                     .ToListAsync();
 
