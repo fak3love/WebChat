@@ -124,7 +124,7 @@ export const Chat = ({avatarSrc, message, writtenDate, unreadCount, unread, send
                         <div style={{fontSize: 13, color: 'rgb(147, 147, 147)'}}>{writtenDate}</div>
                     </div>
                     <div style={{display: 'flex', position: 'relative'}}>
-                        <Avatar alt="Remy Sharp" src={sender === 'target' ? null : avatarSrc} style={{display: sender === 'user' ? 'block' : 'none', width: 25, height: 25, alignSelf: 'center'}} />
+                        <Avatar alt="Remy Sharp" src={sender === 'target' ? null : avatarSrc} style={{display: sender === 'user' ? 'inherit' : 'none', width: 25, height: 25, alignSelf: 'center'}} />
                         <div style={{marginLeft: isUnreadUser ? 7.5 : sender === 'user' ? 5 : 0, background: isUnreadUser ? 'rgb(174 183 194 / 12%)' : 'transparent', padding: sender === 'user' ? '5px 5px 0 5px' : 0}} className={classes.message}>{message}</div>
                         <div style={{display: isUnreadTarget ? 'block' : 'none'}} className={classes.unreadCount}>{unreadCount}</div>
                     </div>

@@ -9,6 +9,9 @@ namespace WebChat.Domain.Entities
         public int Id { get; set; }
         public int InitiatorUserId { get; set; }
         public int TargetUserId { get; set; }
+        public bool IsRead { get; set; }
+        public bool IsDeletedInitiator { get; set; }
+        public bool IsDeletedTarget { get; set; }
 
         public UserProfile InitiatorUser { get; set; }
         public UserProfile TargetUser { get; set; }

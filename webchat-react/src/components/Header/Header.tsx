@@ -37,25 +37,27 @@ const useStyles = makeStyles((theme: Theme) =>
                 display: 'flex',
                 width: '165px',
                 textDecoration: 'none',
-                color: '#EDEEF0'
+                color: 'rgb(27, 146, 216)'
             },
         },
         search: {
             position: 'relative',
-            borderRadius: theme.shape.borderRadius,
-            backgroundColor: alpha(theme.palette.common.white, 0.15),
+            borderRadius: 8,
+            backgroundColor: '#EDEEF0',
+            color: '#99A2AD',
             '&:hover': {
-                backgroundColor: alpha(theme.palette.common.white, 0.25),
+                backgroundColor: '#EDEEF0',
             },
             marginRight: theme.spacing(2),
             marginLeft: 0,
             width: '100%',
             [theme.breakpoints.up('sm')]: {
                 marginLeft: theme.spacing(3),
-                width: 'auto',
+                width: 237,
             },
         },
         searchIcon: {
+            color: '#99A2AD',
             padding: theme.spacing(0, 2),
             height: '100%',
             position: 'absolute',
@@ -65,7 +67,8 @@ const useStyles = makeStyles((theme: Theme) =>
             justifyContent: 'center',
         },
         inputRoot: {
-            color: 'inherit',
+            color: 'black',
+            fontSize: 14
         },
         inputInput: {
             padding: theme.spacing(1, 1, 1, 0),
@@ -128,19 +131,20 @@ export const Header = ({handleUpdate}: {handleUpdate: any}) => {
                 setUser(profile === undefined ? user : profile);
             });
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
         <div className={classes.grow}>
             <AppBar position="static" elevation={0} color="transparent">
-                <Toolbar>
+                <Toolbar style={{minHeight: 60}}>
                     <Link className={classes.title} to="/Profile">
-                        <FontAwesomeIcon icon={faPaperPlane} style={{width: 24, height: 24, marginRight: 16}}/>
+                        <FontAwesomeIcon icon={faPaperPlane} style={{width: 24, height: 24, marginRight: 16, alignSelf: 'center', marginBottom: 5}}/>
                         <Typography variant="h6" noWrap>
                             WebChat
                         </Typography>
                     </Link>
-                    <IconButton color="inherit" className={classes.sectionMobile} style={{margin: '0 16px 0 -16px'}} onClick={toggleDrawer(true)}>
+                    <IconButton className={classes.sectionMobile} style={{color: 'rgba(0, 0, 0, 0.75', margin: '0 16px 0 -16px'}} onClick={toggleDrawer(true)}>
                         <MenuIcon/>
                     </IconButton>
                     <div className={classes.search}>
@@ -159,8 +163,8 @@ export const Header = ({handleUpdate}: {handleUpdate: any}) => {
                     <NotificationButton/>
                     <div className={classes.grow} />
                     <div className={classes.sectionDesktop} style={{position: "absolute", height: "100%", right: 0, padding: 0}}>
-                        <Button id="profile-menu" aria-controls="menu" aria-haspopup="true" style={{color: '#edeef0'}} disableTouchRipple={true} onClick={(event: any) => setAnchorEl(event.currentTarget)}>
-                            <div style={{fontWeight: 500, maxWidth: 220, alignSelf: "center", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontSize: 16, textTransform: 'none'}}>{user.firstName}</div>
+                        <Button id="profile-menu" aria-controls="menu" aria-haspopup="true" style={{color: 'rgb(0 0 0 / 75%)'}} disableTouchRipple={true} onClick={(event: any) => setAnchorEl(event.currentTarget)}>
+                            <div style={{fontWeight: 500, maxWidth: 220, alignSelf: "center", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontSize: 15, textTransform: 'none'}}>{user.firstName}</div>
                             <Avatar style={{width: 38, height: 38, margin: "0 7.5px 0 10px", alignSelf: "center"}} src={user.avatar}/>
                             <ExpandMoreIcon style={{alignSelf: "center", width: 20, height: 20}}/>
                         </Button>
@@ -183,14 +187,12 @@ export const Header = ({handleUpdate}: {handleUpdate: any}) => {
                 onClose={() => setAnchorEl(null)}
                 style={{marginTop: '48px'}}
             >
-                <React.Fragment>
-                    <MenuItem onClick={() => setAnchorEl(null)} disableTouchRipple={true} style={{width: 133, fontSize: 14}}>
-                        Settings
-                        <Link to="/Settings" style={{position: 'absolute', marginLeft: -16, display: 'block', width: '100%', height: '100%'}}/>
-                    </MenuItem>
-                    <Divider style={{margin: "8px 0"}}/>
-                    <MenuItem onClick={() => {setAnchorEl(null); logout(); document.location.pathname = "/Authorization"}} disableTouchRipple={true} style={{width: 133, fontSize: 14}}>Sign out</MenuItem>
-                </React.Fragment>
+                <MenuItem onClick={() => setAnchorEl(null)} disableTouchRipple={true} style={{width: 133, fontSize: 14}}>
+                    Settings
+                    <Link to="/Settings" style={{position: 'absolute', marginLeft: -16, display: 'block', width: '100%', height: '100%'}}/>
+                </MenuItem>
+                <Divider style={{margin: "8px 0"}}/>
+                <MenuItem onClick={() => {setAnchorEl(null); logout(); document.location.pathname = "/Authorization"}} disableTouchRipple={true} style={{width: 133, fontSize: 14}}>Sign out</MenuItem>
             </Menu>
         </div>
     );

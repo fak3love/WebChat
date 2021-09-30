@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import Avatar from "@material-ui/core/Avatar";
@@ -13,11 +13,12 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faSignOutAlt} from "@fortawesome/free-solid-svg-icons";
 import {createStyles, Theme, withStyles} from "@material-ui/core/styles";
 import "./MenuList.css";
+import {CustomBadge} from "../../CustomBadge";
 
 const StyledBadge = withStyles((theme: Theme) => createStyles({
     badge: {
         backgroundColor: '#44b700',
-        color: '#44b700',
+        color: '#44b700c7',
         boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
         '&::after': {
             position: 'absolute',
@@ -64,11 +65,11 @@ export const MenuList = ({firstName, lastName, avatar, handleToggleDrawer}: {fir
                         <Avatar src={avatar}/>
                     </StyledBadge>
                     <div style={{marginLeft: 16, display: "flex", flexDirection: "column"}}>
-                        <div style={{display: "flex", fontWeight: 500}}>
+                        <div style={{display: "flex", fontWeight: 500, color: 'rgba(0, 0, 0, 0.75)'}}>
                             <div style={{margin: "0 5px 0 0", maxWidth: 80,  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"}}>{firstName}</div>
                             <div style={{maxWidth: 80,  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"}}>{lastName}</div>
                         </div>
-                        <span style={{fontSize: 13, color: "#44b700"}}>online</span>
+                        <span style={{fontSize: 13, color: "#909499"}}>online</span>
                     </div>
                     <ChevronRightIcon style={{marginLeft: 'auto', color: '#B0B7BF'}}/>
                     <Link to="/Profile" style={{position: 'absolute', marginLeft: -16, display: 'block', width: '100%', height: '100%'}}/>
@@ -86,7 +87,7 @@ export const MenuList = ({firstName, lastName, avatar, handleToggleDrawer}: {fir
                         </svg>
                     </ListItemIcon>
                     <ListItemText>Messages</ListItemText>
-                    <Badge color="secondary" overlap="circular" badgeContent={999} style={{marginRight: 16}}/>
+                    <CustomBadge badgeProps={{overlap: 'circular', badgeContent: 10, style: {marginRight: 16}}}/>
                     <Link to="/Messages" style={{position: 'absolute', marginLeft: -16, display: 'block', width: '100%', height: '100%'}}/>
                 </ListItem>
                 <ListItem button>
@@ -101,7 +102,7 @@ export const MenuList = ({firstName, lastName, avatar, handleToggleDrawer}: {fir
                         </svg>
                     </ListItemIcon>
                     <ListItemText>Friends</ListItemText>
-                    <Badge color="secondary" overlap="circular" badgeContent={10} style={{marginRight: 16}}/>
+                    <CustomBadge badgeProps={{overlap: 'circular', badgeContent: 10, style: {marginRight: 16}}}/>
                     <Link to="/Friends" style={{position: 'absolute', marginLeft: -16, display: 'block', width: '100%', height: '100%'}}/>
                 </ListItem>
                 <ListItem button>
@@ -111,7 +112,7 @@ export const MenuList = ({firstName, lastName, avatar, handleToggleDrawer}: {fir
                         </svg>
                     </ListItemIcon>
                     <ListItemText>Photos</ListItemText>
-                    <Badge color="secondary" overlap="circular" badgeContent={999} style={{marginRight: 16}}/>
+                    <CustomBadge badgeProps={{overlap: 'circular', badgeContent: 10, style: {marginRight: 16}}}/>
                     <Link to="/Photos" style={{position: 'absolute', marginLeft: -16, display: 'block', width: '100%', height: '100%'}}/>
                 </ListItem>
             </List>

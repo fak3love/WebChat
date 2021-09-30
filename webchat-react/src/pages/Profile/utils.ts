@@ -1,4 +1,4 @@
-import {headers, logout} from "../../ts/authorization";
+import {headers} from "../../ts/authorization";
 import moment from "moment";
 import {get} from "../../ts/requests";
 import {goToAuthorization, goToProfile} from "../../utils/common";

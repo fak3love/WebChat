@@ -55,6 +55,7 @@ export const Likebar = ({likeCount, isLiked, btnWidth = 26, btnHeight = 26, icon
     useEffect(() => {
         if (likeCount !== undefined && likes !== likeCount)
             setLikes(likeCount);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [likeCount]);
 
     useEffect(() => {
@@ -63,6 +64,7 @@ export const Likebar = ({likeCount, isLiked, btnWidth = 26, btnHeight = 26, icon
             setIconLikeColor(isLiked ? '#FF3347' : '#C3C7CE');
             setTextLikeColor(isLiked ? '#FF3347' : '#626d7a');
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isLiked]);
 
     return (

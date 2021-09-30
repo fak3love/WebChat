@@ -3,6 +3,7 @@ import {createStyles, makeStyles, Theme} from "@material-ui/core/styles";
 import {Header} from "../Header";
 import {SideMenu} from "../SideMenu";
 import {Container} from "@material-ui/core";
+import {MessageTabManager} from "../MessageTabManager";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -21,7 +22,7 @@ const useStyles = makeStyles((theme: Theme) =>
         },
         header: {
             gridArea: 'Header',
-            background: 'rgb(27 146 216)',
+            background: 'white',
             display: isAuthPage ? 'none' : 'block'
         },
         menu: {
@@ -39,6 +40,7 @@ const useStyles = makeStyles((theme: Theme) =>
             background: '#EDEEF0'
         },
         section: {
+            display: 'flex',
             width: '100%',
             paddingLeft: 0,
             [theme.breakpoints.up('sm')]: {
@@ -60,20 +62,25 @@ export const Layout = ({children}: Props): any => {
         updateHeaderRef.current!(firstName, lastName, avatar);
     }
 
+    useEffect(() => {
+        console.log(true);
+    })
+
     return (
         <div className={classes.root}>
             <div className={classes.header}>
-                <Container maxWidth="md">
+                <Container maxWidth="lg" style={{maxWidth: 1030}}>
                     <Header handleUpdate={updateHeaderRef}/>
                 </Container>
             </div>
-            <Container maxWidth="md" className={classes.content}>
+            <Container maxWidth="lg" style={{maxWidth: 1030}} className={classes.content}>
                 <aside className={classes.menu}>
                     <SideMenu/>
                 </aside>
                 <section className={classes.section}>
                     <LayoutContext.Provider value={{updateHeader: updateHeader}}>
                         {children}
+                        {document.location.pathname.startsWith('/Messages') ? <MessageTabManager/> : ''}
                     </LayoutContext.Provider>
                 </section>
             </Container>

@@ -56,6 +56,23 @@ namespace WebChat.DataAccess.MsSql
                         entry.Entity.CreatedAt = DateTime.Now;
                         break;
                     case EntityState.Modified:
+                        if (entry.Entity is UserMessage)
+                        {
+                            bool isBreak = false;
+
+                            foreach (var property in entry.Properties)
+                            {
+                                if (property.IsModified && (property.Metadata.Name == "IsRead") || (property.Metadata.Name == "IsDeletedInitiator") || (property.Metadata.Name == "IsDeletedTarget"))
+                                {
+                                    isBreak = true;
+                                    break;
+                                }
+                            }
+
+                            if (isBreak)
+                                break;
+                        }
+
                         entry.Entity.UpdatedAt = DateTime.Now;
                         break;
                 }

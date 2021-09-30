@@ -1,62 +1,105 @@
-﻿using AutoMapper;
-using MediatR;
+﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using WebChat.Application.Dtos;
+using WebChat.Application.Common.Exceptions;
+using WebChat.Application.Common.Helpers;
+using WebChat.Application.Models;
 using WebChat.DataAccess.MsSql;
+using WebChat.Domain.Entities;
+using WebChat.Domain.Interfaces.Services;
 
 namespace WebChat.Application.Queries
 {
-    public class GetChatLastMessagesByProfileIdQuery : IRequest<ICollection<MessageDto>>
+    public class GetChatLastMessagesByProfileIdQuery : IRequest<ICollection<MessageModel>>
     {
         public int ProfileId { get; set; }
-        public int TargetProfileId { get; set; }
-        public int SkipCount { get; set; }
-        public int TakeCount { get; set; }
-        public bool AllowDeletedMessages { get; set; }
+        public int TargetId { get; set; }
+        public int LoadFrom { get; set; }
 
-        public GetChatLastMessagesByProfileIdQuery(int profileId, int targetProfileId, int skipCount, int takeCount, bool allowDeletedMessages)
+        public GetChatLastMessagesByProfileIdQuery(int profileId, int targetId, int loadFrom)
         {
             ProfileId = profileId;
-            TargetProfileId = targetProfileId;
-            SkipCount = skipCount;
-            TakeCount = takeCount;
-            AllowDeletedMessages = allowDeletedMessages;
+            TargetId = targetId;
+            LoadFrom = loadFrom;
         }
 
-        public class Handler : IRequestHandler<GetChatLastMessagesByProfileIdQuery, ICollection<MessageDto>>
+        public class Handler : IRequestHandler<GetChatLastMessagesByProfileIdQuery, ICollection<MessageModel>>
         {
             private readonly WebChatContext _context;
-            private readonly IMapper _mapper;
+            private readonly IFileManager _fileManager;
 
-            public Handler(WebChatContext context, IMapper mapper)
+            public Handler(WebChatContext context, IFileManager fileManager)
             {
                 _context = context;
-                _mapper = mapper;
+                _fileManager = fileManager;
             }
 
-            public Task<ICollection<MessageDto>> Handle(GetChatLastMessagesByProfileIdQuery request, CancellationToken cancellationToken)
+            public async Task<ICollection<MessageModel>> Handle(GetChatLastMessagesByProfileIdQuery request, CancellationToken cancellationToken)
             {
-                var userMessages = _context.UserMessages
-                .Where(message =>
-                    (request.AllowDeletedMessages || !request.AllowDeletedMessages && !message.DeletedAt.HasValue) &&
-                    (message.InitiatorUserId == request.ProfileId && message.TargetUserId == request.TargetProfileId) ||
-                    (message.InitiatorUserId == request.TargetProfileId && message.TargetUserId == request.ProfileId))
-                .Distinct()
-                .OrderByDescending(message => message.CreatedAt)
-                .AsEnumerable();
+                var user = await _context.UserProfiles.FirstOrDefaultAsync(userProfile => userProfile.Id == request.ProfileId);
 
-                if (request.SkipCount > 0)
-                    userMessages = userMessages.Skip(request.SkipCount);
+                if (user is null)
+                    throw new NotFoundException(nameof(UserProfile), request.ProfileId);
 
-                if (request.TakeCount > 0)
-                    userMessages = userMessages.Take(request.TakeCount);
+                var target = await _context.UserProfiles.FirstOrDefaultAsync(userProfile => userProfile.Id == request.TargetId);
 
-                var dto = _mapper.Map<ICollection<MessageDto>>(userMessages);
+                if (target is null)
+                    throw new NotFoundException(nameof(UserProfile), request.TargetId);
 
-                return Task.FromResult(dto);
+                var messages = await _context.UserMessages
+                    .Include(prop => prop.MessagePhotos)
+                    .ThenInclude(prop => prop.UserPhoto)
+                    .Where(prop =>
+                        ((prop.InitiatorUserId == request.ProfileId && prop.TargetUserId == request.TargetId) ||
+                        (prop.InitiatorUserId == request.TargetId && prop.TargetUserId == request.ProfileId)) &&
+                        ((!prop.IsDeletedInitiator && !prop.IsDeletedTarget) ||
+                        (prop.InitiatorUserId == request.ProfileId && !prop.IsDeletedInitiator) || (prop.TargetUserId == request.ProfileId && !prop.IsDeletedTarget))
+                    )
+                    .OrderByDescending(prop => prop.CreatedAt)
+                    .Skip(request.LoadFrom)
+                    .Take(20)
+                    .OrderBy(prop => prop.CreatedAt)
+                    .ToListAsync();
+
+                var messageModels = new List<MessageModel>();
+
+                foreach (var message in messages)
+                {
+                    messageModels.Add(new MessageModel()
+                    {
+                        UserId = message.InitiatorUserId,
+                        MessageId = message.Id,
+                        IsRead = message.IsRead,
+                        WrittenDate = message.CreatedAt,
+                        EditedDate = message.UpdatedAt,
+                        MessageText = message.MessageText,
+                        MessageImages = await GetPhotos(message.MessagePhotos.Select(prop => prop.UserPhoto.Slug))
+                    });
+                }
+
+                await ReadMessages(messages.Where(message => message.TargetUserId == request.ProfileId && !message.IsRead).ToList());
+
+                return messageModels;
+            }
+
+            private async Task<ICollection<string>> GetPhotos(IEnumerable<string> slugs)
+            {
+                List<string> photos = new List<string>();
+
+                foreach (var slug in slugs)
+                    photos.Add(await WebChatContextHelper.TryGetPhotoBase64BySlug(slug, _fileManager));
+
+                return photos;
+            }
+            private async Task ReadMessages(List<UserMessage> messages)
+            {
+                for (int i = 0; i < messages.Count; i++)
+                    messages[i].IsRead = true;
+
+                await _context.SaveChangesAsync();
             }
         }
     }

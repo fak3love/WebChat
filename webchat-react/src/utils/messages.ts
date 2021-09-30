@@ -1,7 +1,7 @@
-import {MessageType} from "../components/Message/Message";
+import {RawMessage} from "../pages/Messages/Messages";
 
-export function build(messages: Array<MessageType>) {
-    const sections: Array<{date: string, messages: Array<MessageType>}> = [];
+export function build(messages: RawMessage[]) {
+    const sections: Array<{date: string, messages: RawMessage[]}> = [];
 
     for (let i = 0; i < messages.length; i++) {
         let message = messages[i];
@@ -11,13 +11,13 @@ export function build(messages: Array<MessageType>) {
             const previous = new Date(messages[i - 1].writtenDate).getDay();
 
             if (current !== previous)
-                sections.push({date: message.writtenDate, messages: []});
+                sections.splice(0, 0, {date: message.writtenDate, messages: []});
 
-            sections[sections.length - 1].messages.push(message);
+            sections[0].messages.push(message);
             continue;
         }
 
-        sections.push({date: message.writtenDate, messages: [message]});
+        sections.splice(0,0, {date: message.writtenDate, messages: [message]});
     }
 
     return sections;

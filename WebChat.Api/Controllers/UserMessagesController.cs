@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 using System.Threading.Tasks;
 using WebChat.Application.Commands.Creates;
 using WebChat.Application.Commands.Deletes;
@@ -9,6 +10,15 @@ namespace WebChat.Api.Controllers
 {
     public class UserMessagesController : WebChatBaseController
     {
+        [HttpGet("{targetId?}")]
+        public async Task<IActionResult> Get(int targetId)
+        {
+            int.TryParse(Request.Query["loadFrom"].FirstOrDefault(), out int loadFrom);
+            var result = await Mediator.Send(new GetChatLastMessagesByProfileIdQuery(UserId, targetId, loadFrom));
+
+            return result.Count == 0 ? NotFound() : Ok(result);
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetChats()
         {
@@ -16,17 +26,7 @@ namespace WebChat.Api.Controllers
 
             var result = await Mediator.Send(new GetChatsByProfileIdQuery(profileId));
 
-            return Ok(result);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetChatLastMessages([FromBody] GetChatLastMessagesByProfileIdQuery query)
-        {
-            query.ProfileId = UserId;
-
-            var result = await Mediator.Send(query);
-
-            return Ok(result);
+            return result.Count == 0 ? NotFound() : Ok(result);
         }
 
         [HttpPost]
@@ -49,8 +49,18 @@ namespace WebChat.Api.Controllers
             return Ok();
         }
 
-        [HttpPost]
+        [HttpDelete]
         public async Task<IActionResult> DeleteMessage([FromBody] DeleteMessageCommand command)
+        {
+            command.ProfileId = UserId;
+
+            await Mediator.Send(command);
+
+            return Ok();
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteMessageHistory([FromBody] DeleteMessageHistoryCommand command)
         {
             command.ProfileId = UserId;
 

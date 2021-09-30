@@ -1,9 +1,9 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {createStyles, makeStyles, Theme} from "@material-ui/core/styles";
 import {Button, Divider, IconButton, Paper, TextField, Tooltip} from "@material-ui/core";
 import {Link} from "react-router-dom";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faAngleDown, faSearch, faTimes} from '@fortawesome/free-solid-svg-icons'
+import {faSearch, faTimes} from '@fortawesome/free-solid-svg-icons'
 import {faPaperPlane} from '@fortawesome/free-solid-svg-icons'
 import {faPaperclip} from '@fortawesome/free-solid-svg-icons'
 import {faCamera} from '@fortawesome/free-solid-svg-icons'
@@ -16,20 +16,28 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
-import SearchIcon from "@material-ui/icons/Search";
-import InputBase from "@material-ui/core/InputBase";
 import {nanoid} from 'nanoid'
 import {Searchbar} from "../../components/Searchbar";
 import {AttachedImage} from "../../components/AttachedImage";
 import {Message} from "../../components/Message";
-import {MessageType} from "../../components/Message/Message";
 import {build} from "../../utils/messages";
 import {MessageSection} from "../../components/MessageSection";
-import {getTimeDurationByDate, getTimeFormat} from "../../utils/dates";
 import {first} from "../../utils/array";
+import {deleteRequest, get} from "../../ts/requests";
+import {getUserId, headers} from "../../ts/authorization";
+import {getVisitorId, isVisitor} from "../../utils/common";
+import moment from "moment";
+import {SignalRContext} from "../../contextes/SignalRContext";
+import {isEmptyOrSpaces} from "../../utils/validators";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
+        paper: {
+            width: 'auto',
+            [theme.breakpoints.up('sm')]: {
+                width: 550,
+            }
+        },
         inputRoot: {
             padding: 10,
             fontSize: 13
@@ -98,6 +106,17 @@ const useInputStyles = makeStyles(() =>
     }),
 );
 
+export type RawMessage = {
+    userId: string,
+    messageId: string,
+    writtenDate: string,
+    editedDate?: string | null,
+    messageText: string,
+    messageImages: string[],
+    selected: boolean,
+    isRead: boolean
+}
+
 export const Messages = () => {
     const classes = useStyles();
     const listItemClasses = useListItemStyles();
@@ -108,14 +127,24 @@ export const Messages = () => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [showSearch, setShowSearch] = useState<boolean>(false);
     const [attachedImages, setAttachedImages] = useState<Array<{src: any, uniqueKey: string}>>([]);
-    const [messages, setMessages] = useState<Array<any>>([
-        {userId: 'faust', messageId: '1', writtenDate: '2021.09.14 9:12', editedDate: '2021.09.14 9:17', firstName: 'faust', avatarSrc: '', messageText: 'test123', messageImages: []},
-        {userId: 'faust', messageId: '2', writtenDate: '2021.09.14 9:13', firstName: 'faust', avatarSrc: '', messageText: 'test123', messageImages: []},
-    ]);
-    const [inputMessageId, setInputMessageId] = useState<string>('');
-    const [selectedMessages, setSelectedMessages] = useState<Array<string>>([]);
+    const [messages, setMessages] = useState<RawMessage[]>([]);
+    const [editMessageId, setEditMessageId] = useState<string>('');
+    const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
+    const [loadFrom, setLoadFrom] = useState<number>(0);
+    const [lockLoading, setLockLoading] = useState<boolean>(false);
+    const [hasNoMessages, setHasNoMessages] = useState<boolean>(false);
+    const [user, setUser] = useState<{userId: string, firstName: string, lastName: string, onlineStatus: string, avatar: string}>();
+    const [target, setTarget] = useState<{userId: string, firstName: string, lastName: string, onlineStatus: string, avatar: string}>();
+    const [typingDotsInterval, setTypingDotsInterval] = useState<number>(0);
+    const [typingTimeout, setTypingTimeout] = useState<number>(0);
+    const [stopTypingTimeout, setStopTypingTimeout] = useState<number>(0);
 
     const inputAttachImgRef = useRef<any>();
+    const scrollbarRef = useRef<any>();
+    const inputMessageRef = useRef<any>();
+    const typingDotsRef = useRef<any>();
+
+    const signalRContext = useContext(SignalRContext);
 
     const handleClick = (event: any) => {
         setAnchorEl(event.currentTarget);
@@ -146,11 +175,11 @@ export const Messages = () => {
                 setAttachedImages(images);
         }
     }
-    const handleMessageClick = (event: any) => {
+    const handleMessageClick = (event: any, messageId: string) => {
         if (event.target.classList.contains('icon-edit'))
             return;
 
-        const message = first(messages, (message: any) => message.messageId === event.target.closest('.message').dataset.messageid);
+        const message = first(messages, (message: any) => message.messageId === messageId);
         message.selected = !message.selected;
 
         if (!message.selected)
@@ -160,28 +189,63 @@ export const Messages = () => {
 
         setMessages([...messages]);
     }
-    function handleEditMessageClick(event: any) {
-        const messageId = event.target.closest('.message').dataset.messageid;
-
+    const handleEditMessageClick = (event: any, messageId: string) => {
         const message = first(messages, (message: any) => message.messageId === messageId);
-        const input: any =  document.getElementById('input-message');
 
-        setInputMessageId(messageId);
+        setEditMessageId(messageId);
         setAttachedImages(message.messageImages.map((img: any) => {return {src: img, uniqueKey: nanoid()}}));
-        input.value = message.messageText;
+        inputMessageRef.current.value = message.messageText;
     }
     const handleSendMessage = () => {
-        if (inputMessageId === '') {
-            //send a new message
+        if ((isEmptyOrSpaces(inputMessageRef.current.value) && attachedImages.length === 0) || attachedImages.length > 10)
             return;
+
+        const images: string[] = attachedImages.map(img => img.src);
+        const messageText = inputMessageRef.current.value.trim();
+
+        if (editMessageId !== '') {
+            signalRContext.updateMessage(parseInt(editMessageId), messageText, images);
+            const message = messages.filter(message => message.messageId === editMessageId)[0];
+
+            message.editedDate = moment().toISOString();
+            message.messageText = messageText;
+            message.messageImages = images;
+
+            setMessages([...messages]);
+            setAttachedImages([]);
+            setEditMessageId('');
+            inputMessageRef.current.value = '';
+        }
+        else {
+            const tmpId = nanoid(10);
+
+            signalRContext.sendMessage(parseInt(target!.userId), messageText, images, tmpId);
+
+            setMessages([
+                ...messages, {
+                    messageId: tmpId,
+                    userId: user?.userId,
+                    messageText: messageText,
+                    messageImages: images,
+                    writtenDate: moment().toISOString(),
+                    editedDate: null,
+                    selected: false
+                } as RawMessage
+            ])
+
+            setAttachedImages([]);
+            setEditMessageId('');
+            inputMessageRef.current.value = '';
         }
 
-        //send edited message
+        setLoadFrom(loadFrom + 1);
+        signalRContext.stopTyping(target?.userId);
+        scrollbarRef.current.scrollToBottom();
     }
     const handleUndoEditing = () => {
         setAttachedImages([]);
-        setInputMessageId("");
-        (document.getElementById('input-message') as any).value = '';
+        setEditMessageId("");
+        inputMessageRef.current.value = '';
     }
     const handleCancelSelection = () => {
         selectedMessages.forEach(messageId => {
@@ -195,32 +259,213 @@ export const Messages = () => {
         setMessages([...messages]);
     }
     const handleDeleteSelectedMessages = () => {
+        const deleteMessageIds = messages.filter(message => message.selected).map(message => parseInt(message.messageId));
+
         setMessages(messages.filter(message => !message.selected));
         setSelectedMessages([]);
+        setLoadFrom(loadFrom - deleteMessageIds.length < 0 ? 0 : loadFrom - deleteMessageIds.length);
+
+        deleteRequest({url: 'UserMessages/DeleteMessage', headers: headers, body: JSON.stringify({targetId: target?.userId, messageIds: deleteMessageIds})}).catch(err => console.error(err));
     }
     const handleClearMessageHistory = () => {
+        setMessages([]);
+        deleteRequest({url: 'UserMessages/DeleteMessageHistory', headers: headers, body: JSON.stringify({targetId: target?.userId})}).catch(err => console.error(err));
+    }
+    const startTypingAnimation = () => {
+        clearInterval(typingDotsInterval);
 
+        const typingDotsId: any = setInterval(() => {
+            if (typingDotsRef.current.innerText.length === 1) {
+                typingDotsRef.current.innerText = '..';
+                return;
+            }
+            if (typingDotsRef.current.innerText.length === 2) {
+                typingDotsRef.current.innerText = '...';
+                return;
+            }
+            if (typingDotsRef.current.innerText.length === 3) {
+                typingDotsRef.current.innerText = '.';
+                return;
+            }
+        }, 400);
+
+        setTypingDotsInterval(typingDotsId);
+    }
+    const stopTypingAnimation = () => {
+        clearInterval(typingDotsInterval);
+        setTypingDotsInterval(0);
+    }
+    const handleChangeTextField = () => {
+        if (user === undefined || target === undefined || typingTimeout !== 0 || user?.userId === target.userId)
+            return;
+
+        clearTimeout(typingTimeout);
+        clearTimeout(stopTypingTimeout);
+        signalRContext.beginTyping(parseInt(target!.userId));
+
+        const timeoutId: any = setTimeout(() => {
+            const stopTimeoutId: any = setTimeout(() => {
+                signalRContext.stopTyping(parseInt(target!.userId));
+            }, 500);
+
+            setStopTypingTimeout(stopTimeoutId);
+            setTypingTimeout(0);
+        }, 2000);
+
+        setTypingTimeout(timeoutId);
     }
 
+    const loadMessages = async () => {
+        if (lockLoading)
+            return;
+
+        setLockLoading(true);
+        const response = await get({url: `UserMessages/Get/${getVisitorId()}?loadFrom=${loadFrom}`, headers: headers});
+
+        if (response.ok) {
+            const json = await response.json();
+
+            setMessages(json.concat(messages));
+            setLoadFrom(loadFrom + 20);
+
+            const filterMessages = json.filter((message: RawMessage) => !message.isRead && message.userId.toString() === target?.userId).map((message: RawMessage) => message.messageId);
+
+            if (filterMessages.length > 0)
+                signalRContext.readMessages(parseInt(target!.userId), filterMessages);
+        }
+        else if (response.status === 404)
+            setHasNoMessages(true);
+
+        setLockLoading(false);
+    }
+
+    useEffect(() => {
+        const container = scrollbarRef?.current?.container;
+
+        if (container !== undefined) {
+            container.firstChild.style.display = 'flex';
+            container.firstChild.style.flexDirection = 'column-reverse';
+            container.lastChild.style.display = 'flex';
+            container.lastChild.style.flexDirection = 'column-reverse';
+        }
+
+        Promise.all([
+            get({url: `UserProfiles/GetHeader/${getUserId()}`, headers: headers}),
+            get({url: `UserProfiles/GetHeader/${getVisitorId()}`, headers: headers})
+        ]).then(async response => {
+            if (response[0].ok && response[1].ok) {
+                const userJson = await response[0].json();
+                const targetJson = await response[1].json();
+
+                setUser({
+                    userId: getUserId()!,
+                    firstName: userJson.firstName,
+                    lastName: userJson.lastName,
+                    avatar: userJson.avatar,
+                    onlineStatus: moment().subtract(5, 'minutes') <= moment(userJson.lastActionDate) ? 'online' : moment(userJson.lastActionDate).calendar()
+                });
+
+                setTarget({
+                    userId: getVisitorId()!,
+                    firstName: targetJson.firstName,
+                    lastName: targetJson.lastName,
+                    avatar: targetJson.avatar,
+                    onlineStatus: moment().subtract(5, 'minutes') <= moment(targetJson.lastActionDate) ? 'online' : moment(targetJson.lastActionDate).calendar()
+                });
+
+            }
+        });
+    }, []);
+
+    useEffect(() => {
+        if (user !== undefined && target !== undefined)
+            loadMessages();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user, target]);
+
+    useEffect(() => {
+        if (signalRContext.newMessage !== undefined && user?.userId !== target?.userId) {
+            setMessages([...messages, signalRContext.newMessage]);
+
+            signalRContext.readMessages(parseInt(target!.userId), [parseInt(signalRContext.newMessage.messageId)]);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [signalRContext.newMessage]);
+
+    useEffect(() => {
+        if (signalRContext.newMessageId !== undefined) {
+            const tmpMessages = messages.filter(message => message.messageId === signalRContext.newMessageId.tmpId);
+            if (tmpMessages.length > 0)
+                tmpMessages[0].messageId = signalRContext.newMessageId.newId;
+
+            setMessages([...messages]);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [signalRContext.newMessageId]);
+
+    useEffect(() => {
+        if (signalRContext.updatedMessage !== undefined) {
+            const filterMessages = messages.filter(message => message.messageId === signalRContext.updatedMessage.messageId);
+
+            if (filterMessages.length > 0) {
+                const message = filterMessages[0];
+                message.messageText = signalRContext.updatedMessage.message;
+                message.messageImages = signalRContext.updatedMessage.attachedImages;
+                message.editedDate = signalRContext.updatedMessage.editedDate;
+
+                setMessages([...messages]);
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [signalRContext.updatedMessage]);
+
+    useEffect(() => {
+        if (signalRContext.confirmedReadMessages.length > 0) {
+            for (let i = 0; i < signalRContext.confirmedReadMessages.length; i++) {
+                for (let j = messages.length - 1; j >= 0; j--) {
+                    if (signalRContext.confirmedReadMessages[i] === messages[j].messageId) {
+                        messages[j].isRead = true;
+                        break;
+                    }
+                }
+            }
+
+            setMessages([...messages]);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [signalRContext.confirmedReadMessages]);
+
+    useEffect(() => {
+        if (signalRContext.typing !== undefined && signalRContext.typing.userId.toString() === target?.userId) {
+            if (signalRContext.typing.isTyping) {
+                startTypingAnimation();
+                return;
+            }
+
+            stopTypingAnimation();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [signalRContext.typing.isTyping]);
+
     return (
-        <React.Fragment>
-            <Paper variant='outlined' style={{height: 'max-content', background: 'white', marginBottom: 15}}>
+        <div style={{display: 'flex', height: '100%'}}>
+            <Paper variant='outlined' className={classes.paper} style={{display: 'flex', flexDirection: 'column', height: '95%', background: 'white', marginBottom: 15}}>
                 <div style={{display: selectedMessages.length > 0 || showSearch ? 'none' : 'flex', height: 50}}>
                     <div className={classes.btnBack}/>
                     <div style={{display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center', padding: '5px 0'}}>
                         <div style={{textAlign: 'center'}}>
-                            <Link to="/Profile" className={classes.link}>Faust King</Link>
+                            <Link to={target?.userId.toString() === getUserId() ? '/Profile' : `/Profile/${target?.userId}`} className={classes.link}>{target?.firstName} {target?.lastName}</Link>
                         </div>
                         <div style={{textAlign: 'center', marginTop: -4}}>
-                            <span style={{width: 'max-content', fontSize: 12, color: '#626d7a'}}>online</span>
+                            <span style={{width: 'max-content', fontSize: 12, color: '#626d7a'}}>{target?.onlineStatus}</span>
                         </div>
                     </div>
                     <div style={{display: 'flex'}}>
                         <div style={{display: 'flex', justifyContent: 'center', width: 50, height: 50, cursor: 'pointer'}} onClick={handleClick}>
                             <MoreHorizIcon style={{marginTop: 10, width: 30, height: 30, color: 'rgba(0, 0, 0, 0.40)'}}/>
                         </div>
-                        <Link to="/Profile" style={{display: 'flex', justifyContent: 'center', height: 50, width: 50}}>
-                            <Avatar alt="Remy Sharp" style={{marginTop: 10, width: 30, height: 30}} />
+                        <Link to={target?.userId.toString() === getUserId() ? '/Profile' : `/Profile/${target?.userId}`} style={{display: 'flex', justifyContent: 'center', height: 50, width: 50}}>
+                            <Avatar alt="Remy Sharp" style={{marginTop: 10, width: 30, height: 30}} src={target?.avatar}/>
                         </Link>
                     </div>
                 </div>
@@ -231,38 +476,50 @@ export const Messages = () => {
                     </Button>
                     <div style={{display: 'flex', flexDirection: 'row-reverse', width: '100%', paddingRight: 6}}>
                         <Tooltip title="Delete" arrow>
-                            <IconButton style={{width: 32, height: 32, alignSelf: 'center'}} disableTouchRipple onClick={handleDeleteSelectedMessages}>
-                                <FontAwesomeIcon icon={faTrashAlt} style={{width: 17, height: 17}}/>
+                            <IconButton style={{width: 34, height: 34, alignSelf: 'center'}} disableTouchRipple onClick={handleDeleteSelectedMessages}>
+                                <FontAwesomeIcon icon={faTrashAlt} style={{width: 18, height: 18}}/>
                             </IconButton>
                         </Tooltip>
                     </div>
                 </div>
                 <Searchbar style={{display: showSearch && selectedMessages.length === 0 ? 'flex' : 'none'}} onClickToClose={() => setShowSearch(false)}/>
                 <Divider/>
-                <Scrollbars style={{height: 400}} autoHide>
+                <Scrollbars ref={scrollbarRef} style={{height: '100%'}} autoHide onScrollFrame={(value) => {
+                    if (value.top <= -0.8 && !hasNoMessages)
+                        loadMessages();
+                }}>
+                    <span style={{visibility: typingDotsInterval !== 0 ? 'visible' : 'hidden', margin: '15px 0 20px 38px', fontSize: 13, color: '#939393'}}>
+                        <span>{target?.firstName} is typing</span>
+                        <span ref={typingDotsRef}>...</span>
+                    </span>
                     {build(messages).map(section => (
-                        <MessageSection key={section.date} date={getTimeDurationByDate({startDate: new Date(section.date), endDate: new Date(), include: 'onlyDate'})}>
+                        <MessageSection key={section.date} date={moment(section.date).format('ll')}>
                             {section.messages.map((message, index) => {
                                 let showInfo = index === 0;
+                                let unread = !message.isRead && message.userId.toString() === user?.userId;
 
-                                if (!showInfo && index - 1 >= 0) {
+                                if (user?.userId === target?.userId)
+                                    unread = false;
+
+                                if (index - 1 >= 0 && !showInfo) {
                                     const date = new Date(message.writtenDate);
                                     const previousDate = new Date(section.messages[index - 1].writtenDate);
 
-                                    showInfo = date.getHours() > previousDate.getHours() || date.getMinutes() - previousDate.getMinutes() >= 5;
+                                    showInfo = message.userId !== section.messages[index - 1].userId || date.getHours() > previousDate.getHours() || date.getMinutes() - previousDate.getMinutes() >= 5;
                                 }
 
                                 return <Message key={message.messageId}
                                                 userId={message.userId}
                                                 messageId={message.messageId}
-                                                firstName={message.firstName}
-                                                writtenDate={getTimeFormat(new Date(message.writtenDate))}
+                                                firstName={message.userId.toString() === user!.userId ? user!.firstName : target!.firstName}
+                                                writtenDate={moment(message.writtenDate).format('LT')}
                                                 messageText={message.messageText}
                                                 messageImages={message.messageImages}
                                                 showInfo={showInfo}
-                                                avatarSrc={message.avatarSrc}
-                                                unread={message.unread}
-                                                editedDate={message.editedDate}
+                                                avatarSrc={message.userId.toString() === user?.userId ? user.avatar : target?.avatar}
+                                                editable={message.userId.toString() === user?.userId}
+                                                unread={unread}
+                                                editedDate={message.editedDate === null ? undefined : moment(message.editedDate).format('lll')}
                                                 selected={message.selected}
                                                 onClick={handleMessageClick}
                                                 onEditClick={handleEditMessageClick}/>
@@ -273,13 +530,28 @@ export const Messages = () => {
                 <Divider/>
                 <div style={{display: 'flex', height: 'max-content', padding: 0}}>
                     <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
-                        <div style={{display: inputMessageId === '' ? 'none' : 'block', marginLeft: 15, marginTop: 15, fontSize: 13, fontWeight: 500, color: '#2a5885'}}>
+                        <div style={{display: editMessageId === '' ? 'none' : 'block', marginLeft: 15, marginTop: 15, fontSize: 13, fontWeight: 500, color: '#2a5885'}}>
                             Edit message
                         </div>
-                        <TextField placeholder="Write a message..." multiline fullWidth maxRows={10} variant="outlined" style={{margin: 8}} InputProps={{classes: inputClasses, className: classes.inputRoot, id: "input-message"}}/>
+                        <TextField placeholder="Write a message..."
+                                   multiline
+                                   fullWidth
+                                   maxRows={10}
+                                   variant="outlined"
+                                   style={{margin: 8}}
+                                   inputRef={inputMessageRef}
+                                   InputProps={{classes: inputClasses, className: classes.inputRoot}}
+                                   onChange={handleChangeTextField}
+                                   onKeyDown={(event: any) => {
+                                       if (event.keyCode === 13 && !event.shiftKey) {
+                                           event.preventDefault();
+                                           handleSendMessage();
+                                       }
+                                   }}
+                        />
                     </div>
                     <Tooltip title="Undo editing" arrow>
-                        <Button disableTouchRipple={true} style={{visibility: inputMessageId === '' ? 'collapse' : 'visible', minWidth: 40, height: 40, borderRadius: '50%', margin: 5}} onClick={handleUndoEditing}>
+                        <Button disableTouchRipple={true} style={{visibility: editMessageId === '' ? 'collapse' : 'visible', minWidth: 40, height: 40, borderRadius: '50%', margin: 5}} onClick={handleUndoEditing}>
                             <FontAwesomeIcon icon={faTimes} style={{width: 20, height: 20, color: '#A6ACB7'}}/>
                         </Button>
                     </Tooltip>
@@ -289,9 +561,9 @@ export const Messages = () => {
                             <input ref={inputAttachImgRef} style={{display: 'none'}} type="file" multiple={true} accept="image/*" onChange={handleFileSelect}/>
                         </Button>
                     </Tooltip>
-                    <Tooltip title={inputMessageId === '' ? 'Send a message' : 'Apply changes'} arrow>
+                    <Tooltip title={editMessageId === '' ? 'Send a message' : 'Apply changes'} arrow>
                         <Button disableTouchRipple={true} style={{minWidth: 40, height: 40, borderRadius: '50%', margin: 5}} onClick={handleSendMessage}>
-                            <FontAwesomeIcon icon={inputMessageId === '' ? faPaperPlane : faCheckCircle} style={{width: 20, height: 20, color: '#A6ACB7'}}/>
+                            <FontAwesomeIcon icon={editMessageId === '' ? faPaperPlane : faCheckCircle} style={{width: 20, height: 20, color: '#A6ACB7'}}/>
                         </Button>
                     </Tooltip>
                 </div>
@@ -327,6 +599,6 @@ export const Messages = () => {
                     <ListItemText classes={listItemTextClasses} disableTypography={true}>Clear message history</ListItemText>
                 </MenuItem>
             </Menu>
-        </React.Fragment>
+        </div>
     );
 };

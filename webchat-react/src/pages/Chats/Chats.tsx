@@ -38,7 +38,7 @@ export const Chats = () => {
     const classes = useStyles();
 
     return (
-        <Paper variant='outlined' style={{height: 'max-content', background: 'white', marginBottom: 15}}>
+        <Paper variant='outlined' style={{width: '100%', height: 'max-content', background: 'white', marginBottom: 15}}>
             <div className={classes.search}>
                 <SearchIcon className={classes.searchIcon} />
                 <InputBase

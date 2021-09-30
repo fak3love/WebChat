@@ -23,6 +23,18 @@ import countriesJson from "../../assets/json/country.json";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
+        paper: {
+            display: 'flex',
+            flexDirection: 'column',
+            width: '100%',
+            height: 'max-content',
+            background: 'white',
+            marginBottom: 15,
+            [theme.breakpoints.up('sm')]: {
+                display: 'flex',
+                width: 600
+            },
+        },
         search: {
             display: 'flex',
             position: 'relative',
@@ -124,8 +136,8 @@ type User  = {
     isOnline: boolean
 }
 
-const listAgeFrom = range({start: 14, end: 80}).map(x => <MenuItem value={x} style={{fontSize: 13}}>from {x}</MenuItem>);
-const listAgeTo = range({start: 14, end: 80}).map(x => <MenuItem value={x} style={{fontSize: 13}}>to {x}</MenuItem>);
+const listAgeFrom = range({start: 14, end: 80}).map(x => <MenuItem key={x} value={x} style={{fontSize: 13}}>from {x}</MenuItem>);
+const listAgeTo = range({start: 14, end: 80}).map(x => <MenuItem key={x} value={x} style={{fontSize: 13}}>to {x}</MenuItem>);
 
 export const Search = () => {
     const classes = useStyles();
@@ -134,8 +146,8 @@ export const Search = () => {
     const inputCheckBoxAvatarRef = useRef<any>();
     const inputCheckBoxOnlineRef = useRef<any>();
     const [gender, setGender] = useState('male');
-    const [ageFrom, setAgeFrom] = useState('');
-    const [ageTo, setAgeTo] = useState('');
+    const [ageFrom, setAgeFrom] = useState('from');
+    const [ageTo, setAgeTo] = useState('to');
     const [country, setCountry] = useState('none');
     const [city, setCity] = useState('none');
     const [cityDisabled, setCityDisabled] = useState<boolean>(true);
@@ -158,18 +170,15 @@ export const Search = () => {
         if (event.target.value !== 'none') {
             const countries: any = countriesJson;
             setCityDisabled(false);
-
-            setCities(countries[event.target.value].slice(0, 10))
+            setCities(countries[event.target.value].slice(0, 50));
             return;
         }
 
         setCity('none');
         setCityDisabled(true);
-        searchFriends(700);
     };
     const handleChangeCity = (event: React.ChangeEvent<{ value: any }>) => {
         setCity(event.target.value);
-        searchFriends(700);
     };
 
     const buildQuery = () => {
@@ -215,10 +224,11 @@ export const Search = () => {
 
     useEffect(() => {
         searchFriends();
-    }, [gender]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [gender, country, city]);
 
     return (
-        <Paper variant='outlined' style={{height: 'max-content', background: 'white', marginBottom: 15}}>
+        <Paper variant='outlined' className={classes.paper}>
             <div className={classes.search}>
                 <SearchIcon className={classes.searchIcon} />
                 <InputBase
@@ -261,12 +271,7 @@ export const Search = () => {
                             disableUnderline
                         >
                             <MenuItem value="none" style={{fontSize: 13}}>Select a country</MenuItem>
-                            {Object.keys(countriesJson).map((name, index) => {
-                                if (index < 50)
-                                    return <MenuItem key={name} value={name} style={{fontSize: 13}}>{name}</MenuItem>
-
-                                return '';
-                            })}
+                            {Object.keys(countriesJson).slice(0, 74).map((name, index) => <MenuItem key={name + index} value={name} style={{fontSize: 13}}>{name}</MenuItem>)}
                         </Select>
                     </FormControl>
                     <FormControl style={{margin: '8px 16px'}} className={classes.formControl} disabled={cityDisabled}>
@@ -280,7 +285,7 @@ export const Search = () => {
                             disableUnderline
                         >
                             <MenuItem value="none" style={{fontSize: 13}}>Select a city</MenuItem>
-                            {cities.map(name => <MenuItem key={name} value={name} style={{fontSize: 13}}>{name}</MenuItem>)}
+                            {cities.map((name, index) => <MenuItem key={name + index} value={name} style={{fontSize: 13}}>{name}</MenuItem>)}
                         </Select>
                     </FormControl>
                     <FormControl style={{margin: '8px 16px'}} className={classes.formControl}>
@@ -294,7 +299,7 @@ export const Search = () => {
                             disableUnderline
                             MenuProps={{classes: {paper: classes.menuPaper}}}
                         >
-                            <MenuItem value={0} style={{fontSize: 13}}>From</MenuItem>
+                            <MenuItem value='from' style={{fontSize: 13}}>From</MenuItem>
                             {listAgeFrom}
                         </Select>
                     </FormControl>
@@ -309,7 +314,7 @@ export const Search = () => {
                             disableUnderline
                             MenuProps={{classes: {paper: classes.menuPaper}}}
                         >
-                            <MenuItem value={0} style={{fontSize: 13}}>To</MenuItem>
+                            <MenuItem value='to' style={{fontSize: 13}}>To</MenuItem>
                             {listAgeTo}
                         </Select>
                     </FormControl>

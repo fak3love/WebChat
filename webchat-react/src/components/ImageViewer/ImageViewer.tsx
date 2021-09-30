@@ -1,11 +1,8 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Button, Divider, IconButton, Tooltip} from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
-import avatar2 from "../../assets/images/deadinside400.jpg";
-import avatar from "../../assets/images/avatar2.jpg";
-import FavoriteIcon from "@material-ui/icons/Favorite";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCamera, faCheckCircle, faPaperPlane, faShare, faTimes, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
+import {faCamera, faPaperPlane, faTimes, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
 import Scrollbars from "react-custom-scrollbars";
 import {Comment} from "../Comment";
 import TextField from "@material-ui/core/TextField";
@@ -17,10 +14,8 @@ import {AttachedImage} from "../AttachedImage";
 import {Likebar} from "../Likebar";
 import {nanoid} from "nanoid";
 import {CommentType} from "../Comment/Comment";
-import {getTimeDurationByDate} from "../../utils/dates";
 import {deleteRequest, get, post} from "../../ts/requests";
 import {getUserId, headers} from "../../ts/authorization";
-import {isVisitor} from "../../utils/common";
 import moment from "moment";
 import {isEmptyOrSpaces} from "../../utils/validators";
 
@@ -300,11 +295,11 @@ export const ImageViewer = ({userId, viewPhoto, isOpen, closeClick, onDeleted}: 
             return;
 
         setLockLoading(true);
-        const response = await get({url: `UserPhotoComments/GetByPhotoSlug/${viewPhoto?.slug}?loadFrom=${loadFrom + 10}`, headers: headers});
+        const response = await get({url: `UserPhotoComments/GetByPhotoSlug/${viewPhoto?.slug}?loadFrom=${loadFrom + 20}`, headers: headers});
 
         if (response.ok) {
             setComments(comments.concat(await response.json()));
-            setLoadFrom(loadFrom + 10);
+            setLoadFrom(loadFrom + 20);
         }
 
         if (response.status === 404)
@@ -335,6 +330,7 @@ export const ImageViewer = ({userId, viewPhoto, isOpen, closeClick, onDeleted}: 
                     setHasNoComments(true);
             });
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [viewPhoto]);
 
     useEffect(() => {

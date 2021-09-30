@@ -1,31 +1,38 @@
 ﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using WebChat.Application.Common.Exceptions;
 using WebChat.DataAccess.MsSql;
 using WebChat.Domain.Entities;
+using WebChat.Domain.Interfaces.Services;
 
 namespace WebChat.Application.Commands.Deletes
 {
-    public class DeleteMessageCommand : IRequest
+    public class DeleteMessageCommand : IRequest<Unit>
     {
         public int ProfileId { get; set; }
-        public int MessageId { get; set; }
+        public int TargetId { get; set; }
+        public int[] MessageIds { get; set; }
 
-        public DeleteMessageCommand(int profileId, int messageId)
+        public DeleteMessageCommand(int profileId, int targetId, int[] messageIds)
         {
             ProfileId = profileId;
-            MessageId = messageId;
+            TargetId = targetId;
+            MessageIds = messageIds;
         }
 
         public class Handler : IRequestHandler<DeleteMessageCommand, Unit>
         {
             private readonly WebChatContext _context;
+            private readonly IFileManager _fileManager;
 
-            public Handler(WebChatContext context)
+            public Handler(WebChatContext context, IFileManager fileManager)
             {
                 _context = context;
+                _fileManager = fileManager;
             }
 
             public async Task<Unit> Handle(DeleteMessageCommand request, CancellationToken cancellationToken)
@@ -35,14 +42,42 @@ namespace WebChat.Application.Commands.Deletes
                 if (userProfile is null)
                     throw new NotFoundException(nameof(UserProfile), request.ProfileId);
 
-                var message = await _context.UserMessages.FindAsync(new object[] { request.MessageId }, cancellationToken);
+                var messages = await _context.UserMessages
+                    .Where(prop =>
+                        ((prop.InitiatorUserId == request.ProfileId && prop.TargetUserId == request.TargetId) ||
+                        (prop.InitiatorUserId == request.TargetId && prop.TargetUserId == request.ProfileId)) &&
+                        ((!prop.IsDeletedInitiator && !prop.IsDeletedTarget) ||
+                        (prop.InitiatorUserId == request.ProfileId && !prop.IsDeletedInitiator) || (prop.TargetUserId == request.ProfileId && !prop.IsDeletedTarget))
+                    )
+                    .ToListAsync();
 
-                if (message.InitiatorUserId != request.ProfileId)
-                    throw new BadRequestException();
+                if (messages.Count == 0)
+                    throw new NotFoundException(nameof(UserMessage), $"Profile: {request.ProfileId} | Target: {request.TargetId}");
 
-                message.DeletedAt = DateTime.Now;
+                for (int i = 0; i < messages.Count; i++)
+                {
+                    if (request.ProfileId == messages[i].InitiatorUserId)
+                        messages[i].IsDeletedInitiator = true;
 
-                await _context.SaveChangesAsync(cancellationToken);
+                    if (request.ProfileId == messages[i].TargetUserId)
+                        messages[i].IsDeletedTarget = true;
+
+                    if (messages[i].IsDeletedInitiator && messages[i].IsDeletedTarget)
+                    {
+                        var messagePhotos = await _context.UserMessagePhotos
+                            .Include(prop => prop.UserPhoto)
+                            .Where(ump => ump.UserMessageId == messages[i].Id)
+                            .Select(prop => prop.UserPhoto.Slug)
+                            .ToListAsync();
+
+                        _context.UserMessages.Remove(messages[i]);
+
+                        await _context.SaveChangesAsync(cancellationToken);
+
+                        foreach (var slug in messagePhotos)
+                            await _fileManager.Delete(slug + ".jpg");
+                    }
+                }
 
                 return Unit.Value;
             }

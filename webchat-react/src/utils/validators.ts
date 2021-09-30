@@ -35,6 +35,7 @@ export function validateName(value: string) {
     if (value.length < 2 || value.length > 40)
         return "Name length must be 2-40 characters";
 
+    // eslint-disable-next-line no-useless-escape
     if (!/^[a-zA-Z\-]+$/.test(value))
         return "Invalid name";
 

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using System.IO;
 using WebChat.Api.Extensions;
+using WebChat.Api.Hubs;
 using WebChat.Api.Middlewares;
 using WebChat.Application;
 using WebChat.DataAccess;
@@ -62,6 +63,11 @@ namespace WebChat.Api
             services.AddJwtAuthentication(Configuration);
 
             services.AddWebChatCors();
+
+            services.AddSignalR(conf =>
+            {
+                conf.MaximumReceiveMessageSize = null;
+            });
         }
 
         public void Configure(IApplicationBuilder app)
@@ -89,6 +95,7 @@ namespace WebChat.Api
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<ChatHub>("/hubs/chat");
             });
         }
 

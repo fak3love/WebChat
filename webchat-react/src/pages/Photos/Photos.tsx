@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useRef, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {Theme, createStyles, makeStyles} from '@material-ui/core/styles';
 import {Paper} from "@material-ui/core";
 import Scrollbars from "react-custom-scrollbars";
@@ -135,8 +135,8 @@ export const Photos = () => {
 
         setLoadingTimeout(timeoutId);
     }
-    const handleOpenImageViewer = (event: any) => {
-        const image = images.filter(image => image.slug.toString() === event.target.dataset.imageslug.toString())[0];
+    const handleOpenImageViewer = (event: any, slug: string) => {
+        const image = images.filter(image => image.slug.toString() === slug)[0];
         setSelectedPhoto({slug: image.slug, src: image.src});
         setOpenImageViewer(true);
     };
@@ -159,6 +159,7 @@ export const Photos = () => {
         return () => {
             document.body.style.overflow = 'auto';
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     if (loading)
@@ -185,15 +186,14 @@ export const Photos = () => {
                             let rows = index % 5 === 0 ? 2 : 1;
 
                             return (
-                                <Tooltip title={moment(item.createdAt).format('LL')} arrow placement="bottom" enterDelay={1000} enterNextDelay={1000}>
-                                    <ImageListItem key={item.slug} cols={cols} rows={rows}>
+                                <Tooltip key={item.slug} title={moment(item.createdAt).format('LL')} arrow placement="bottom" enterDelay={1000} enterNextDelay={1000}>
+                                    <ImageListItem cols={cols} rows={rows}>
                                         <img
                                             src={item.src}
                                             style={{width: '100%', height: 200, cursor: 'pointer'}}
                                             alt={item.slug}
                                             loading="lazy"
-                                            onClick={handleOpenImageViewer}
-                                            data-imageSlug={item.slug}
+                                            onClick={(event: any) => {handleOpenImageViewer(event, item.slug)}}
                                         />
                                     </ImageListItem>
                                 </Tooltip>

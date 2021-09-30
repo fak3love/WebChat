@@ -8,7 +8,7 @@ namespace WebChat.Application.Validators
         public DeleteMessageCommandValidator()
         {
             RuleFor(prop => prop.ProfileId).GreaterThan(0).WithMessage("Must be greater than 0");
-            RuleFor(prop => prop.MessageId).GreaterThan(0).WithMessage("Must be greater than 0");
+            RuleFor(prop => prop.MessageIds).Must((ids) => ids.Length > 0).WithMessage("Must be greater than 0");
         }
     }
 }

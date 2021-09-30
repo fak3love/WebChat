@@ -46,7 +46,8 @@ namespace WebChat.Application.Queries
                 {
                     FirstName = entity.FirstName,
                     LastName = entity.LastName,
-                    Avatar = avatar
+                    Avatar = avatar,
+                    LastActionDate = entity.LastActionDate
                 };
 
                 return profileHeader;

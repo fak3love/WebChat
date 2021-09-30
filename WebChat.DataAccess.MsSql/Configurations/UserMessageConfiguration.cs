@@ -13,6 +13,9 @@ namespace WebChat.DataAccess.MsSql.Configurations
             builder.HasOne(prop => prop.TargetUser).WithMany(prop => prop.TargetMessages).HasForeignKey(prop => prop.TargetUserId).OnDelete(DeleteBehavior.Restrict);
             builder.Property(prop => prop.MessageText).HasMaxLength(500);
             builder.Property(prop => prop.CreatedAt).IsRequired();
+            builder.Property(prop => prop.IsRead).HasDefaultValue(false);
+            builder.Property(prop => prop.IsDeletedInitiator).HasDefaultValue(false);
+            builder.Property(prop => prop.IsDeletedTarget).HasDefaultValue(false);
         }
     }
 }

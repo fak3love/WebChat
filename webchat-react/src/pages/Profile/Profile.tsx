@@ -326,6 +326,7 @@ export const Profile = () => {
         return () => {
             document.body.style.overflow = 'auto';
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     if (loading)
@@ -413,7 +414,7 @@ export const Profile = () => {
                         <svg height="20" width="20" xmlns="http://www.w3.org/2000/svg" className="mobileStatusIcon">
                             <g fill="none" fillRule="evenodd">
                                 <path d="M0 0h20v20H0z"/>
-                                <path d="M17.5 5.25a.75.75 0 00-.74-.75H3.24a.74.74 0 00-.74.75c0 .41.34.75.74.75h13.52c.4 0 .74-.33.74-.75zm0 5a.75.75 0 00-.74-.75H3.24a.74.74 0 00-.74.75c0 .41.34.75.74.75h13.52c.4 0 .74-.33.74-.75zm-15 5c0 .41.34.75.76.75h8.98a.75.75 0 00.76-.75.75.75 0 00-.75-.75h-9a.75.75 0 00-.75.75z" fill="#99a2ad" fill-rule="nonzero"/>
+                                <path d="M17.5 5.25a.75.75 0 00-.74-.75H3.24a.74.74 0 00-.74.75c0 .41.34.75.74.75h13.52c.4 0 .74-.33.74-.75zm0 5a.75.75 0 00-.74-.75H3.24a.74.74 0 00-.74.75c0 .41.34.75.74.75h13.52c.4 0 .74-.33.74-.75zm-15 5c0 .41.34.75.76.75h8.98a.75.75 0 00.76-.75.75.75 0 00-.75-.75h-9a.75.75 0 00-.75.75z" fill="#99a2ad" fillRule="nonzero"/>
                             </g>
                         </svg>
                         <div className="mobileStatusBlock">

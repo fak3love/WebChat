@@ -5,7 +5,7 @@ import {faArrowCircleRight} from '@fortawesome/free-solid-svg-icons'
 import {faTimesCircle} from '@fortawesome/free-solid-svg-icons'
 import {Link} from "react-router-dom";
 import Avatar from "@material-ui/core/Avatar";
-import {IconButton, Tooltip} from "@material-ui/core";
+import {Tooltip} from "@material-ui/core";
 import {Likebar} from "../Likebar";
 import moment from "moment";
 import {getUserId, headers} from "../../ts/authorization";
