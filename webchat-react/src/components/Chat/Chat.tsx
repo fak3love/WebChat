@@ -5,6 +5,7 @@ import {Link} from "react-router-dom";
 import {faTimes} from '@fortawesome/free-solid-svg-icons'
 import Badge from "@material-ui/core/Badge";
 import Avatar from "@material-ui/core/Avatar";
+import {tryAddPeerByUserId} from "../MessageTabManager/utils";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -22,7 +23,6 @@ const useStyles = makeStyles((theme: Theme) =>
             textDecoration: 'none',
             whiteSpace: 'nowrap',
             fontWeight: 500,
-            marginBottom: 10,
             [theme.breakpoints.down('sm')]: {
                 maxWidth: 155
             },
@@ -32,24 +32,28 @@ const useStyles = makeStyles((theme: Theme) =>
             color: '#626d7a',
             borderRadius: 3,
             width: '100%',
-            maxWidth: 525,
+            maxWidth: 350,
+            height: 25,
             textOverflow: 'ellipsis',
             overflow: 'hidden',
             whiteSpace: 'nowrap',
+            alignSelf: 'center',
             [theme.breakpoints.down('sm')]: {
                 maxWidth: 175
             },
         },
         unreadCount: {
-            position: 'absolute',
             right: 0,
-            top: 0,
+            marginLeft: 35,
             background: '#5181b8',
-            borderRadius: '18px',
-            padding: '2.7px 6px',
+            borderRadius: '100%',
+            textAlign: 'center',
             fontWeight: 700,
             fontSize: 11,
-            color: 'white'
+            color: 'white',
+            lineHeight: '19px',
+            width: 18,
+            height: 18
         }
     }),
 );
@@ -123,15 +127,15 @@ export const Chat = ({avatarSrc, message, writtenDate, unreadCount, unread, send
                         <div className={classes.name}>{target.firstName} {target.lastName}</div>
                         <div style={{fontSize: 13, color: 'rgb(147, 147, 147)'}}>{writtenDate}</div>
                     </div>
-                    <div style={{display: 'flex', position: 'relative'}}>
+                    <div style={{display: 'flex', position: 'relative', marginTop: 7.5}}>
                         <Avatar alt="Remy Sharp" src={sender === 'target' ? null : avatarSrc} style={{display: sender === 'user' ? 'inherit' : 'none', width: 25, height: 25, alignSelf: 'center'}} />
-                        <div style={{marginLeft: isUnreadUser ? 7.5 : sender === 'user' ? 5 : 0, background: isUnreadUser ? 'rgb(174 183 194 / 12%)' : 'transparent', padding: sender === 'user' ? '5px 5px 0 5px' : 0}} className={classes.message}>{message}</div>
+                        <div style={{marginLeft: isUnreadUser ? 7.5 : sender === 'user' ? 5 : 0, background: isUnreadUser ? 'rgb(174 183 194 / 12%)' : 'transparent', lineHeight: sender === 'user' ? '25px' : 'auto', paddingLeft: sender === 'user' ? 5 : 0}} className={classes.message}>{message}</div>
                         <div style={{display: isUnreadTarget ? 'block' : 'none'}} className={classes.unreadCount}>{unreadCount}</div>
                     </div>
                 </div>
             </div>
-            <FontAwesomeIcon icon={faTimes} style={{display: btnRemoveChatDisplay, position: 'absolute', width: 11, height: 11, top: 17, right: 10, color: 'rgb(147, 147, 147)', zIndex: 2}} onClick={handleRemoveChat}/>
-            <Link to={`/Messages/${target.userId}`} style={{position: 'absolute', width: '100%', height: '100%'}}/>
+            <FontAwesomeIcon icon={faTimes} style={{display: btnRemoveChatDisplay, position: 'absolute', width: 11, height: 11, marginTop: 12.5, right: 10, color: 'rgb(147, 147, 147)', zIndex: 2}} onClick={handleRemoveChat}/>
+            <Link to={`/Messages/${target.userId}${tryAddPeerByUserId(target.userId)}`} style={{position: 'absolute', width: '100%', height: '100%'}}/>
         </div>
     );
 };

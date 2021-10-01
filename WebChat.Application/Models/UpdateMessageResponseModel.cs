@@ -5,6 +5,7 @@ namespace WebChat.Application.Models
 {
     public class UpdateMessageResponseModel
     {
+        public int UserId { get; set; }
         public int TargetId { get; set; }
         public int MessageId { get; set; }
         public string Message { get; set; }

@@ -171,8 +171,8 @@ export const Authorization = () => {
         return <LoadingScreen open={loading}/>
 
     return (
-        <Stack spacing={2} direction="column" style={{alignItems: 'end', marginBottom: 15}}>
-            <Paper variant='outlined' style={{height: 'max-content', width: '100%', maxWidth: 321, background: 'white'}}>
+        <Stack spacing={2} direction="column" style={{width: '100%', marginBottom: 15}}>
+            <Paper variant='outlined' style={{height: 'max-content', width: '100%', maxWidth: 321, alignSelf: 'end', background: 'white'}}>
                 <Box
                     component="form"
                     noValidate
@@ -209,7 +209,7 @@ export const Authorization = () => {
                     </Stack>
                 </Box>
             </Paper>
-            <Paper variant='outlined' style={{height: 'max-content', width: '100%', maxWidth: 321, background: 'white'}}>
+            <Paper variant='outlined' style={{height: 'max-content', width: '100%', maxWidth: 321, alignSelf: 'end', background: 'white'}}>
                 <div style={{margin: 25}}>
                     <Stack spacing={0.5} direction="column" style={{textAlign: 'center', marginBottom: 25}}>
                         <span style={{fontSize: 20}}>First time here?</span>

@@ -105,6 +105,7 @@ namespace WebChat.Application.Commands.Updates
 
                 var messageResponseModel = new UpdateMessageResponseModel()
                 {
+                    UserId = userMessage.InitiatorUserId,
                     TargetId = userMessage.TargetUserId,
                     MessageId = userMessage.Id,
                     Message = request.MessageText,

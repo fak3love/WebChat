@@ -1,10 +1,14 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {createStyles, makeStyles, Theme} from "@material-ui/core/styles";
 import {Chat} from "../../components/Chat";
 import {Divider, Paper} from "@material-ui/core";
 import SearchIcon from "@material-ui/icons/Search";
 import InputBase from "@material-ui/core/InputBase";
 import Scrollbars from "react-custom-scrollbars";
+import {get} from "../../ts/requests";
+import {headers} from "../../ts/authorization";
+import moment from "moment";
+import {nanoid} from "nanoid";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -34,11 +38,40 @@ const useStyles = makeStyles((theme: Theme) =>
     }),
 );
 
+type RawChat = {
+    userId: string,
+    firstName: string,
+    lastName: string,
+    avatar: string,
+    lastMessage: string,
+    sender: 'user' | 'target',
+    isOnline: boolean,
+    isUnread: boolean,
+    unreadCount: number,
+    writtenDate: string
+}
+
 export const Chats = () => {
     const classes = useStyles();
+    const [chats, setChats] = useState<RawChat[]>([]);
+    const [userAvatar, setUserAvatar] = useState<string>('');
+
+    const loadChats = async () => {
+        const response = await get({url: 'UserMessages/GetChats', headers: headers});
+
+        if (response.ok) {
+            const json = await response.json();
+
+            setChats(json);
+        }
+    }
+
+    useEffect(() => {
+        loadChats();
+    }, []);
 
     return (
-        <Paper variant='outlined' style={{width: '100%', height: 'max-content', background: 'white', marginBottom: 15}}>
+        <Paper variant='outlined' style={{width: '100%', height: '95%', background: 'white', marginBottom: 15}}>
             <div className={classes.search}>
                 <SearchIcon className={classes.searchIcon} />
                 <InputBase
@@ -52,42 +85,21 @@ export const Chats = () => {
             <Divider/>
             <Scrollbars style={{height: 500}} autoHide>
                 <div style={{display: 'flex', flexDirection: 'column'}}>
-                    <Chat
-                          message="Test123456789"
-                          writtenDate="14:40"
-                          sender="target"
-                          unreadCount={5}
-                          unread={true}
-                          avatarSrc=''
-                          target={{userId: 'test', avatarSrc: '', isOnline: true, firstName: 'Kaneki', lastName: 'Ken'}}/>
-                    <Divider/>
-                    <Chat
-                          message="Test123456789"
-                          writtenDate="17:44"
-                          sender="target"
-                          unreadCount={5}
-                          unread={false}
-                          avatarSrc=''
-                          target={{userId: 'test', avatarSrc: '', isOnline: true, firstName: 'Kaneki', lastName: 'Ken'}}/>
-                    <Divider/>
-                    <Chat
-                          message="Test123456789"
-                          writtenDate="2021.10.10"
-                          sender="user"
-                          unreadCount={0}
-                          unread={true}
-                          avatarSrc=''
-                          target={{userId: 'test', avatarSrc: '', isOnline: true, firstName: 'Kaneki', lastName: 'Ken'}}/>
-                    <Divider/>
-                    <Chat
-                          message="Test123456789"
-                          writtenDate="yesterday"
-                          sender="user"
-                          unreadCount={0}
-                          unread={false}
-                          avatarSrc=''
-                          target={{userId: 'test', avatarSrc: '', isOnline: true, firstName: 'Kaneki', lastName: 'Ken'}}/>
-                    <Divider/>
+                    {(document.location.search.includes('tab=unread') ? chats.filter(chat => chat.isUnread && chat.sender === 'target') : chats).map((chat, index) => {
+                        return (
+                            <React.Fragment key={nanoid()}>
+                                <Chat
+                                    message={chat.lastMessage}
+                                    writtenDate={moment(chat.writtenDate).calendar().toLowerCase()}
+                                    sender={chat.sender}
+                                    unreadCount={chat.unreadCount}
+                                    unread={chat.isUnread}
+                                    avatarSrc={userAvatar}
+                                    target={{userId: chat.userId, avatarSrc: chat.avatar, isOnline: chat.isOnline, firstName: chat.firstName, lastName: chat.lastName}}/>
+                                {index < chats.length - 1 ? <Divider/> : ''}
+                            </React.Fragment>
+                        )
+                    })}
                 </div>
             </Scrollbars>
         </Paper>

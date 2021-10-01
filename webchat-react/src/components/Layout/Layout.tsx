@@ -1,4 +1,4 @@
-import React, {createContext, useEffect, useRef} from 'react';
+import React, {createContext, useEffect, useRef, useState} from 'react';
 import {createStyles, makeStyles, Theme} from "@material-ui/core/styles";
 import {Header} from "../Header";
 import {SideMenu} from "../SideMenu";
@@ -57,14 +57,12 @@ export const LayoutContext = createContext({updateHeader: (firstName: string, la
 
 export const Layout = ({children}: Props): any => {
     const classes = useStyles();
+
     const updateHeaderRef = useRef<(firstName: string, lastName: string, avatar: string) => void>();
+
     const updateHeader = (firstName: string, lastName: string, avatar: string) => {
         updateHeaderRef.current!(firstName, lastName, avatar);
     }
-
-    useEffect(() => {
-        console.log(true);
-    })
 
     return (
         <div className={classes.root}>
@@ -80,7 +78,7 @@ export const Layout = ({children}: Props): any => {
                 <section className={classes.section}>
                     <LayoutContext.Provider value={{updateHeader: updateHeader}}>
                         {children}
-                        {document.location.pathname.startsWith('/Messages') ? <MessageTabManager/> : ''}
+                        <MessageTabManager/>
                     </LayoutContext.Provider>
                 </section>
             </Container>

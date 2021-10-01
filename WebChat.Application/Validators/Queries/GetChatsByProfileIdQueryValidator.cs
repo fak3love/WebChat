@@ -7,7 +7,7 @@ namespace WebChat.Application.Validators
     {
         public GetChatsByProfileIdQueryValidator()
         {
-            RuleFor(prop => prop.Id).GreaterThan(0).WithMessage("Must be greater than 0");
+            RuleFor(prop => prop.ProfileId).GreaterThan(0).WithMessage("Must be greater than 0");
         }
     }
 }

@@ -22,9 +22,7 @@ namespace WebChat.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetChats()
         {
-            var profileId = UserId;
-
-            var result = await Mediator.Send(new GetChatsByProfileIdQuery(profileId));
+            var result = await Mediator.Send(new GetChatsByProfileIdQuery(UserId));
 
             return result.Count == 0 ? NotFound() : Ok(result);
         }

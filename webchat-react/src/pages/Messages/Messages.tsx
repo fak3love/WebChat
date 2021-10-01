@@ -16,6 +16,7 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
+import {useHistory} from 'react-router-dom'
 import {nanoid} from 'nanoid'
 import {Searchbar} from "../../components/Searchbar";
 import {AttachedImage} from "../../components/AttachedImage";
@@ -25,7 +26,7 @@ import {MessageSection} from "../../components/MessageSection";
 import {first} from "../../utils/array";
 import {deleteRequest, get} from "../../ts/requests";
 import {getUserId, headers} from "../../ts/authorization";
-import {getVisitorId, isVisitor} from "../../utils/common";
+import {getVisitorId} from "../../utils/common";
 import moment from "moment";
 import {SignalRContext} from "../../contextes/SignalRContext";
 import {isEmptyOrSpaces} from "../../utils/validators";
@@ -35,7 +36,7 @@ const useStyles = makeStyles((theme: Theme) =>
         paper: {
             width: 'auto',
             [theme.breakpoints.up('sm')]: {
-                width: 550,
+                width: 525,
             }
         },
         inputRoot: {
@@ -87,7 +88,6 @@ const useListItemTextStyles = makeStyles(() =>
         }
     }),
 );
-
 const useInputStyles = makeStyles(() =>
     createStyles({
         root: {
@@ -138,6 +138,9 @@ export const Messages = () => {
     const [typingDotsInterval, setTypingDotsInterval] = useState<number>(0);
     const [typingTimeout, setTypingTimeout] = useState<number>(0);
     const [stopTypingTimeout, setStopTypingTimeout] = useState<number>(0);
+    const [oldPath, setOldPath] = useState<string>();
+
+    const history = useHistory();
 
     const inputAttachImgRef = useRef<any>();
     const scrollbarRef = useRef<any>();
@@ -207,7 +210,7 @@ export const Messages = () => {
             signalRContext.updateMessage(parseInt(editMessageId), messageText, images);
             const message = messages.filter(message => message.messageId === editMessageId)[0];
 
-            message.editedDate = moment().toISOString();
+            message.editedDate = new Date().toISOString();
             message.messageText = messageText;
             message.messageImages = images;
 
@@ -227,11 +230,11 @@ export const Messages = () => {
                     userId: user?.userId,
                     messageText: messageText,
                     messageImages: images,
-                    writtenDate: moment().toISOString(),
+                    writtenDate: new Date().toISOString(),
                     editedDate: null,
                     selected: false
                 } as RawMessage
-            ])
+            ]);
 
             setAttachedImages([]);
             setEditMessageId('');
@@ -315,6 +318,22 @@ export const Messages = () => {
         setTypingTimeout(timeoutId);
     }
 
+    const resetStates = () => {
+        setUser(undefined);
+        setTarget(undefined);
+        setMessages([]);
+        setShowSearch(false);
+        setAttachedImages([]);
+        setMessages([]);
+        setEditMessageId('');
+        setSelectedMessages([]);
+        setLoadFrom(0);
+        setLockLoading(false);
+        setHasNoMessages(false);
+        setTypingDotsInterval(0);
+        setTypingTimeout(0);
+        setStopTypingTimeout(0);
+    }
     const loadMessages = async () => {
         if (lockLoading)
             return;
@@ -338,17 +357,7 @@ export const Messages = () => {
 
         setLockLoading(false);
     }
-
-    useEffect(() => {
-        const container = scrollbarRef?.current?.container;
-
-        if (container !== undefined) {
-            container.firstChild.style.display = 'flex';
-            container.firstChild.style.flexDirection = 'column-reverse';
-            container.lastChild.style.display = 'flex';
-            container.lastChild.style.flexDirection = 'column-reverse';
-        }
-
+    const loadProfiles = async () => {
         Promise.all([
             get({url: `UserProfiles/GetHeader/${getUserId()}`, headers: headers}),
             get({url: `UserProfiles/GetHeader/${getVisitorId()}`, headers: headers})
@@ -372,10 +381,36 @@ export const Messages = () => {
                     avatar: targetJson.avatar,
                     onlineStatus: moment().subtract(5, 'minutes') <= moment(targetJson.lastActionDate) ? 'online' : moment(targetJson.lastActionDate).calendar()
                 });
-
             }
         });
+    }
+
+    useEffect(() => {
+        const container = scrollbarRef?.current?.container;
+
+        if (container !== undefined) {
+            container.firstChild.style.display = 'flex';
+            container.firstChild.style.flexDirection = 'column-reverse';
+            container.lastChild.style.display = 'flex';
+            container.lastChild.style.flexDirection = 'column-reverse';
+        }
+
+        loadProfiles();
     }, []);
+
+    useEffect(() => {
+        return history.listen(() => {
+            if (history.location.pathname !== oldPath)
+                setOldPath(history.location.pathname);
+        })
+    }, [history]);
+
+    useEffect(() => {
+        if (oldPath !== undefined) {
+            resetStates();
+            loadProfiles();
+        }
+    }, [oldPath]);
 
     useEffect(() => {
         if (user !== undefined && target !== undefined)
@@ -384,7 +419,7 @@ export const Messages = () => {
     }, [user, target]);
 
     useEffect(() => {
-        if (signalRContext.newMessage !== undefined && user?.userId !== target?.userId) {
+        if (signalRContext.newMessage !== undefined && user?.userId !== target?.userId && target?.userId === signalRContext.newMessage.userId.toString()) {
             setMessages([...messages, signalRContext.newMessage]);
 
             signalRContext.readMessages(parseInt(target!.userId), [parseInt(signalRContext.newMessage.messageId)]);
@@ -404,7 +439,7 @@ export const Messages = () => {
     }, [signalRContext.newMessageId]);
 
     useEffect(() => {
-        if (signalRContext.updatedMessage !== undefined) {
+        if (signalRContext.updatedMessage !== undefined && target?.userId === signalRContext.updatedMessage.userId.toString()) {
             const filterMessages = messages.filter(message => message.messageId === signalRContext.updatedMessage.messageId);
 
             if (filterMessages.length > 0) {
@@ -457,7 +492,7 @@ export const Messages = () => {
                             <Link to={target?.userId.toString() === getUserId() ? '/Profile' : `/Profile/${target?.userId}`} className={classes.link}>{target?.firstName} {target?.lastName}</Link>
                         </div>
                         <div style={{textAlign: 'center', marginTop: -4}}>
-                            <span style={{width: 'max-content', fontSize: 12, color: '#626d7a'}}>{target?.onlineStatus}</span>
+                            <span style={{width: 'max-content', fontSize: 12, color: '#626d7a'}}>{target?.onlineStatus.toLowerCase()}</span>
                         </div>
                     </div>
                     <div style={{display: 'flex'}}>
@@ -492,7 +527,7 @@ export const Messages = () => {
                         <span>{target?.firstName} is typing</span>
                         <span ref={typingDotsRef}>...</span>
                     </span>
-                    {build(messages).map(section => (
+                    {build(messages).map((section, sectionIndex) => (
                         <MessageSection key={section.date} date={moment(section.date).format('ll')}>
                             {section.messages.map((message, index) => {
                                 let showInfo = index === 0;
@@ -501,11 +536,11 @@ export const Messages = () => {
                                 if (user?.userId === target?.userId)
                                     unread = false;
 
-                                if (index - 1 >= 0 && !showInfo) {
+                                if (index > 0) {
                                     const date = new Date(message.writtenDate);
                                     const previousDate = new Date(section.messages[index - 1].writtenDate);
 
-                                    showInfo = message.userId !== section.messages[index - 1].userId || date.getHours() > previousDate.getHours() || date.getMinutes() - previousDate.getMinutes() >= 5;
+                                    showInfo = message.userId.toString() !== section.messages[index - 1].userId.toString() || date.getHours() > previousDate.getHours() || date.getMinutes() - previousDate.getMinutes() >= 5;
                                 }
 
                                 return <Message key={message.messageId}

@@ -24,7 +24,7 @@ function App() {
 
     const [newMessageId, setNewMessageId] = useState<{newId: string, tmpId: string}>();
     const [newMessage, setNewMessage] = useState<RawMessage>();
-    const [updatedMessage, setUpdatedMessage] = useState<{messageId: string, message: string, attachedImages: string[], editedDate: string}>();
+    const [updatedMessage, setUpdatedMessage] = useState<{userId: string, messageId: string, message: string, attachedImages: string[], editedDate: string}>();
     const [confirmedReadMessages, setConfirmedReadMessages] = useState<string[]>([]);
     const [typing, setTyping] = useState<{isTyping: boolean, userId: number}>({isTyping: false, userId: 0});
 

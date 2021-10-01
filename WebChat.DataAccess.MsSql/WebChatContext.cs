@@ -62,7 +62,7 @@ namespace WebChat.DataAccess.MsSql
 
                             foreach (var property in entry.Properties)
                             {
-                                if (property.IsModified && (property.Metadata.Name == "IsRead") || (property.Metadata.Name == "IsDeletedInitiator") || (property.Metadata.Name == "IsDeletedTarget"))
+                                if (property.IsModified && (property.Metadata.Name == "IsRead" || property.Metadata.Name == "IsDeletedInitiator" || property.Metadata.Name == "IsDeletedTarget"))
                                 {
                                     isBreak = true;
                                     break;
