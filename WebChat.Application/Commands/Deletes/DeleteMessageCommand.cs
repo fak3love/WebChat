@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,7 +43,7 @@ namespace WebChat.Application.Commands.Deletes
                 if (userProfile is null)
                     throw new NotFoundException(nameof(UserProfile), request.ProfileId);
 
-                var messages = await _context.UserMessages
+                var tmpMessages = await _context.UserMessages
                     .Where(prop =>
                         ((prop.InitiatorUserId == request.ProfileId && prop.TargetUserId == request.TargetId) ||
                         (prop.InitiatorUserId == request.TargetId && prop.TargetUserId == request.ProfileId)) &&
@@ -50,6 +51,13 @@ namespace WebChat.Application.Commands.Deletes
                         (prop.InitiatorUserId == request.ProfileId && !prop.IsDeletedInitiator) || (prop.TargetUserId == request.ProfileId && !prop.IsDeletedTarget))
                     )
                     .ToListAsync();
+
+                var messages = new List<UserMessage>();
+
+                foreach (var message in tmpMessages)
+                    for (int i = 0; i < request.MessageIds.Length; i++)
+                        if (message.Id == request.MessageIds[i])
+                            messages.Add(message);
 
                 if (messages.Count == 0)
                     throw new NotFoundException(nameof(UserMessage), $"Profile: {request.ProfileId} | Target: {request.TargetId}");
@@ -67,15 +75,19 @@ namespace WebChat.Application.Commands.Deletes
                         var messagePhotos = await _context.UserMessagePhotos
                             .Include(prop => prop.UserPhoto)
                             .Where(ump => ump.UserMessageId == messages[i].Id)
-                            .Select(prop => prop.UserPhoto.Slug)
+                            .Select(prop => prop.UserPhoto)
                             .ToListAsync();
 
                         _context.UserMessages.Remove(messages[i]);
-
                         await _context.SaveChangesAsync(cancellationToken);
 
-                        foreach (var slug in messagePhotos)
-                            await _fileManager.Delete(slug + ".jpg");
+                        foreach (var photo in messagePhotos)
+                        {
+                            _context.UserPhotos.Remove(photo);
+                            await _fileManager.Delete(photo.Slug + ".jpg");
+                        }
+
+                        await _context.SaveChangesAsync(cancellationToken);
                     }
                 }
 

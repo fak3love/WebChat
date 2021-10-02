@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {createStyles, makeStyles, Theme} from "@material-ui/core/styles";
 import {Chat} from "../../components/Chat";
 import {Divider, Paper} from "@material-ui/core";
@@ -6,9 +6,12 @@ import SearchIcon from "@material-ui/icons/Search";
 import InputBase from "@material-ui/core/InputBase";
 import Scrollbars from "react-custom-scrollbars";
 import {get} from "../../ts/requests";
-import {headers} from "../../ts/authorization";
+import {getUserId, headers} from "../../ts/authorization";
 import moment from "moment";
 import {nanoid} from "nanoid";
+import {SignalRContext} from "../../contextes/SignalRContext";
+import {isEmptyOrSpaces} from "../../utils/validators";
+import {useHistory} from "react-router-dom";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -40,6 +43,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 type RawChat = {
     userId: string,
+    messageId: string,
     firstName: string,
     lastName: string,
     avatar: string,
@@ -48,7 +52,7 @@ type RawChat = {
     isOnline: boolean,
     isUnread: boolean,
     unreadCount: number,
-    writtenDate: string
+    writtenDate: string,
 }
 
 export const Chats = () => {
@@ -56,6 +60,20 @@ export const Chats = () => {
     const [chats, setChats] = useState<RawChat[]>([]);
     const [userAvatar, setUserAvatar] = useState<string>('');
 
+    const history = useHistory();
+
+    const signalRContext = useContext(SignalRContext);
+
+    const loadAvatar = async () => {
+        const response = await get({url: `UserPhotos/GetAvatar/${getUserId()}`, headers: headers});
+
+        if (response.ok) {
+            const avatarResponse = await get({url: `UserPhotos/GetPhotoBaseString/${await response.text()}`, headers: headers});
+
+            if (avatarResponse.ok)
+                setUserAvatar("data:image/png;base64," + await avatarResponse.text());
+        }
+    }
     const loadChats = async () => {
         const response = await get({url: 'UserMessages/GetChats', headers: headers});
 
@@ -67,8 +85,65 @@ export const Chats = () => {
     }
 
     useEffect(() => {
-        loadChats();
+        if (chats.length === 0) {
+            loadAvatar();
+            loadChats();
+        }
     }, []);
+
+    useEffect(() => {
+        return history.listen((location) => {
+            if (location.pathname !== '/Messages' || location.search.includes('tab=unread'))
+                return;
+
+            setChats([]);
+            loadChats();
+            loadAvatar();
+        })
+    }, [history]);
+
+    useEffect(() => {
+        if (signalRContext.newMessage !== undefined) {
+            let chat: any = chats.find(chat => chat.userId.toString() === signalRContext.newMessage.message.userId.toString());
+            const photos = signalRContext.newMessage.message.messageImages.length;
+            const text = signalRContext.newMessage.message.messageText;
+
+            const isUndefined = chat === undefined;
+
+            if (isUndefined)
+                chat = {};
+
+            chat.userId = signalRContext.newMessage.message.userId.toString();
+            chat.messageId = signalRContext.newMessage.message.messageId.toString();
+            chat.firstName = signalRContext.newMessage.user.firstName;
+            chat.firstName = signalRContext.newMessage.user.lastName;
+            chat.avatar = signalRContext.newMessage.user.avatar;
+            chat.lastMessage = isEmptyOrSpaces(text) ? (photos === 1 ? 'Photo' : `${photos} photos`) : text;
+            chat.sender = 'target';
+            chat.isUnread = !signalRContext.newMessage.message.isRead;
+            chat.writtenDate = signalRContext.newMessage.message.writtenDate;
+            chat.isOnline = true;
+
+            if (isUndefined)
+                chat.unreadCount = 1;
+            else
+                chat.unreadCount++;
+
+            if (isUndefined)
+                chats.splice(0, 0, chat);
+
+            setChats([...chats]);
+        }
+    }, [signalRContext.newMessage]);
+
+    useEffect(() => {
+        for (let i = 0; i < chats.length; i++)
+            for (let readMessageId of signalRContext.confirmedReadMessages)
+                if (chats[i].messageId.toString() === readMessageId.toString())
+                    chats[i].isUnread = false;
+
+        setChats([...chats]);
+    }, [signalRContext.confirmedReadMessages]);
 
     return (
         <Paper variant='outlined' style={{width: '100%', height: '95%', background: 'white', marginBottom: 15}}>
@@ -95,7 +170,8 @@ export const Chats = () => {
                                     unreadCount={chat.unreadCount}
                                     unread={chat.isUnread}
                                     avatarSrc={userAvatar}
-                                    target={{userId: chat.userId, avatarSrc: chat.avatar, isOnline: chat.isOnline, firstName: chat.firstName, lastName: chat.lastName}}/>
+                                    target={{userId: chat.userId, avatarSrc: chat.avatar, isOnline: chat.isOnline, firstName: chat.firstName, lastName: chat.lastName}}
+                                />
                                 {index < chats.length - 1 ? <Divider/> : ''}
                             </React.Fragment>
                         )

@@ -5,6 +5,7 @@ namespace WebChat.Application.Models
     public class ChatModel
     {
         public int UserId { get; set; }
+        public int MessageId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Avatar { get; set; }

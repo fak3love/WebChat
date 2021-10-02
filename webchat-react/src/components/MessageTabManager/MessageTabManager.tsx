@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {MessageTab} from "../MessageTab";
 import {Divider, Paper} from "@material-ui/core";
 import {createStyles, makeStyles, Theme} from "@material-ui/core/styles";
@@ -12,6 +12,7 @@ import {
     showTabs
 } from "./utils";
 import {getVisitorId, isVisitor} from "../../utils/common";
+import {SignalRContext} from "../../contextes/SignalRContext";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -32,15 +33,17 @@ export const MessageTabManager = () => {
 
     const history = useHistory();
     const [location, setLocation] = useState<{pathname: string, search: string}>({pathname: '/', search: '?'});
+    const [userTabs, setUserTabs] = useState<{userId: string, unreadCount: number}[]>([]);
     const actualLocation = location.search !== '?' ? location : document.location;
 
     const isShowTabs = showTabs(actualLocation.pathname);
-    const userTabs = getTabs(actualLocation.search);
     const selectedUserId = getSelectedTabUserId();
 
     const selectAllChats = selectedUserId === undefined && isSelectedAllChats(actualLocation.search);
     const selectUnread = selectedUserId === undefined && isSelectedUnread(actualLocation.search);
     const peers = getPeers(actualLocation.search);
+
+    const signalRContext = useContext(SignalRContext);
 
     const handleTabCloseClick = (userId: string) => {
         let search = actualLocation.search.replace(new RegExp('_?' + userId, 'i'), '');
@@ -71,8 +74,29 @@ export const MessageTabManager = () => {
     },[history]);
 
     useEffect(() => {
-        
+        const tabs = getTabs(actualLocation.search);
+        const newTabs = [];
+
+        for (let tab of tabs) {
+            const filterTabs = userTabs.filter(userTab => userTab.userId === tab);
+
+            newTabs.push({userId: tab, unreadCount: isVisitor('/Messages') && getVisitorId() === tab ? 0 : filterTabs.length > 0 ? filterTabs[0].unreadCount : 0});
+        }
+
+        setUserTabs(newTabs);
     }, [location]);
+
+    useEffect(() => {
+        if (signalRContext.newMessage !== undefined && (!isVisitor('/Messages') || signalRContext.newMessage.message.userId.toString() !== getVisitorId())) {
+            const tab = userTabs.find(tab => tab.userId === signalRContext.newMessage.message.userId.toString());
+
+            if (tab !== undefined) {
+                tab.unreadCount++;
+
+                setUserTabs([...userTabs]);
+            }
+        }
+    }, [signalRContext.newMessage]);
 
     return (
         <Paper variant='outlined' style={{display: document.body.offsetWidth > 600 && isShowTabs ? 'flex' : 'none'}} className={classes.paper}>
@@ -80,14 +104,14 @@ export const MessageTabManager = () => {
             <MessageTab title="Unread" selected={selectUnread} onClick={() => history.push(`/Messages?tab=unread${peers !== '' ? '&' + peers : ''}`)}/>
             <div style={{display: userTabs.length > 0 ? 'flex' : 'none', flexDirection: 'column'}}>
                 <Divider style={{height: 1, margin: '5px 15px'}}/>
-                {userTabs.map(userId => {
-                    return <MessageTab key={userId}
-                                       userId={userId}
-                                       newMessageCount={3}
-                                       selected={selectedUserId !== undefined && selectedUserId.toString() === userId.toString()}
+                {userTabs.map(userTab => {
+                    return <MessageTab key={userTab.userId}
+                                       userId={userTab.userId}
+                                       newMessageCount={userTab.unreadCount}
+                                       selected={selectedUserId !== undefined && selectedUserId.toString() === userTab.userId.toString()}
                                        disableClose={false}
-                                       onClick={() => history.push(`/Messages/${userId}?${peers}`)}
-                                       closeClick={() => handleTabCloseClick(userId)}/>
+                                       onClick={() => history.push(`/Messages/${userTab.userId}?${peers}`)}
+                                       closeClick={() => handleTabCloseClick(userTab.userId)}/>
                 })}
             </div>
         </Paper>

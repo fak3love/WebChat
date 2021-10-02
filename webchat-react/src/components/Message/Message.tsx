@@ -23,6 +23,15 @@ const useStyles = makeStyles((theme: Theme) =>
             [theme.breakpoints.down('sm')]: {
                 maxWidth: 150,
             }
+        },
+        img: {
+            maxWidth: 160,
+            [theme.breakpoints.up('sm')]: {
+                maxHeight: 175,
+                width: 'auto',
+                maxWidth: '100%',
+                margin: '5px 10px 5px 0'
+            }
         }
     }),
 );
@@ -64,7 +73,7 @@ export const Message = ({userId, messageId, firstName, avatarSrc, writtenDate, m
     }, [messageId]);
 
     return (
-        <div className="message" style={{display: 'flex', padding: '0 5px', background: selected ? '#F0F2F5' : 'transparent', cursor: 'pointer', marginTop: showInfo ? 5 : 0}} onClick={(event: any) => {onClick(event, messageId)}} onMouseMove={handleMove} onMouseLeave={handleLeave}>
+        <div style={{display: 'flex', padding: '0 21px 0 5px', background: selected ? '#F0F2F5' : 'transparent', cursor: 'pointer', marginTop: showInfo ? 5 : 0}} onClick={(event: any) => {onClick(event, messageId)}} onMouseMove={handleMove} onMouseLeave={handleLeave}>
             <div style={{display: 'flex', maxHeight: 51}}>
                 <FontAwesomeIcon icon={faCheckCircle} style={{visibility: !selected ? showChecked ? 'visible' : 'hidden' : 'visible', width: 16, height: 16, color: selected ? '#5181B8' : '#86A7CD', alignSelf: 'center'}}/>
             </div>
@@ -96,7 +105,7 @@ export const Message = ({userId, messageId, firstName, avatarSrc, writtenDate, m
                         {/*/>*/}
                     </div>
                     <div style={{display: messageImages !== undefined ? 'flex' : 'none', flexWrap: 'wrap', marginTop: 2.5}}>
-                        {messageImages?.map((src, index) => <img key={index} style={{maxHeight: 175, margin: '5px 10px 5px 0'}} src={src} alt={src}/>)}
+                        {messageImages?.map((src, index) => <img key={index} className={classes.img} src={src} alt={src}/>)}
                     </div>
                     <Tooltip title={`Edited at ${editedDate}`} placement="bottom" arrow>
                         <span style={{display: editedDate !== undefined ? 'inline' : 'none', color: '#99a2ad', fontSize: 13, width: 'max-content'}}>(edited)</span>

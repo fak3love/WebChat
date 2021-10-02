@@ -174,12 +174,11 @@ export const Photos = () => {
                 }}>
                     <ImageList
                         sx={{
-                            width: 640,
                             transform: 'translateZ(0)',
                         }}
                         rowHeight={200}
                         gap={5}
-                        style={{margin: 0}}
+                        style={{margin: 0, width: '100%'}}
                     >
                         {images.map((item, index) => {
                             let cols = index % 5 === 0 ? 2 : 1;

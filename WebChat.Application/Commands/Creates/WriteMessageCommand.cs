@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using WebChat.Application.Common.Exceptions;
+using WebChat.Application.Common.Helpers;
 using WebChat.Application.Models;
 using WebChat.Application.Validators;
 using WebChat.DataAccess.MsSql;
@@ -50,9 +51,9 @@ namespace WebChat.Application.Commands.Creates
                 if (userProfile is null)
                     throw new NotFoundException(nameof(UserProfile), request.ProfileId);
 
-                userProfile = await _context.UserProfiles.FindAsync(new object[] { request.TargetProfileId }, cancellationToken);
+                var targetProfile = await _context.UserProfiles.FindAsync(new object[] { request.TargetProfileId }, cancellationToken);
 
-                if (userProfile is null)
+                if (targetProfile is null)
                     throw new NotFoundException(nameof(UserProfile), request.TargetProfileId);
 
                 foreach (var photo in request.MessagePhotos)
@@ -63,7 +64,8 @@ namespace WebChat.Application.Commands.Creates
                 {
                     InitiatorUserId = request.ProfileId,
                     TargetUserId = request.TargetProfileId,
-                    MessageText = request.MessageText
+                    MessageText = request.MessageText,
+                    IsRead = request.ProfileId == request.TargetProfileId
                 };
 
                 userMessage = (await _context.UserMessages.AddAsync(userMessage, cancellationToken)).Entity;
@@ -98,8 +100,11 @@ namespace WebChat.Application.Commands.Creates
                 {
                     UserId = request.ProfileId,
                     MessageId = userMessage.Id,
+                    FirstName = userProfile.FirstName,
+                    LastName = userProfile.LastName,
                     MessageText = request.MessageText,
                     MessageImages = request.MessagePhotos,
+                    IsRead = request.ProfileId == request.TargetProfileId,
                     WrittenDate = DateTime.Now
                 };
 

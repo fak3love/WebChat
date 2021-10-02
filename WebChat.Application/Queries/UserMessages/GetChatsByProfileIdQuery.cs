@@ -34,8 +34,8 @@ namespace WebChat.Application.Queries
 
             public async Task<ICollection<ChatModel>> Handle(GetChatsByProfileIdQuery request, CancellationToken cancellationToken)
             {
-                var initiatorUsers = await _context.UserMessages.Where(message => message.InitiatorUserId == request.ProfileId).Select(x => x.TargetUserId).ToListAsync(cancellationToken);
-                var targetUsers = await _context.UserMessages.Where(message => message.TargetUserId == request.ProfileId).Select(x => x.InitiatorUserId).ToListAsync(cancellationToken);
+                var initiatorUsers = await _context.UserMessages.Where(message => message.InitiatorUserId == request.ProfileId && !message.IsDeletedInitiator).Select(x => x.TargetUserId).ToListAsync(cancellationToken);
+                var targetUsers = await _context.UserMessages.Where(message => message.TargetUserId == request.ProfileId && !message.IsDeletedTarget).Select(x => x.InitiatorUserId).ToListAsync(cancellationToken);
 
                 var userIds = initiatorUsers.Union(targetUsers);
 
@@ -46,8 +46,8 @@ namespace WebChat.Application.Queries
                     var lastMessage = await _context.UserMessages
                         .Include(prop => prop.MessagePhotos)
                         .Where(um =>
-                            (um.InitiatorUserId == request.ProfileId && um.TargetUserId == userId) ||
-                            (um.InitiatorUserId == userId && um.TargetUserId == request.ProfileId)
+                            (um.InitiatorUserId == request.ProfileId && um.TargetUserId == userId && !um.IsDeletedInitiator) ||
+                            (um.InitiatorUserId == userId && um.TargetUserId == request.ProfileId && !um.IsDeletedTarget)
                         )
                         .OrderByDescending(prop => prop.CreatedAt)
                         .FirstAsync();
@@ -67,6 +67,7 @@ namespace WebChat.Application.Queries
                     chats.Add(new ChatModel()
                     {
                         UserId = userId,
+                        MessageId = lastMessage.Id,
                         FirstName = profile.FirstName,
                         LastName = profile.LastName,
                         Avatar = await WebChatContextHelper.TryGetAvatarByUserId(userId, _context, _fileManager),

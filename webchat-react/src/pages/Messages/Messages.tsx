@@ -63,7 +63,7 @@ const useStyles = makeStyles((theme: Theme) =>
             [theme.breakpoints.down('sm')]: {
                 maxWidth: 200,
             },
-        }
+        },
     }),
 );
 const useListItemStyles = makeStyles(() =>
@@ -268,10 +268,12 @@ export const Messages = () => {
         setSelectedMessages([]);
         setLoadFrom(loadFrom - deleteMessageIds.length < 0 ? 0 : loadFrom - deleteMessageIds.length);
 
+        signalRContext.resetNewMessage();
         deleteRequest({url: 'UserMessages/DeleteMessage', headers: headers, body: JSON.stringify({targetId: target?.userId, messageIds: deleteMessageIds})}).catch(err => console.error(err));
     }
     const handleClearMessageHistory = () => {
         setMessages([]);
+        signalRContext.resetNewMessage();
         deleteRequest({url: 'UserMessages/DeleteMessageHistory', headers: headers, body: JSON.stringify({targetId: target?.userId})}).catch(err => console.error(err));
     }
     const startTypingAnimation = () => {
@@ -419,10 +421,10 @@ export const Messages = () => {
     }, [user, target]);
 
     useEffect(() => {
-        if (signalRContext.newMessage !== undefined && user?.userId !== target?.userId && target?.userId === signalRContext.newMessage.userId.toString()) {
-            setMessages([...messages, signalRContext.newMessage]);
+        if (signalRContext.newMessage !== undefined && user?.userId !== target?.userId && target?.userId === signalRContext.newMessage.message.userId.toString()) {
+            setMessages([...messages, signalRContext.newMessage.message]);
 
-            signalRContext.readMessages(parseInt(target!.userId), [parseInt(signalRContext.newMessage.messageId)]);
+            signalRContext.readMessages(parseInt(target!.userId), [parseInt(signalRContext.newMessage.message.messageId)]);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [signalRContext.newMessage]);
@@ -527,7 +529,7 @@ export const Messages = () => {
                         <span>{target?.firstName} is typing</span>
                         <span ref={typingDotsRef}>...</span>
                     </span>
-                    {build(messages).map((section, sectionIndex) => (
+                    {build(messages).map((section) => (
                         <MessageSection key={section.date} date={moment(section.date).format('ll')}>
                             {section.messages.map((message, index) => {
                                 let showInfo = index === 0;

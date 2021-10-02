@@ -64,15 +64,18 @@ namespace WebChat.Application.Commands.Deletes
                         var messagePhotos = await _context.UserMessagePhotos
                             .Include(prop => prop.UserPhoto)
                             .Where(ump => ump.UserMessageId == messages[i].Id)
-                            .Select(prop => prop.UserPhoto.Slug)
+                            .Select(prop => prop.UserPhoto)
                             .ToListAsync();
 
                         _context.UserMessages.Remove(messages[i]);
 
                         await _context.SaveChangesAsync(cancellationToken);
 
-                        foreach (var slug in messagePhotos)
-                            await _fileManager.Delete(slug + ".jpg");
+                        foreach (var photo in messagePhotos)
+                        {
+                            _context.UserPhotos.Remove(photo);
+                            await _fileManager.Delete(photo.Slug + ".jpg");
+                        }
                     }
                 }
                 

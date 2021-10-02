@@ -1,9 +1,10 @@
-import React, {createContext, useEffect, useRef, useState} from 'react';
+import React, {createContext, useRef} from 'react';
 import {createStyles, makeStyles, Theme} from "@material-ui/core/styles";
 import {Header} from "../Header";
 import {SideMenu} from "../SideMenu";
 import {Container} from "@material-ui/core";
 import {MessageTabManager} from "../MessageTabManager";
+import {SnackbarMessage} from "../SnackbarMessage";
 
 type Props = {
     children: JSX.Element | JSX.Element[]

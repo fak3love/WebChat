@@ -1,0 +1,13 @@
+.sideMessageBox {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  margin: 0 8px;
+  font-size: 13px;
+  max-width: 200px;
+  word-break: break-all;
+  max-height: 75px;
+  overflow: hidden;
+}
+
+/*# sourceMappingURL=SnackbarMessage.css.map */

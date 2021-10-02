@@ -20,6 +20,14 @@ namespace WebChat.Api.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> GetUniqueUnreadCount()
+        {
+            var result = await Mediator.Send(new GetUniqueUnreadCountMessageByProfileIdQuery(UserId));
+
+            return Ok(result);
+        }
+
+        [HttpGet]
         public async Task<IActionResult> GetChats()
         {
             var result = await Mediator.Send(new GetChatsByProfileIdQuery(UserId));

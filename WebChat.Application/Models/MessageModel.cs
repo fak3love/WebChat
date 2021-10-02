@@ -7,6 +7,8 @@ namespace WebChat.Application.Models
     {
         public int UserId { get; set; }
         public int MessageId { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
         public string MessageText { get; set; }
         public bool IsRead { get; set; }
         public DateTime WrittenDate { get; set; }

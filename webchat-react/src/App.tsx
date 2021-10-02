@@ -14,19 +14,42 @@ import * as signalR from "@microsoft/signalr";
 import './assets/fonts.css';
 import './assets/icons.css';
 import './App.css';
-import {getToken, isEmptyStorage} from "./ts/authorization";
+import {getToken, headers, isEmptyStorage} from "./ts/authorization";
 import {SignalRContext} from "./contextes/SignalRContext";
 import {environment} from "./ts/environment";
 import {RawMessage} from "./pages/Messages/Messages";
+import {SnackbarMessage} from "./components/SnackbarMessage";
+import {get} from "./ts/requests";
 
 function App() {
     const [connection, setConnection] = useState<HubConnection>();
 
     const [newMessageId, setNewMessageId] = useState<{newId: string, tmpId: string}>();
-    const [newMessage, setNewMessage] = useState<RawMessage>();
+    const [newMessage, setNewMessage] = useState<{message: RawMessage, user: {userId: string, firstName: string, lastName: string, lastActionDate: string, avatar: string}}>();
     const [updatedMessage, setUpdatedMessage] = useState<{userId: string, messageId: string, message: string, attachedImages: string[], editedDate: string}>();
     const [confirmedReadMessages, setConfirmedReadMessages] = useState<string[]>([]);
     const [typing, setTyping] = useState<{isTyping: boolean, userId: number}>({isTyping: false, userId: 0});
+    const [uniqueMessageUserIds, setUniqueMessageUserIds] = useState<number[]>([]);
+
+    const loadUnreadMessages = async () => {
+        const response = await get({url: 'UserMessages/GetUniqueUnreadCount', headers: headers});
+
+        if (response.ok)
+            setUniqueMessageUserIds(await response.json());
+    }
+
+    const resetNewMessage = () => setNewMessage(undefined);
+
+    const updateUniqueMessages = (userId: any) => {
+        const findId = uniqueMessageUserIds.find(id => id === userId);
+
+        console.log(findId);
+
+        if (findId === undefined) {
+            uniqueMessageUserIds.push(userId);
+            setUniqueMessageUserIds([...uniqueMessageUserIds]);
+        }
+    }
 
     useEffect(() => {
         if (isEmptyStorage())
@@ -42,6 +65,8 @@ function App() {
             .build();
 
         setConnection(connection);
+
+        loadUnreadMessages();
     }, []);
 
     useEffect(() => {
@@ -50,14 +75,25 @@ function App() {
                 connection.on("NewMessageId", (messageId) => {
                     setNewMessageId(messageId);
                 })
-                connection.on('NewMessage', message => {
-                    setNewMessage(message);
+                connection.on('NewMessage', (message, user) => {
+                    setNewMessage({message: message, user: user});
+
+                    updateUniqueMessages(message.userId);
                 });
                 connection.on('UpdateMessage', message => {
                     setUpdatedMessage(message);
                 });
-                connection.on('ConfirmedReadMessages', (messageIds: string[]) => {
-                    setConfirmedReadMessages(messageIds);
+                connection.on('ConfirmedReadMessages', (messageIds: {userId: number, messageId: string}[]) => {
+                    setConfirmedReadMessages(messageIds.map(id => id.messageId));
+
+                    for (let i = 0; i < messageIds.length; i++) {
+                        const findId = uniqueMessageUserIds.findIndex(id => id === messageIds[i].userId);
+
+                        if (findId !== -1)
+                            uniqueMessageUserIds.splice(findId, 1);
+                    }
+
+                    setUniqueMessageUserIds([...uniqueMessageUserIds]);
                 });
                 connection.on('BeginTyping', (userId: number) => {
                     setTyping({isTyping: true, userId: userId});
@@ -76,6 +112,7 @@ function App() {
                 updatedMessage: updatedMessage,
                 confirmedReadMessages: confirmedReadMessages,
                 typing: typing,
+                uniqueMessageUserIds: uniqueMessageUserIds,
                 sendMessage(targetId: number, message: string, attachedImages: string[], tmpId: string) {
                     connection?.send('SendMessage', targetId, message, attachedImages, tmpId).catch((err) => console.error(err));
                 },
@@ -90,7 +127,8 @@ function App() {
                 },
                 stopTyping(targetId: number) {
                     connection?.send('StopTyping', targetId);
-                }
+                },
+                resetNewMessage: resetNewMessage
             }}>
                 <BrowserRouter>
                     <Layout>
@@ -111,6 +149,7 @@ function App() {
                         <Route exact path='/Settings' component={Settings} />
                         <Route exact path='/Authorization' component={Authorization}/>
                     </Layout>
+                    <SnackbarMessage message={newMessage?.message} user={newMessage?.user}/>
                 </BrowserRouter>
             </SignalRContext.Provider>
         </div>

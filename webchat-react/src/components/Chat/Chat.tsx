@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {createStyles, makeStyles, Theme, withStyles} from "@material-ui/core/styles";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {Link} from "react-router-dom";
@@ -46,14 +46,13 @@ const useStyles = makeStyles((theme: Theme) =>
             right: 0,
             marginLeft: 35,
             background: '#5181b8',
-            borderRadius: '100%',
-            textAlign: 'center',
+            borderRadius: 18,
             fontWeight: 700,
             fontSize: 11,
             color: 'white',
             lineHeight: '19px',
-            width: 18,
-            height: 18
+            height: 18,
+            padding: '0 6px'
         }
     }),
 );
@@ -86,7 +85,7 @@ export type ChatType = {
     unreadCount?: number,
     unread: boolean,
     sender: 'user' | 'target',
-    target: TargetType,
+    target: TargetType
 }
 
 export const Chat = ({avatarSrc, message, writtenDate, unreadCount, unread, sender, target}: ChatType) => {
@@ -95,6 +94,8 @@ export const Chat = ({avatarSrc, message, writtenDate, unreadCount, unread, send
     const isUnreadTarget = unread && sender === 'target';
     const [background, setBackground] = useState<'transparent' | 'rgb(174 183 194 / 12%)'>(isUnreadTarget ? 'rgb(174 183 194 / 12%)' : 'transparent')
     const [btnRemoveChatDisplay, setBtnRemoveChatDisplay] = useState<'block' | 'none'>('none');
+
+    const messageRef = useRef<any>();
 
     const handleMouseMove = () => {
         setBackground('rgb(174 183 194 / 12%)');
@@ -129,7 +130,7 @@ export const Chat = ({avatarSrc, message, writtenDate, unreadCount, unread, send
                     </div>
                     <div style={{display: 'flex', position: 'relative', marginTop: 7.5}}>
                         <Avatar alt="Remy Sharp" src={sender === 'target' ? null : avatarSrc} style={{display: sender === 'user' ? 'inherit' : 'none', width: 25, height: 25, alignSelf: 'center'}} />
-                        <div style={{marginLeft: isUnreadUser ? 7.5 : sender === 'user' ? 5 : 0, background: isUnreadUser ? 'rgb(174 183 194 / 12%)' : 'transparent', lineHeight: sender === 'user' ? '25px' : 'auto', paddingLeft: sender === 'user' ? 5 : 0}} className={classes.message}>{message}</div>
+                        <div ref={messageRef} style={{marginLeft: isUnreadUser ? 7.5 : sender === 'user' ? 5 : 0, background: isUnreadUser ? 'rgb(174 183 194 / 12%)' : 'transparent', lineHeight: sender === 'user' ? '25px' : 'auto', paddingLeft: sender === 'user' ? 5 : 0}} className={classes.message}>{message}</div>
                         <div style={{display: isUnreadTarget ? 'block' : 'none'}} className={classes.unreadCount}>{unreadCount}</div>
                     </div>
                 </div>

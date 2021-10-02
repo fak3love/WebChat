@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {createStyles, makeStyles} from "@material-ui/core/styles";
 import {MenuList, MenuItem} from '@material-ui/core';
 import Badge from "@material-ui/core/Badge";
@@ -6,6 +6,9 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import {Link} from "react-router-dom";
 import {CustomBadge} from "../CustomBadge";
+import {get} from "../../ts/requests";
+import {headers} from "../../ts/authorization";
+import {SignalRContext} from "../../contextes/SignalRContext";
 
 const useListStyles = makeStyles(() =>
     createStyles({
@@ -43,6 +46,15 @@ export const SideMenu = () => {
     const listItemIconClasses = useListItemIconStyles();
     const listItemTextClasses = useListItemTextStyles();
 
+    const [unreadMessages, setUnreadMessages] = useState<number>(0);
+    const [newFriendRequests, setNewFriendsRequests] = useState<number>(0);
+
+    const signalRContext = useContext(SignalRContext);
+
+    useEffect(() => {
+        setUnreadMessages(signalRContext.uniqueMessageUserIds.length);
+    }, [signalRContext.uniqueMessageUserIds]);
+
     return (
         <MenuList classes={listClasses}>
             <MenuItem classes={listItemClasses} disableTouchRipple={true}>
@@ -64,7 +76,7 @@ export const SideMenu = () => {
                     </svg>
                 </ListItemIcon>
                 <ListItemText classes={listItemTextClasses} disableTypography={true}>Messages</ListItemText>
-                <CustomBadge badgeProps={{overlap: 'circular', badgeContent: 10, style: {marginRight: 16}}}/>
+                <CustomBadge badgeProps={{overlap: 'circular', badgeContent: unreadMessages, style: {marginRight: 16}}}/>
                 <Link to="/Messages" style={{position: 'absolute', display: 'block', width: '100%', height: '100%', zIndex: 1}}/>
             </MenuItem>
             <MenuItem classes={listItemClasses} disableTouchRipple={true}>
@@ -79,7 +91,7 @@ export const SideMenu = () => {
                     </svg>
                 </ListItemIcon>
                 <ListItemText classes={listItemTextClasses} disableTypography={true}>Friends</ListItemText>
-                <CustomBadge badgeProps={{overlap: 'circular', badgeContent: 24, style: {marginRight: 16}}}/>
+                <CustomBadge badgeProps={{overlap: 'circular', badgeContent: newFriendRequests, style: {marginRight: 16}}}/>
                 <Link to="/Friends" style={{position: 'absolute', display: 'block', width: '100%', height: '100%', zIndex: 1}}/>
             </MenuItem>
             <MenuItem classes={listItemClasses} disableTouchRipple={true}>
