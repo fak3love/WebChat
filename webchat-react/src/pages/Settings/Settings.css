@@ -1,3 +1,52 @@
-
+.Settings {
+  display: flex;
+  width: 100%;
+  height: 95%;
+}
+.Settings__content {
+  width: 100%;
+}
+.Settings__textField {
+  width: 200px;
+  padding: 5px 9px 7px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+}
+.Settings__textField:focus {
+  outline: none;
+}
+.Settings__button {
+  width: max-content;
+  margin-left: 155px;
+  padding: 7px 16px 8px;
+  font-size: 12.5px;
+  color: white;
+  background: #5181b8;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.Settings__button:hover {
+  background: #6690C0;
+}
+.Settings__select {
+  width: 220px;
+  padding: 5px 9px 7px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+}
+.Settings__select:focus {
+  outline: none;
+}
+.Settings__selectMini {
+  padding: 5px 9px 7px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+  width: max-content;
+  margin-right: 10px;
+}
+.Settings__selectMini:focus {
+  outline: none;
+}
 
 /*# sourceMappingURL=Settings.css.map */

@@ -25,8 +25,8 @@ export async function get({url, headers}: RequestMethod) {
 export async function post({url, headers, body}: RequestMethod) {
     return await request({url, headers, body, method: "post"});
 }
-export async function update({url, headers, body}: RequestMethod) {
-    return await request({url, headers, body, method: "update"});
+export async function put({url, headers, body}: RequestMethod) {
+    return await request({url, headers, body, method: "put"});
 }
 export async function patch({url, headers, body}: RequestMethod) {
     return await request({url, headers, body, method: "patch"});

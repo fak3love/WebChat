@@ -26,11 +26,18 @@ namespace WebChat.Api.Controllers
             return Ok(result);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetGeneral()
+        {
+            var result = await Mediator.Send(new GetUserGeneralByIdQuery(UserId));
+
+            return Ok(result);
+        }
+
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] UpdateAccountCommand command)
         {
-            if (command.Id != UserId)
-                return BadRequest();
+            command.Id = UserId;
 
             await Mediator.Send(command);
 

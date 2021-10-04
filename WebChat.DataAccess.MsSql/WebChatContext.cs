@@ -77,6 +77,19 @@ namespace WebChat.DataAccess.MsSql
                         break;
                 }
             }
+
+            foreach (var entry in ChangeTracker.Entries<ILastPasswordUpdate>())
+            {
+                switch (entry.State)
+                {
+                    case EntityState.Added:
+                        entry.Entity.LastPasswordUpdate = DateTime.Now;
+                        break;
+                    case EntityState.Modified:
+                        entry.Entity.LastPasswordUpdate = DateTime.Now;
+                        break;
+                }
+            }
         }
     }
 }

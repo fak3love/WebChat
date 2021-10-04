@@ -14,7 +14,7 @@ import * as signalR from "@microsoft/signalr";
 import './assets/fonts.css';
 import './assets/icons.css';
 import './App.css';
-import {getToken, headers, isEmptyStorage} from "./ts/authorization";
+import {getToken, getUserId, headers, isEmptyStorage} from "./ts/authorization";
 import {SignalRContext} from "./contextes/SignalRContext";
 import {environment} from "./ts/environment";
 import {RawMessage} from "./pages/Messages/Messages";
@@ -43,9 +43,7 @@ function App() {
     const updateUniqueMessages = (userId: any) => {
         const findId = uniqueMessageUserIds.find(id => id === userId);
 
-        console.log(findId);
-
-        if (findId === undefined) {
+        if (findId === undefined && userId.toString() !== getUserId()) {
             uniqueMessageUserIds.push(userId);
             setUniqueMessageUserIds([...uniqueMessageUserIds]);
         }

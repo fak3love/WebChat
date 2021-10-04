@@ -11,14 +11,16 @@ namespace WebChat.Application.Commands.Updates
     {
         public int Id { get; set; }
         public string UserName { get; set; }
-        public string Password { get; set; }
+        public string CurrentPassword { get; set; }
+        public string NewPassword { get; set; }
         public string Email { get; set; }
 
-        public UpdateAccountCommand(int id, string userName, string password, string email)
+        public UpdateAccountCommand(int id, string userName, string currentPassword, string newPassword, string email)
         {
             Id = id;
             UserName = userName;
-            Password = password;
+            CurrentPassword = currentPassword;
+            NewPassword = newPassword;
             Email = email;
         }
 
@@ -38,15 +40,19 @@ namespace WebChat.Application.Commands.Updates
                 if (user is null)
                     throw new NotFoundException(nameof(User), request.Id);
 
-                user.UserName = request.UserName;
-                user.Email = request.Email;
+                if (!string.IsNullOrWhiteSpace(request.UserName))
+                    user.UserName = request.UserName;
+
+                if (!string.IsNullOrWhiteSpace(request.Email))
+                    await _userManager.SetEmailAsync(user, request.Email);
 
                 var identityResult = await _userManager.UpdateAsync(user);
 
                 if (!identityResult.Succeeded)
                     throw new IdentityException(identityResult.Errors);
 
-                identityResult = await _userManager.AddPasswordAsync(user, request.Password);
+                if (!string.IsNullOrWhiteSpace(request.CurrentPassword) && !string.IsNullOrWhiteSpace(request.NewPassword))
+                    identityResult = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
 
                 if (!identityResult.Succeeded)
                     throw new IdentityException(identityResult.Errors);

@@ -28,6 +28,14 @@ namespace WebChat.Api.Controllers
             return Ok(result);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetGeneral()
+        {
+            var result = await Mediator.Send(new GetUserProfileGeneralByIdQuery(UserId));
+
+            return Ok(result);
+        }
+
         [HttpGet("{profileId}")]
         public async Task<IActionResult> GetName(int profileId)
         {

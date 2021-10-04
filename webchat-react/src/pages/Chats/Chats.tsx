@@ -116,7 +116,7 @@ export const Chats = () => {
             chat.userId = signalRContext.newMessage.message.userId.toString();
             chat.messageId = signalRContext.newMessage.message.messageId.toString();
             chat.firstName = signalRContext.newMessage.user.firstName;
-            chat.firstName = signalRContext.newMessage.user.lastName;
+            chat.lastMessage = signalRContext.newMessage.user.lastName;
             chat.avatar = signalRContext.newMessage.user.avatar;
             chat.lastMessage = isEmptyOrSpaces(text) ? (photos === 1 ? 'Photo' : `${photos} photos`) : text;
             chat.sender = 'target';

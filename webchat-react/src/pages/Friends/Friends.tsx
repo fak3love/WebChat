@@ -51,6 +51,7 @@ const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         sectionDesktop: {
             width: '100%',
+            height: 500,
             [theme.breakpoints.up('sm')]: {
                 display: 'flex',
                 width: 600
