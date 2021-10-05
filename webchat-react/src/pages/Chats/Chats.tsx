@@ -12,6 +12,7 @@ import {nanoid} from "nanoid";
 import {SignalRContext} from "../../contextes/SignalRContext";
 import {isEmptyOrSpaces} from "../../utils/validators";
 import {useHistory} from "react-router-dom";
+import {getFilteredMessages} from "./utils";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -59,6 +60,7 @@ export const Chats = () => {
     const classes = useStyles();
     const [chats, setChats] = useState<RawChat[]>([]);
     const [userAvatar, setUserAvatar] = useState<string>('');
+    const [filterText, setFilterText] = useState<string | null>(null);
 
     const history = useHistory();
 
@@ -155,12 +157,13 @@ export const Chats = () => {
                         root: classes.inputRoot,
                         input: classes.inputInput,
                     }}
+                    onChange={(event: any) => setFilterText(event.target.value)}
                 />
             </div>
             <Divider/>
             <Scrollbars style={{height: 500}} autoHide>
                 <div style={{display: 'flex', flexDirection: 'column'}}>
-                    {(document.location.search.includes('tab=unread') ? chats.filter(chat => chat.isUnread && chat.sender === 'target') : chats).map((chat, index) => {
+                    {getFilteredMessages(chats, filterText).map((chat: RawChat, index: number) => {
                         return (
                             <React.Fragment key={nanoid()}>
                                 <Chat
