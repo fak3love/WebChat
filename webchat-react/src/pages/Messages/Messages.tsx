@@ -33,8 +33,16 @@ import {isEmptyOrSpaces} from "../../utils/validators";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
+        container: {
+            display: 'flex',
+            width: '100%',
+            height: '100%',
+            [theme.breakpoints.up('sm')]: {
+                width: 'auto',
+            }
+        },
         paper: {
-            width: 'auto',
+            width: '100%',
             [theme.breakpoints.up('sm')]: {
                 width: 525,
             }
@@ -166,14 +174,19 @@ export const Messages = () => {
         const images: Array<{src: any, uniqueKey: string}> = [...attachedImages];
         let i = 0;
 
-        reader.readAsDataURL(files[i]);
+        reader.readAsArrayBuffer(files[i]);
 
-        reader.onload = (file) => {
-            images.push({src: file.target?.result, uniqueKey: nanoid()});
+        reader.onload = (file: any) => {
+            const imageBaseString = btoa(
+                new Uint8Array(file.target.result)
+                    .reduce((data, byte) => data + String.fromCharCode(byte), '')
+            );
+
+            images.push({src: 'data:image/png;base64, ' + imageBaseString, uniqueKey: nanoid()});
 
             i++;
             if (i < files.length)
-                reader.readAsDataURL(files[i]);
+                reader.readAsArrayBuffer(files[i]);
             else
                 setAttachedImages(images);
         }
@@ -485,7 +498,7 @@ export const Messages = () => {
     }, [signalRContext.typing.isTyping]);
 
     return (
-        <div style={{display: 'flex', height: '100%'}}>
+        <div className={classes.container}>
             <Paper variant='outlined' className={classes.paper} style={{display: 'flex', flexDirection: 'column', height: '95%', background: 'white', marginBottom: 15}}>
                 <div style={{display: selectedMessages.length > 0 || showSearch ? 'none' : 'flex', height: 50}}>
                     <div className={classes.btnBack}/>

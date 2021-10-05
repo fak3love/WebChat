@@ -123,6 +123,36 @@ const useStyles = makeStyles((theme: Theme) =>
             [theme.breakpoints.down('md')]: {
                 width: '100%'
             }
+        },
+        backdropImgWrapper: {
+            display: 'flex',
+            height: '100%',
+            maxWidth: 1300
+        },
+        backdropImgBlock: {
+            display: 'flex',
+            justifyContent: 'center',
+            height: '100%',
+            padding: '0 40px'
+        },
+        backdropImg: {
+            maxWidth: '90%',
+            maxHeight: '90%',
+            alignSelf: 'center'
+        },
+        infoWrapper: {
+            display: 'flex',
+            margin: 10
+        },
+        infoName: {
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-around',
+            marginLeft: 15
+        },
+        infoCreatedDate: {
+            fontSize: 12,
+            color: '#939393'
         }
     }),
 );
@@ -192,14 +222,19 @@ export const ImageViewer = ({userId, viewPhoto, isOpen, closeClick, onDeleted}: 
         const images: Array<{src: any, uniqueKey: string}> = [...attachedImages];
         let i = 0;
 
-        reader.readAsDataURL(files[i]);
+        reader.readAsArrayBuffer(files[i]);
 
-        reader.onload = (file) => {
-            images.push({src: file.target?.result, uniqueKey: nanoid()});
+        reader.onload = (file: any) => {
+            const imageBaseString = btoa(
+                new Uint8Array(file.target.result)
+                    .reduce((data, byte) => data + String.fromCharCode(byte), '')
+            );
+
+            images.push({src: 'data:image/png;base64, ' + imageBaseString, uniqueKey: nanoid()});
 
             i++;
             if (i < files.length)
-                reader.readAsDataURL(files[i]);
+                reader.readAsArrayBuffer(files[i]);
             else
                 setAttachedImages(images);
         }
@@ -349,20 +384,20 @@ export const ImageViewer = ({userId, viewPhoto, isOpen, closeClick, onDeleted}: 
                 <CloseIcon style={{width: 30, height: 30, color: 'white'}}/>
             </IconButton>
             <div className={classes.paper}>
-                <div style={{display: 'flex', height: '100%', maxWidth: 1300}}>
+                <div className={classes.backdropImgWrapper}>
                     <div className={classes.backdropImgSection}>
-                        <div style={{display: 'flex', justifyContent: 'center', height: '100%', padding: '20px 20px 5px 20px'}}>
-                            <img src={viewPhoto?.src} style={{maxWidth: '100%', alignSelf: 'center'}} alt={viewPhoto?.slug}/>
+                        <div className={classes.backdropImgBlock}>
+                            <img src={viewPhoto?.src} className={classes.backdropImg} alt={viewPhoto?.slug}/>
                         </div>
                     </div>
                     <div className={classes.infoSection} style={styleInfo}>
-                        <div style={{display: 'flex', margin: 10}}>
+                        <div className={classes.infoWrapper}>
                             <Link to={getUserId() === userId ? '/Profile' : `/Profile/${userId}`} onClick={closeClick}>
                                 <Avatar alt="Remy Sharp" src={user?.avatar} style={{width: 40, height: 40}} />
                             </Link>
-                            <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-around', marginLeft: 15}}>
+                            <div className={classes.infoName}>
                                 <Link to={getUserId() === userId ? '/Profile' : `/Profile/${userId}`} className={classes.friendBlockLink} onClick={closeClick}>{user?.firstName} {user?.lastName}</Link>
-                                <div style={{fontSize: 12, color: '#939393'}}>{moment(photo?.createdDate).format('LL')}</div>
+                                <div className={classes.infoCreatedDate}>{moment(photo?.createdDate).format('LL')}</div>
                             </div>
                         </div>
                         <IconButton className={classes.btnCloseMobile} onClick={closeClick}>
@@ -390,7 +425,8 @@ export const ImageViewer = ({userId, viewPhoto, isOpen, closeClick, onDeleted}: 
                                 loadComments();
                         }}>
                             {comments.map(comment =>
-                                <Comment userId={comment.userId}
+                                <Comment key={comment.commentId}
+                                         userId={comment.userId}
                                          commentId={comment.commentId}
                                          firstName={comment.firstName}
                                          lastName={comment.lastName}

@@ -10,4 +10,36 @@
   overflow: hidden;
 }
 
+.snackbarContent {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.snackbarContent__header {
+  display: flex;
+  width: 100%;
+}
+.snackbarContent__newMessage {
+  font-size: 13px;
+  font-weight: 500;
+  width: 100%;
+}
+.snackbarContent__closeBtn {
+  width: 18px;
+  height: 18px;
+  align-self: center;
+}
+.snackbarContent__body {
+  display: flex;
+  margin-top: 8px;
+}
+.snackbarContent__nameInfo {
+  font-weight: 600;
+  color: #a0cfff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 400px;
+}
+
 /*# sourceMappingURL=SnackbarMessage.css.map */

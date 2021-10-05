@@ -1,0 +1,17 @@
+.MessageSection {
+  display: flex;
+  flex-direction: column;
+  margin: 5px;
+}
+.MessageSection__date {
+  font-size: 12.5px;
+  margin: 10px 0;
+  text-align: center;
+  color: #626d7a;
+}
+.MessageSection__children {
+  display: flex;
+  flex-direction: column;
+}
+
+/*# sourceMappingURL=MessageSection.css.map */

@@ -87,7 +87,7 @@ namespace WebChat.Application.Commands.Creates
                 {
                     var slug = await Nanoid.Nanoid.GenerateAsync(size: 20);
 
-                    byte[] imageBytes = Convert.FromBase64String(messagePhoto.Replace("data:image/png;base64,", ""));
+                    byte[] imageBytes = Convert.FromBase64String(messagePhoto.Replace("data:image/png;base64, ", ""));
                     await _context.UserPhotos.AddAsync(new UserPhoto(userProfile.Id, slug, false));
                     await _fileManager.WriteAllBytes(slug + ".jpg", imageBytes);
                     photoSlugs.Add(slug);

@@ -1,10 +1,11 @@
 import React from 'react';
+import "./MessageSection.css";
 
 export const MessageSection = ({date, children}: {date: string, children: JSX.Element | JSX.Element[]}) => {
     return (
-        <div style={{display: 'flex', flexDirection: 'column', margin: 5}}>
-            <div style={{fontSize: 12.5, margin: '10px 0', textAlign: 'center', color: '#626d7a'}}>{date}</div>
-            <div style={{display: 'flex', flexDirection: 'column'}}>
+        <div className="MessageSection">
+            <div className="MessageSection__date">{date}</div>
+            <div className="MessageSection__children">
                 {children}
             </div>
         </div>

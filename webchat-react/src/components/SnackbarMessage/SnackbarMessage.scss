@@ -9,3 +9,35 @@
   max-height: 75px;
   overflow: hidden;
 }
+.snackbarContent {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  &__header {
+    display: flex;
+    width: 100%;
+  }
+  &__newMessage {
+    font-size: 13px;
+    font-weight: 500;
+    width: 100%;
+  }
+  &__closeBtn {
+    width: 18px;
+    height: 18px;
+    align-self: center;
+  }
+  &__body {
+    display: flex;
+    margin-top: 8px
+  }
+  &__nameInfo {
+    font-weight: 600;
+    color: #a0cfff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 400px;
+  }
+}

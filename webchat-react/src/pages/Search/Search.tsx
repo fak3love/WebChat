@@ -145,7 +145,7 @@ export const Search = () => {
     const inputSearchRef = useRef<any>();
     const inputCheckBoxAvatarRef = useRef<any>();
     const inputCheckBoxOnlineRef = useRef<any>();
-    const [gender, setGender] = useState('male');
+    const [gender, setGender] = useState('any');
     const [ageFrom, setAgeFrom] = useState('from');
     const [ageTo, setAgeTo] = useState('to');
     const [country, setCountry] = useState('none');
@@ -225,7 +225,7 @@ export const Search = () => {
     useEffect(() => {
         searchFriends();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [gender, country, city]);
+    }, [gender, country, city, ageFrom, ageTo]);
 
     return (
         <Paper variant='outlined' className={classes.paper}>

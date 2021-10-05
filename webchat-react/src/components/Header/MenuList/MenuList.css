@@ -1,5 +1,32 @@
 .list {
   width: 250px;
 }
+.list__userInfo {
+  margin-left: 16px;
+  display: flex;
+  flex-direction: column;
+}
+.list__userWrapper {
+  display: flex;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.75);
+}
+.list__userFirstName {
+  margin: 0 5px 0 0;
+  max-width: 80px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.list__userLastName {
+  max-width: 80px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.list__userOnlineStatus {
+  font-size: 13px;
+  color: #909499;
+}
 
 /*# sourceMappingURL=MenuList.css.map */

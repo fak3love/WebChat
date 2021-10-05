@@ -54,7 +54,7 @@ namespace WebChat.Application.Queries
                     .Include(prop => prop.ReplyToComment)
                     .ThenInclude(prop => prop.UserProfile)
                     .Where(prop => prop.UserPhotoId == userPhoto.Id)
-                    .OrderByDescending(prop => prop.CreatedAt)
+                    .OrderBy(prop => prop.CreatedAt)
                     .Skip(request.LoadFrom)
                     .Take(20)
                     .ToListAsync();

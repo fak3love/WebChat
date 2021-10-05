@@ -1,0 +1,32 @@
+.MessageTab {
+  display: flex;
+  position: relative;
+  cursor: pointer;
+  height: 32px;
+  padding: 0 5px 0 20px;
+}
+.MessageTab__title {
+  font-size: 13px;
+  align-self: center;
+  max-width: 160px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.MessageTab__closeTabBlock {
+  position: absolute;
+  height: 100%;
+  right: 15px;
+}
+.MessageTab__newMessageCount {
+  position: absolute;
+  flex-direction: column;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2a5885;
+  height: 100%;
+  right: 15px;
+}
+
+/*# sourceMappingURL=MessageTab.css.map */

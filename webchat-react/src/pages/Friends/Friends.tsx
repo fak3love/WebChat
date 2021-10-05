@@ -191,7 +191,7 @@ export const Friends = () => {
                                 return (
                                     <div key={familiar.userId}>
                                         <UserBlock userId={familiar.userId}  firstName={familiar.firstName} lastName={familiar.lastName} isOnline={familiar.isOnline} avatarSrc={familiar.avatar} info={moment(familiar.modifiedDate).startOf('minutes').fromNow()}/>
-                                        {index < friends.length - 1 ? <Divider style={{margin: '24px 0'}}/> : ''}
+                                        {index < friends.length - 1 ? <Divider style={{margin: '20px 0'}}/> : ''}
                                     </div>
                                 )
                             })}
@@ -203,7 +203,7 @@ export const Friends = () => {
                                 return (
                                     <div key={familiar.userId}>
                                         <UserBlock userId={familiar.userId}  firstName={familiar.firstName} lastName={familiar.lastName} isOnline={familiar.isOnline} avatarSrc={familiar.avatar} info={moment(familiar.modifiedDate).startOf('minutes').fromNow()}/>
-                                        {index < friends.length - 1 ? <Divider style={{margin: '24px 0'}}/> : ''}
+                                        {index < followers.length - 1 ? <Divider style={{margin: '20px 0'}}/> : ''}
                                     </div>
                                 )
                             })}
@@ -214,8 +214,8 @@ export const Friends = () => {
                             {subscriptions.map((familiar, index) => {
                                 return (
                                     <div key={familiar.userId}>
-                                        <UserBlock userId={familiar.userId}  firstName={familiar.firstName} lastName={familiar.lastName} isOnline={familiar.isOnline} avatarSrc={familiar.avatar} info={moment(familiar.modifiedDate).startOf('minutes').fromNow()}/>
-                                        {index < friends.length - 1 ? <Divider style={{margin: '24px 0'}}/> : ''}
+                                        <UserBlock userId={familiar.userId} firstName={familiar.firstName} lastName={familiar.lastName} isOnline={familiar.isOnline} avatarSrc={familiar.avatar} info={moment(familiar.modifiedDate).startOf('minutes').fromNow()}/>
+                                        {index < subscriptions.length - 1 ? <Divider style={{margin: '20px 0'}}/> : ''}
                                     </div>
                                 )
                             })}

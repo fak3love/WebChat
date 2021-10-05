@@ -96,13 +96,6 @@ export const Message = ({userId, messageId, firstName, avatarSrc, writtenDate, m
                     </div>
                     <div style={{display: messageText !== undefined ? 'block' : 'none', marginTop: 5}}>
                         <div style={{fontSize: 13, lineHeight: 1.4, paddingRight: 80, overflowWrap: 'anywhere', whiteSpace: 'pre-wrap'}}>{messageText}</div>
-                        {/*<iframe id="player"*/}
-                        {/*        width="347"*/}
-                        {/*        height="195"*/}
-                        {/*        frameBorder="0"*/}
-                        {/*        allowFullScreen*/}
-                        {/*        src="http://www.youtube.com/embed/Z8c_2_k3EZA?enablejsapi=1"*/}
-                        {/*/>*/}
                     </div>
                     <div style={{display: messageImages !== undefined ? 'flex' : 'none', flexWrap: 'wrap', marginTop: 2.5}}>
                         {messageImages?.map((src, index) => <img key={index} className={classes.img} src={src} alt={src}/>)}

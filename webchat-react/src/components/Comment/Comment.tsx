@@ -119,7 +119,7 @@ export const Comment = ({userId, commentId, firstName, lastName, createdDate, av
                     {message}
                 </div>
                 <div style={{display: attachedImages !== undefined ? 'flex' : 'none', flexWrap: 'wrap', marginTop: 2.5}}>
-                    {attachedImages?.map(src => <img style={{maxHeight: 120, margin: '5px 10px 5px 0'}} src={src} alt={src}/>)}
+                    {attachedImages?.map((src, index) => <img key={src + index} style={{maxHeight: 120, maxWidth: 210, margin: '5px 10px 5px 0'}} src={src} alt={src}/>)}
                 </div>
                 <div className={classes.actionBody}>
                     <div className={classes.date}>{moment(createdDate).format('lll')}</div>

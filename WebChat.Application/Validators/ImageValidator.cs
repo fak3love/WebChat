@@ -18,7 +18,7 @@ namespace WebChat.Application.Validators
         }
         public static bool IsValidImageByBase64Web(string base64)
         {
-            byte[] imageBytes = Convert.FromBase64String(base64.Replace("data:image/png;base64,", ""));
+            byte[] imageBytes = Convert.FromBase64String(base64.Replace("data:image/png;base64, ", ""));
 
             return IsValidImage(imageBytes);
         }

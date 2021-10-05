@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {createStyles, makeStyles, Theme, withStyles} from "@material-ui/core/styles";
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {Link} from "react-router-dom";
@@ -53,6 +53,35 @@ const useStyles = makeStyles((theme: Theme) =>
             lineHeight: '19px',
             height: 18,
             padding: '0 6px'
+        },
+        avatar: {
+            width: 50,
+            height: 50
+        },
+        wrapper: {
+            display: 'flex',
+            padding: '0 28px',
+            width: '100%'
+        },
+        infoBlock: {
+            display: 'flex',
+            flexDirection: 'column',
+            marginLeft: 15,
+            alignSelf: 'center',
+            width: '100%'
+        },
+        infoUser: {
+            display: 'flex',
+            justifyContent: 'space-between'
+        },
+        writtenDate: {
+            fontSize: 13,
+            color: 'rgb(147, 147, 147)'
+        },
+        infoMessage: {
+            display: 'flex',
+            position: 'relative',
+            marginTop: 7.5
         }
     }),
 );
@@ -111,7 +140,7 @@ export const Chat = ({avatarSrc, message, writtenDate, unreadCount, unread, send
 
     return (
         <div className={classes.chat} style={{background: background}} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
-            <div style={{display: 'flex', padding: '0 28px', width: '100%'}}>
+            <div className={classes.wrapper}>
                 <StyledBadge
                     overlap="circular"
                     anchorOrigin={{
@@ -121,14 +150,14 @@ export const Chat = ({avatarSrc, message, writtenDate, unreadCount, unread, send
                     variant={target.isOnline ? "dot" : "standard"}
                     style={{alignSelf: 'center'}}
                 >
-                    <Avatar alt="Remy Sharp" src={target.avatarSrc} style={{width: 50, height: 50}} />
+                    <Avatar alt="Remy Sharp" src={target.avatarSrc} className={classes.avatar}/>
                 </StyledBadge>
-                <div style={{display: 'flex', flexDirection: 'column', marginLeft: 15, alignSelf: 'center', width: '100%'}}>
-                    <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                <div className={classes.infoBlock}>
+                    <div className={classes.infoUser}>
                         <div className={classes.name}>{target.firstName} {target.lastName}</div>
-                        <div style={{fontSize: 13, color: 'rgb(147, 147, 147)'}}>{writtenDate}</div>
+                        <div className={classes.writtenDate}>{writtenDate}</div>
                     </div>
-                    <div style={{display: 'flex', position: 'relative', marginTop: 7.5}}>
+                    <div className={classes.infoMessage}>
                         <Avatar alt="Remy Sharp" src={sender === 'target' ? null : avatarSrc} style={{display: sender === 'user' ? 'inherit' : 'none', width: 25, height: 25, alignSelf: 'center'}} />
                         <div ref={messageRef} style={{marginLeft: isUnreadUser ? 7.5 : sender === 'user' ? 5 : 0, background: isUnreadUser ? 'rgb(174 183 194 / 12%)' : 'transparent', lineHeight: sender === 'user' ? '25px' : 'auto', paddingLeft: sender === 'user' ? 5 : 0}} className={classes.message}>{message}</div>
                         <div style={{display: isUnreadTarget ? 'block' : 'none'}} className={classes.unreadCount}>{unreadCount}</div>

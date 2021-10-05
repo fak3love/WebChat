@@ -64,15 +64,15 @@ export const SnackbarMessage = ({message, user}: {message: RawMessage | undefine
             onClick={handleClick}
             ContentProps={{classes: classes, style: {background: 'rgb(65 65 65)', cursor: 'pointer'}}}
             message={
-                <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
-                    <div style={{display: 'flex', width: '100%'}}>
-                        <div style={{fontSize: 13, fontWeight: 500, width: '100%'}}>New message</div>
-                        <CloseIcon id="btnCloseMessageBox" style={{width: 18, height: 18, alignSelf: 'center'}} onClick={handleClose}/>
+                <div className="snackbarContent">
+                    <div className="snackbarContent__header">
+                        <div className="snackbarContent__newMessage">New message</div>
+                        <CloseIcon id="btnCloseMessageBox" onClick={handleClose}/>
                     </div>
-                    <div style={{display: 'flex', marginTop: 8}}>
+                    <div className="snackbarContent__body">
                         <Avatar src={user?.avatar} style={{width: 45, height: 45}}/>
                         <div className="sideMessageBox">
-                            <div style={{fontWeight: 600, color: '#a0cfff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 400}}>{user?.firstName} {user?.lastName}</div>
+                            <div className="snackbarContent__nameInfo">{user?.firstName} {user?.lastName}</div>
                             <div style={{marginTop: 5}}>
                                 {message !== undefined ? (isEmptyOrSpaces(message.messageText) && message.messageImages.length > 0 ? 'sent you a private message' : message.messageText) : ''}
                             </div>

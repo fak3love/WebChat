@@ -215,11 +215,11 @@ export const Settings = () => {
                             <input type="button" className="Settings__button" value="Save your place" onClick={handleSavePlace}/>
                         </div>
                     }/>
-                    <SettingsItem showBottomBorder={true} leftText="Languages" middleText={editData !== undefined && editData.languages.length > 0 ? editData.languages.map(language => getWithCapitalLetter(language)).join(',') : 'not specified'} hiddenContent={
+                    <SettingsItem showBottomBorder={true} leftText="Languages" middleText={editData !== undefined && editData.languages.length > 0 ? editData.languages.map(language => getWithCapitalLetter(language)).join(', ') : 'not specified'} hiddenContent={
                         <div style={{display: 'flex', flexDirection: 'column', fontSize: 13, color: '#2a5885'}}>
                             <div style={{display: 'flex', padding: '0 0 10px 0'}}>
                                 <div style={{width: 155, alignSelf: 'center'}}>Languages</div>
-                                <div style={{color: 'black', maxWidth: 275}}>{editData !== undefined && editData.languages.length > 0 ? editData.languages.map(language => getWithCapitalLetter(language)).join(',') : 'not specified'}</div>
+                                <div style={{color: 'black', maxWidth: 275}}>{editData !== undefined && editData.languages.length > 0 ? editData.languages.map(language => getWithCapitalLetter(language)).join(', ') : 'not specified'}</div>
                             </div>
                             <div style={{display: 'flex', padding: '0 0 10px 0'}}>
                                 <div style={{width: 155, alignSelf: 'center'}}>Enter languages</div>

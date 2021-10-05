@@ -20,6 +20,7 @@ import {environment} from "./ts/environment";
 import {RawMessage} from "./pages/Messages/Messages";
 import {SnackbarMessage} from "./components/SnackbarMessage";
 import {get} from "./ts/requests";
+import {getVisitorId, isVisitor} from "./utils/common";
 
 function App() {
     const [connection, setConnection] = useState<HubConnection>();
@@ -34,18 +35,25 @@ function App() {
     const loadUnreadMessages = async () => {
         const response = await get({url: 'UserMessages/GetUniqueUnreadCount', headers: headers});
 
-        if (response.ok)
-            setUniqueMessageUserIds(await response.json());
+        if (response.ok) {
+            const text = await response.text();
+            setUniqueMessageUserIds(JSON.parse(text));
+            localStorage.setItem('uniqueMessageUserIds', text);
+        }
     }
 
     const resetNewMessage = () => setNewMessage(undefined);
 
     const updateUniqueMessages = (userId: any) => {
-        const findId = uniqueMessageUserIds.find(id => id === userId);
+        const localStorageMessageIds = localStorage.getItem('uniqueMessageUserIds');
+        const uniqueMessageIds = uniqueMessageUserIds.length === 0 && localStorageMessageIds !== null ? JSON.parse(localStorageMessageIds) : uniqueMessageUserIds;
+
+        const findId = uniqueMessageIds.find((id: any) => id === userId);
 
         if (findId === undefined && userId.toString() !== getUserId()) {
-            uniqueMessageUserIds.push(userId);
-            setUniqueMessageUserIds([...uniqueMessageUserIds]);
+            uniqueMessageIds.push(userId);
+            setUniqueMessageUserIds([...uniqueMessageIds]);
+            localStorage.setItem('uniqueMessageUserIds', JSON.stringify(uniqueMessageIds));
         }
     }
 
@@ -76,7 +84,8 @@ function App() {
                 connection.on('NewMessage', (message, user) => {
                     setNewMessage({message: message, user: user});
 
-                    updateUniqueMessages(message.userId);
+                    if (!isVisitor('/Messages') || getVisitorId() !== message.userId.toString())
+                        updateUniqueMessages(message.userId);
                 });
                 connection.on('UpdateMessage', message => {
                     setUpdatedMessage(message);
@@ -84,14 +93,18 @@ function App() {
                 connection.on('ConfirmedReadMessages', (messageIds: {userId: number, messageId: string}[]) => {
                     setConfirmedReadMessages(messageIds.map(id => id.messageId));
 
+                    const localStorageMessageIds = localStorage.getItem('uniqueMessageUserIds');
+                    const uniqueMessageIds = uniqueMessageUserIds.length === 0 && localStorageMessageIds !== null ? JSON.parse(localStorageMessageIds) : uniqueMessageUserIds;
+
                     for (let i = 0; i < messageIds.length; i++) {
-                        const findId = uniqueMessageUserIds.findIndex(id => id === messageIds[i].userId);
+                        const findId = uniqueMessageIds.findIndex((id: any) => id === messageIds[i].userId);
 
                         if (findId !== -1)
-                            uniqueMessageUserIds.splice(findId, 1);
+                            uniqueMessageIds.splice(findId, 1);
                     }
 
-                    setUniqueMessageUserIds([...uniqueMessageUserIds]);
+                    setUniqueMessageUserIds([...uniqueMessageIds]);
+                    localStorage.setItem('uniqueMessageUserIds', JSON.stringify(uniqueMessageIds));
                 });
                 connection.on('BeginTyping', (userId: number) => {
                     setTyping({isTyping: true, userId: userId});

@@ -1,3 +1,31 @@
 .list {
   width: 250px;
+
+  &__userInfo {
+    margin-left: 16px;
+    display: flex;
+    flex-direction: column;
+  }
+  &__userWrapper {
+    display: flex;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.75);
+  }
+  &__userFirstName {
+    margin: 0 5px 0 0;
+    max-width: 80px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  &__userLastName {
+    max-width: 80px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  &__userOnlineStatus {
+    font-size: 13px;
+    color: #909499;
+  }
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import Avatar from "@material-ui/core/Avatar";
@@ -14,6 +14,7 @@ import {faSignOutAlt} from "@fortawesome/free-solid-svg-icons";
 import {createStyles, Theme, withStyles} from "@material-ui/core/styles";
 import "./MenuList.css";
 import {CustomBadge} from "../../CustomBadge";
+import {SignalRContext} from "../../../contextes/SignalRContext";
 
 const StyledBadge = withStyles((theme: Theme) => createStyles({
     badge: {
@@ -45,6 +46,8 @@ const StyledBadge = withStyles((theme: Theme) => createStyles({
 }))(Badge);
 
 export const MenuList = ({firstName, lastName, avatar, handleToggleDrawer}: {firstName: string, lastName: string, avatar?: string, handleToggleDrawer: any}) => {
+    const signalRContext = useContext(SignalRContext);
+
     return (
         <div
             className="list"
@@ -64,12 +67,12 @@ export const MenuList = ({firstName, lastName, avatar, handleToggleDrawer}: {fir
                     >
                         <Avatar src={avatar}/>
                     </StyledBadge>
-                    <div style={{marginLeft: 16, display: "flex", flexDirection: "column"}}>
-                        <div style={{display: "flex", fontWeight: 500, color: 'rgba(0, 0, 0, 0.75)'}}>
-                            <div style={{margin: "0 5px 0 0", maxWidth: 80,  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"}}>{firstName}</div>
-                            <div style={{maxWidth: 80,  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"}}>{lastName}</div>
+                    <div className="list__userInfo">
+                        <div className="list__userWrapper">
+                            <div className="list__userFirstName">{firstName}</div>
+                            <div className="list__userLastName">{lastName}</div>
                         </div>
-                        <span style={{fontSize: 13, color: "#909499"}}>online</span>
+                        <span className="list__userOnlineStatus">online</span>
                     </div>
                     <ChevronRightIcon style={{marginLeft: 'auto', color: '#B0B7BF'}}/>
                     <Link to="/Profile" style={{position: 'absolute', marginLeft: -16, display: 'block', width: '100%', height: '100%'}}/>
@@ -87,7 +90,7 @@ export const MenuList = ({firstName, lastName, avatar, handleToggleDrawer}: {fir
                         </svg>
                     </ListItemIcon>
                     <ListItemText>Messages</ListItemText>
-                    <CustomBadge badgeProps={{overlap: 'circular', badgeContent: 10, style: {marginRight: 16}}}/>
+                    <CustomBadge badgeProps={{overlap: 'circular', badgeContent: signalRContext.uniqueMessageUserIds.length, style: {marginRight: 16}}}/>
                     <Link to="/Messages" style={{position: 'absolute', marginLeft: -16, display: 'block', width: '100%', height: '100%'}}/>
                 </ListItem>
                 <ListItem button>
@@ -102,7 +105,7 @@ export const MenuList = ({firstName, lastName, avatar, handleToggleDrawer}: {fir
                         </svg>
                     </ListItemIcon>
                     <ListItemText>Friends</ListItemText>
-                    <CustomBadge badgeProps={{overlap: 'circular', badgeContent: 10, style: {marginRight: 16}}}/>
+                    <CustomBadge badgeProps={{overlap: 'circular', badgeContent: 0, style: {marginRight: 16}}}/>
                     <Link to="/Friends" style={{position: 'absolute', marginLeft: -16, display: 'block', width: '100%', height: '100%'}}/>
                 </ListItem>
                 <ListItem button>
@@ -112,7 +115,7 @@ export const MenuList = ({firstName, lastName, avatar, handleToggleDrawer}: {fir
                         </svg>
                     </ListItemIcon>
                     <ListItemText>Photos</ListItemText>
-                    <CustomBadge badgeProps={{overlap: 'circular', badgeContent: 10, style: {marginRight: 16}}}/>
+                    <CustomBadge badgeProps={{overlap: 'circular', badgeContent: 0, style: {marginRight: 16}}}/>
                     <Link to="/Photos" style={{position: 'absolute', marginLeft: -16, display: 'block', width: '100%', height: '100%'}}/>
                 </ListItem>
             </List>

@@ -17,14 +17,14 @@ const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         root: {
             width: '100%',
-            height: 600,
+            height: '95%',
             [theme.breakpoints.down('sm')]: {
                 height: 500,
             }
         },
         paper: {
             display: 'flex',
-            height: 600,
+            height: '95%',
             padding: 24,
             [theme.breakpoints.down('sm')]: {
                 height: 500,
@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme: Theme) =>
         },
         scrollbars: {
             width: '100%',
-            height: 600,
+            height: '95%',
             [theme.breakpoints.down('sm')]: {
                 height: 500,
             }
