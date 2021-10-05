@@ -30,9 +30,10 @@ function TabPanel(props: TabPanelProps) {
             id={`simple-tabpanel-${index}`}
             aria-labelledby={`simple-tab-${index}`}
             {...other}
+            style={{height: '95%'}}
         >
             {value === index && (
-                <Box p={3}>
+                <Box p={3} style={{height: '95%'}}>
                     {children}
                 </Box>
             )}
@@ -51,7 +52,7 @@ const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         sectionDesktop: {
             width: '100%',
-            height: 500,
+            height: '95%',
             [theme.breakpoints.up('sm')]: {
                 display: 'flex',
                 width: 600
@@ -61,6 +62,7 @@ const useStyles = makeStyles((theme: Theme) =>
             flexGrow: 1,
             backgroundColor: theme.palette.background.paper,
             border: '1px solid #dce1e6',
+            height: '95%'
         },
         btnFind: {
             display: 'none',
@@ -186,7 +188,7 @@ export const Friends = () => {
                         </Button>
                     </AppBar>
                     <TabPanel value={value} index={0}>
-                        <Scrollbars style={{height: 450}}>
+                        <Scrollbars style={{height: '95%'}}>
                             {friends.map((familiar, index) => {
                                 return (
                                     <div key={familiar.userId}>
@@ -198,7 +200,7 @@ export const Friends = () => {
                         </Scrollbars>
                     </TabPanel>
                     <TabPanel value={value} index={1}>
-                        <Scrollbars style={{height: 450}}>
+                        <Scrollbars style={{height: '95%'}}>
                             {followers.map((familiar, index) => {
                                 return (
                                     <div key={familiar.userId}>
@@ -210,7 +212,7 @@ export const Friends = () => {
                         </Scrollbars>
                     </TabPanel>
                     <TabPanel value={value} index={2}>
-                        <Scrollbars style={{height: 450}}>
+                        <Scrollbars style={{height: '95%'}}>
                             {subscriptions.map((familiar, index) => {
                                 return (
                                     <div key={familiar.userId}>

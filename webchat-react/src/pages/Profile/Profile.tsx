@@ -380,7 +380,7 @@ export const Profile = () => {
                     <DialogTitle id="form-dialog-title" classes={{root: classes.dialogTitleRoot}}>Your status</DialogTitle>
                     <DialogContent classes={{root: classes.dialogContentRoot}}>
                         <DialogContentText>
-                            Write any information about yourself, or information about your mood :)
+                            Write any information about yourself
                         </DialogContentText>
                         <TextField
                             autoFocus

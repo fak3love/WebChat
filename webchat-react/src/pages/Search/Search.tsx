@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme: Theme) =>
             display: 'flex',
             flexDirection: 'column',
             width: '100%',
-            height: 'max-content',
+            height: '95%',
             background: 'white',
             marginBottom: 15,
             [theme.breakpoints.up('sm')]: {
@@ -321,7 +321,7 @@ export const Search = () => {
                 </div>
             </div>
             <Divider style={{display: showParameters ? 'block' : 'none'}}/>
-            <Scrollbars style={{height: 500}} autoHide onScrollFrame={(value) => {
+            <Scrollbars style={{height: '95%'}} autoHide onScrollFrame={(value) => {
                 if (value.top >= 0.8) {
                     clearTimeout(loadingTimeout);
 
