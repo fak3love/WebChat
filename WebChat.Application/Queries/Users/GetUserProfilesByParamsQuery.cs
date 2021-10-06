@@ -57,11 +57,6 @@ namespace WebChat.Application.Queries
                 var profiles = (await _context.UserProfiles
                     .Include(prop => prop.City)
                     .ThenInclude(prop => prop.Country)
-                    .OrderBy(prop => prop.FirstName)
-                    .ThenBy(prop => prop.LastName)
-                    .ThenBy(prop => prop.LastActionDate)
-                    .Skip(startSearch)
-                    .Take(10)
                     .Where(up =>
                         (gender == null || up.Gender == gender) &&
                         (!requiredAvatar || _context.UserPhotos.FirstOrDefault(photo => up.Id == photo.UserProfileId && photo.IsAvatar) != null) &&
@@ -70,6 +65,11 @@ namespace WebChat.Application.Queries
                         (string.IsNullOrEmpty(city) || up.City.Name.ToLower() == city) &&
                         (names == null || (names.Length == 1 && (up.FirstName.Contains(names[0]) || up.LastName.Contains(names[0]))) || (names.Length == 2 && (up.FirstName.StartsWith(names[0]) && up.LastName.StartsWith(names[1]) || up.FirstName.StartsWith(names[1]) && up.LastName.StartsWith(names[0]))))
                     )
+                    .OrderBy(prop => prop.FirstName)
+                    .ThenBy(prop => prop.LastName)
+                    .ThenBy(prop => prop.LastActionDate)
+                    .Skip(startSearch)
+                    .Take(10)
                     .ToListAsync(cancellationToken))
                     .Where(up =>
                         (ageFrom == 0 || (up.Birthday.HasValue && new DateTime((DateTime.Now - up.Birthday.Value).Ticks).Year >= ageFrom)) &&
