@@ -41,6 +41,7 @@ const useStyles = makeStyles((theme: Theme) =>
             borderRadius: theme.shape.borderRadius,
             backgroundColor: 'transparent',
             width: '100%',
+            margin: '8px 0'
         },
         searchIcon: {
             height: '100%',
@@ -48,7 +49,7 @@ const useStyles = makeStyles((theme: Theme) =>
             alignItems: 'center',
             justifyContent: 'center',
             color: '#93A3BC',
-            padding: 8
+            padding: '0 8px'
         },
         searchParameters: {
             padding: 8
@@ -240,7 +241,7 @@ export const Search = () => {
                     inputRef={inputSearchRef}
                     onChange={() => {searchFriends()}}
                 />
-                <IconButton style={{position: 'absolute', right: 0, top: 0, width: 32, height: 32, margin: 4}} disableTouchRipple onClick={() => setShowParameters(!showParameters)}>
+                <IconButton style={{position: 'absolute', right: 0, top: -2, width: 32, height: 32, margin: '0 8px 0 0'}} disableTouchRipple onClick={() => setShowParameters(!showParameters)}>
                     <FontAwesomeIcon icon={faAngleDown} style={{width: 20, height: 20, color: '#99A2AD'}}/>
                 </IconButton>
             </div>

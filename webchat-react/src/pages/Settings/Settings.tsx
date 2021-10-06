@@ -205,7 +205,9 @@ export const Settings = () => {
                             </div>
                             <div style={{display: 'flex', padding: '0 0 10px 0'}}>
                                 <div style={{width: 155, alignSelf: 'center'}}>Select your place</div>
-                                <select className="Settings__selectMini" defaultValue={editData !== undefined ? editData.country?.toLowerCase() : ''} onChange={(event: any) => setSelectedCountry(countries.find(country => country.name === event.target.value)!)}>
+                                <select className="Settings__selectMini" defaultValue={editData !== undefined ? editData.country?.toLowerCase() : ''} onChange={(event: any) => {
+                                    setSelectedCountry(countries.find(country => country.name.toLowerCase() === event.target.value.toLowerCase())!)
+                                }}>
                                     {countries.map(country => <option key={country.name} value={country.name.toLowerCase()}>{country.name}</option>)}
                                 </select>
                                 <select className="Settings__selectMini" defaultValue={editData !== undefined ? editData.city?.toLowerCase() : ''}>
