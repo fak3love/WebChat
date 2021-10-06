@@ -56,10 +56,6 @@ namespace WebChat.Application.Commands.Creates
                 if (targetProfile is null)
                     throw new NotFoundException(nameof(UserProfile), request.TargetProfileId);
 
-                foreach (var photo in request.MessagePhotos)
-                    if (!ImageValidator.IsValidImageByBase64Web(photo))
-                        throw new BadRequestException();
-
                 var userMessage = new UserMessage()
                 {
                     InitiatorUserId = request.ProfileId,
