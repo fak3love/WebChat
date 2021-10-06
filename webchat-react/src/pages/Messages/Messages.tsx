@@ -43,6 +43,11 @@ const useStyles = makeStyles((theme: Theme) =>
         },
         paper: {
             width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            height: '95%',
+            background: 'white',
+            marginBottom: 15,
             [theme.breakpoints.up('sm')]: {
                 width: 525,
             }
@@ -72,6 +77,45 @@ const useStyles = makeStyles((theme: Theme) =>
                 maxWidth: 200,
             },
         },
+        headerProfileInfo: {
+            display: 'flex',
+            flexDirection: 'column',
+            flex: 1,
+            justifyContent: 'center',
+            padding: '5px 0'
+        },
+        headerProfileOnlineStatusBlock: {
+            textAlign: 'center',
+            marginTop: -4
+        },
+        headerProfileOnlineStatusText: {
+            width: 'max-content',
+            fontSize: 12,
+            color: '#626d7a'
+        },
+        headerMoreHorizBlock: {
+            display: 'flex',
+            justifyContent: 'center',
+            width: 50,
+            height: 50,
+            cursor: 'pointer'
+        },
+        headerMoreHorizIcon: {
+            marginTop: 10,
+            width: 30,
+            height: 30,
+            color: 'rgba(0, 0, 0, 0.40)'
+        },
+        inputSection: {
+            display: 'flex',
+            height: 'max-content',
+            padding: 0
+        },
+        inputBlock: {
+            display: 'flex',
+            flexDirection: 'column',
+            width: '100%'
+        }
     }),
 );
 const useListItemStyles = makeStyles(() =>
@@ -499,20 +543,20 @@ export const Messages = () => {
 
     return (
         <div className={classes.container}>
-            <Paper variant='outlined' className={classes.paper} style={{display: 'flex', flexDirection: 'column', height: '95%', background: 'white', marginBottom: 15}}>
+            <Paper variant='outlined' className={classes.paper}>
                 <div style={{display: selectedMessages.length > 0 || showSearch ? 'none' : 'flex', height: 50}}>
                     <div className={classes.btnBack}/>
-                    <div style={{display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center', padding: '5px 0'}}>
+                    <div className={classes.headerProfileInfo}>
                         <div style={{textAlign: 'center'}}>
                             <Link to={target?.userId.toString() === getUserId() ? '/Profile' : `/Profile/${target?.userId}`} className={classes.link}>{target?.firstName} {target?.lastName}</Link>
                         </div>
-                        <div style={{textAlign: 'center', marginTop: -4}}>
-                            <span style={{width: 'max-content', fontSize: 12, color: '#626d7a'}}>{target?.onlineStatus.toLowerCase()}</span>
+                        <div className={classes.headerProfileOnlineStatusBlock}>
+                            <span className={classes.headerProfileOnlineStatusText}>{target?.onlineStatus.toLowerCase()}</span>
                         </div>
                     </div>
                     <div style={{display: 'flex'}}>
-                        <div style={{display: 'flex', justifyContent: 'center', width: 50, height: 50, cursor: 'pointer'}} onClick={handleClick}>
-                            <MoreHorizIcon style={{marginTop: 10, width: 30, height: 30, color: 'rgba(0, 0, 0, 0.40)'}}/>
+                        <div className={classes.headerMoreHorizBlock} onClick={handleClick}>
+                            <MoreHorizIcon className={classes.headerMoreHorizIcon}/>
                         </div>
                         <Link to={target?.userId.toString() === getUserId() ? '/Profile' : `/Profile/${target?.userId}`} style={{display: 'flex', justifyContent: 'center', height: 50, width: 50}}>
                             <Avatar alt="Remy Sharp" style={{marginTop: 10, width: 30, height: 30}} src={target?.avatar}/>
@@ -578,8 +622,8 @@ export const Messages = () => {
                     ))}
                 </Scrollbars>
                 <Divider/>
-                <div style={{display: 'flex', height: 'max-content', padding: 0}}>
-                    <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
+                <div className={classes.inputSection}>
+                    <div className={classes.inputBlock}>
                         <div style={{display: editMessageId === '' ? 'none' : 'block', marginLeft: 15, marginTop: 15, fontSize: 13, fontWeight: 500, color: '#2a5885'}}>
                             Edit message
                         </div>

@@ -361,8 +361,10 @@ export const ImageViewer = ({userId, viewPhoto, isOpen, closeClick, onDeleted}: 
 
                 if (response[2].ok)
                     setComments(await response[2].json());
-                else if (response[2].status === 404)
+                else if (response[2].status === 404) {
+                    setComments([]);
                     setHasNoComments(true);
+                }
             });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
